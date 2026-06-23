@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { LayoutGrid, Type, Box, MessageSquare, Bell, Search, Menu, Stethoscope, LayoutDashboard, Users, Server, LifeBuoy, Activity, Pill, Receipt, UserPlus, Fingerprint, FileText, CalendarRange, ListTree, MonitorPlay, HeartPulse, Stethoscope as StethoscopeIcon, FileSignature, Wallet, FileSpreadsheet, Undo2, Package, Tags, Truck, PieChart, TrendingUp, BriefcaseMedical, LineChart, HelpCircle, MessageCircle, BookOpen, GraduationCap, ClipboardList } from 'lucide-react';
+import { LayoutGrid, Type, Box, MessageSquare, Bell, Search, Menu, Stethoscope, LayoutDashboard, Users, Server, LifeBuoy, Activity, Pill, Receipt, UserPlus, Fingerprint, FileText, CalendarRange, ListTree, MonitorPlay, HeartPulse, Stethoscope as StethoscopeIcon, FileSignature, Wallet, FileSpreadsheet, Undo2, Package, Tags, Truck, PieChart, TrendingUp, BriefcaseMedical, LineChart, HelpCircle, MessageCircle, BookOpen, GraduationCap, ClipboardList, Clock, Phone, FileDigit, CalendarClock, MessageSquareText, Shield, Settings, FileBox } from 'lucide-react';
 import OwnerDashboardView from './views/clinic_owner/OwnerDashboardView';
 import PatientDirectoryView from './views/patient_management/PatientDirectoryView';
 import ApptCalendarView from './views/appointment_management/ApptCalendarView';
@@ -9,7 +9,22 @@ import InvStockView from './views/inventory/InvStockView';
 import ExecRevenueView from './views/executive_analytics/ExecRevenueView';
 import SupportDashboardView from './views/support/SupportDashboardView';
 
-type Tab = 'co-dashboard' | 'pm-directory' | 'am-calendar' | 'emr-dashboard' | 'bp-dashboard' | 'inv-stock' | 'ea-revenue' | 'sup-dashboard';
+import ApptQueueView from './views/appointment_management/ApptQueueView';
+import FollowUpCenterView from './views/appointment_management/FollowUpCenterView';
+import DiagnosticReportsView from './views/doctor_emr/DiagnosticReportsView';
+import StaffManagementView from './views/operations/StaffManagementView';
+import AttendanceLeaveView from './views/operations/AttendanceLeaveView';
+import TaskManagementView from './views/operations/TaskManagementView';
+import AccountsExpensesView from './views/finance/AccountsExpensesView';
+import NotificationCenterView from './views/communication/NotificationCenterView';
+import PatientCommView from './views/communication/PatientCommView';
+import ReportsCenterView from './views/administration/ReportsCenterView';
+import AuditLogsView from './views/administration/AuditLogsView';
+import SettingsView from './views/administration/SettingsView';
+import KnowledgeBaseView from './views/support/KnowledgeBaseView';
+
+
+type Tab = 'co-dashboard' | 'pm-directory' | 'am-calendar' | 'emr-dashboard' | 'bp-dashboard' | 'inv-stock' | 'ea-revenue' | 'sup-dashboard' | 'fd-queue' | 'fd-followups' | 'cl-diagnostics' | 'op-staff' | 'op-attendance' | 'op-tasks' | 'fi-accounts' | 'cm-notifications' | 'cm-patient' | 'ad-reports' | 'ad-audit' | 'ad-settings' | 'sup-knowledge';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<Tab>('co-dashboard');
@@ -33,26 +48,14 @@ export default function App() {
           <nav className="space-y-1 mt-2">
             <SidebarItem 
               icon={<LayoutGrid size={18} />} 
-              label="Business Overview" 
+              label="Dashboard" 
               active={activeTab === 'co-dashboard'} 
               onClick={() => setActiveTab('co-dashboard')} 
-            />
-            <SidebarItem 
-              icon={<TrendingUp size={18} />} 
-              label="Executive Analytics" 
-              active={activeTab === 'ea-revenue'} 
-              onClick={() => setActiveTab('ea-revenue')} 
             />
           </nav>
           
           <div className="text-[10px] uppercase tracking-widest text-slate-500 font-bold px-2 py-3 border-t border-white/5 mt-4 pt-4">Front Desk</div>
           <nav className="space-y-1">
-            <SidebarItem 
-              icon={<CalendarRange size={18} />} 
-              label="Appointments" 
-              active={activeTab === 'am-calendar'} 
-              onClick={() => setActiveTab('am-calendar')} 
-            />
             <SidebarItem 
               icon={<Users size={18} />} 
               label="Patient Database" 
@@ -60,10 +63,22 @@ export default function App() {
               onClick={() => setActiveTab('pm-directory')} 
             />
             <SidebarItem 
-              icon={<Wallet size={18} />} 
-              label="Billing & Invoicing" 
-              active={activeTab === 'bp-dashboard'} 
-              onClick={() => setActiveTab('bp-dashboard')} 
+              icon={<CalendarRange size={18} />} 
+              label="Appointments" 
+              active={activeTab === 'am-calendar'} 
+              onClick={() => setActiveTab('am-calendar')} 
+            />
+            <SidebarItem 
+              icon={<ListTree size={18} />} 
+              label="Queue Management" 
+              active={activeTab === 'fd-queue'} 
+              onClick={() => setActiveTab('fd-queue')} 
+            />
+            <SidebarItem 
+              icon={<Phone size={18} />} 
+              label="Follow-up Center" 
+              active={activeTab === 'fd-followups'} 
+              onClick={() => setActiveTab('fd-followups')} 
             />
           </nav>
 
@@ -75,15 +90,109 @@ export default function App() {
               active={activeTab === 'emr-dashboard'} 
               onClick={() => setActiveTab('emr-dashboard')} 
             />
+            <SidebarItem 
+              icon={<FileDigit size={18} />} 
+              label="Diagnostic Reports" 
+              active={activeTab === 'cl-diagnostics'} 
+              onClick={() => setActiveTab('cl-diagnostics')} 
+            />
           </nav>
 
           <div className="text-[10px] uppercase tracking-widest text-slate-500 font-bold px-2 py-3 border-t border-white/5 mt-4 pt-4">Operations</div>
           <nav className="space-y-1">
             <SidebarItem 
+              icon={<UserPlus size={18} />} 
+              label="Staff Management" 
+              active={activeTab === 'op-staff'} 
+              onClick={() => setActiveTab('op-staff')} 
+            />
+            <SidebarItem 
+              icon={<CalendarClock size={18} />} 
+              label="Attendance & Leave" 
+              active={activeTab === 'op-attendance'} 
+              onClick={() => setActiveTab('op-attendance')} 
+            />
+            <SidebarItem 
+              icon={<ClipboardList size={18} />} 
+              label="Task Management" 
+              active={activeTab === 'op-tasks'} 
+              onClick={() => setActiveTab('op-tasks')} 
+            />
+            <SidebarItem 
               icon={<Tags size={18} />} 
               label="Inventory & Stock" 
               active={activeTab === 'inv-stock'} 
               onClick={() => setActiveTab('inv-stock')} 
+            />
+          </nav>
+
+          <div className="text-[10px] uppercase tracking-widest text-slate-500 font-bold px-2 py-3 border-t border-white/5 mt-4 pt-4">Finance</div>
+          <nav className="space-y-1">
+            <SidebarItem 
+              icon={<Wallet size={18} />} 
+              label="Billing & Invoicing" 
+              active={activeTab === 'bp-dashboard'} 
+              onClick={() => setActiveTab('bp-dashboard')} 
+            />
+            <SidebarItem 
+              icon={<Receipt size={18} />} 
+              label="Accounts & Expenses" 
+              active={activeTab === 'fi-accounts'} 
+              onClick={() => setActiveTab('fi-accounts')} 
+            />
+            <SidebarItem 
+              icon={<TrendingUp size={18} />} 
+              label="Revenue Reports" 
+              active={activeTab === 'ea-revenue'} 
+              onClick={() => setActiveTab('ea-revenue')} 
+            />
+          </nav>
+
+          <div className="text-[10px] uppercase tracking-widest text-slate-500 font-bold px-2 py-3 border-t border-white/5 mt-4 pt-4">Communication</div>
+          <nav className="space-y-1">
+            <SidebarItem 
+              icon={<Bell size={18} />} 
+              label="Notification Center" 
+              active={activeTab === 'cm-notifications'} 
+              onClick={() => setActiveTab('cm-notifications')} 
+            />
+            <SidebarItem 
+              icon={<MessageSquareText size={18} />} 
+              label="Patient Communication" 
+              active={activeTab === 'cm-patient'} 
+              onClick={() => setActiveTab('cm-patient')} 
+            />
+          </nav>
+
+          <div className="text-[10px] uppercase tracking-widest text-slate-500 font-bold px-2 py-3 border-t border-white/5 mt-4 pt-4">Administration</div>
+          <nav className="space-y-1">
+            <SidebarItem 
+              icon={<FileBox size={18} />} 
+              label="Reports Center" 
+              active={activeTab === 'ad-reports'} 
+              onClick={() => setActiveTab('ad-reports')} 
+            />
+            <SidebarItem 
+              icon={<Shield size={18} />} 
+              label="Audit Logs" 
+              active={activeTab === 'ad-audit'} 
+              onClick={() => setActiveTab('ad-audit')} 
+            />
+            <SidebarItem 
+              icon={<Settings size={18} />} 
+              label="Settings" 
+              active={activeTab === 'ad-settings'} 
+              onClick={() => setActiveTab('ad-settings')} 
+            />
+          </nav>
+
+          <div className="text-[10px] uppercase tracking-widest text-slate-500 font-bold px-2 py-3 border-t border-white/5 mt-4 pt-4">Support</div>
+          <nav className="space-y-1">
+            <SidebarItem 
+              icon={<BookOpen size={18} />} 
+              label="Knowledge Base" 
+              active={activeTab === 'sup-knowledge'} 
+              onClick={() => setActiveTab('sup-knowledge')} 
             />
             <SidebarItem 
               icon={<HelpCircle size={18} />} 
@@ -122,13 +231,26 @@ export default function App() {
               <span>Durga Clinic</span>
               <span className="text-slate-300">/</span>
               <span className="text-slate-900 font-bold">
-                {activeTab === 'co-dashboard' && 'Business Overview'}
+                {activeTab === 'co-dashboard' && 'Dashboard'}
                 {activeTab === 'pm-directory' && 'Patient Database'}
                 {activeTab === 'am-calendar' && 'Appointments'}
+                {activeTab === 'fd-queue' && 'Queue Management'}
+                {activeTab === 'fd-followups' && 'Follow-up Center'}
                 {activeTab === 'emr-dashboard' && 'Doctor EMR Console'}
-                {activeTab === 'bp-dashboard' && 'Billing & Invoicing'}
+                {activeTab === 'cl-diagnostics' && 'Diagnostic Reports'}
+                {activeTab === 'op-staff' && 'Staff Management'}
+                {activeTab === 'op-attendance' && 'Attendance & Leave'}
+                {activeTab === 'op-tasks' && 'Task Management'}
                 {activeTab === 'inv-stock' && 'Inventory & Stock'}
-                {activeTab === 'ea-revenue' && 'Executive Analytics'}
+                {activeTab === 'bp-dashboard' && 'Billing & Invoicing'}
+                {activeTab === 'fi-accounts' && 'Accounts & Expenses'}
+                {activeTab === 'ea-revenue' && 'Revenue Reports'}
+                {activeTab === 'cm-notifications' && 'Notification Center'}
+                {activeTab === 'cm-patient' && 'Patient Communication'}
+                {activeTab === 'ad-reports' && 'Reports Center'}
+                {activeTab === 'ad-audit' && 'Audit Logs'}
+                {activeTab === 'ad-settings' && 'Settings'}
+                {activeTab === 'sup-knowledge' && 'Knowledge Base'}
                 {activeTab === 'sup-dashboard' && 'Helpdesk & Support'}
               </span>
             </div>
@@ -156,10 +278,23 @@ export default function App() {
             {activeTab === 'co-dashboard' && <OwnerDashboardView />}
             {activeTab === 'pm-directory' && <PatientDirectoryView />}
             {activeTab === 'am-calendar' && <ApptCalendarView />}
+            {activeTab === 'fd-queue' && <ApptQueueView />}
+            {activeTab === 'fd-followups' && <FollowUpCenterView />}
             {activeTab === 'emr-dashboard' && <EmrDashboardView />}
-            {activeTab === 'bp-dashboard' && <BillingDashboardView />}
+            {activeTab === 'cl-diagnostics' && <DiagnosticReportsView />}
+            {activeTab === 'op-staff' && <StaffManagementView />}
+            {activeTab === 'op-attendance' && <AttendanceLeaveView />}
+            {activeTab === 'op-tasks' && <TaskManagementView />}
             {activeTab === 'inv-stock' && <InvStockView />}
+            {activeTab === 'bp-dashboard' && <BillingDashboardView />}
+            {activeTab === 'fi-accounts' && <AccountsExpensesView />}
             {activeTab === 'ea-revenue' && <ExecRevenueView />}
+            {activeTab === 'cm-notifications' && <NotificationCenterView />}
+            {activeTab === 'cm-patient' && <PatientCommView />}
+            {activeTab === 'ad-reports' && <ReportsCenterView />}
+            {activeTab === 'ad-audit' && <AuditLogsView />}
+            {activeTab === 'ad-settings' && <SettingsView />}
+            {activeTab === 'sup-knowledge' && <KnowledgeBaseView />}
             {activeTab === 'sup-dashboard' && <SupportDashboardView />}
           </div>
         </main>
