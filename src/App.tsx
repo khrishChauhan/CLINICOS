@@ -39,12 +39,12 @@ import ProductSpecView from './views/ProductSpecView';
 type Tab = 'spec' | 'foundation' | 'components' | 'feedback' | 'sa-core' | 'sa-tenants' | 'sa-infra' | 'sa-ops' | 'co-dashboard' | 'co-analytics' | 'co-ops' | 'co-finance' | 'pm-directory' | 'pm-profile' | 'pm-workflows' | 'am-calendar' | 'am-queue' | 'am-reception' | 'emr-dashboard' | 'emr-consultation' | 'emr-prescription' | 'bp-dashboard' | 'bp-invoice' | 'bp-payment' | 'inv-dashboard' | 'inv-stock' | 'inv-purchasing' | 'ea-patient' | 'ea-revenue' | 'ea-doctor' | 'ea-ops' | 'sup-dashboard' | 'sup-tickets' | 'sup-knowledge' | 'sup-training';
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<Tab>('spec');
+  const [activeTab, setActiveTab] = useState<Tab>('co-dashboard');
 
   return (
-    <div className="min-h-screen flex bg-background">
+    <div className="h-screen flex bg-background overflow-hidden relative">
       {/* 10. Sidebar Design Implementation */}
-      <aside className="w-64 bg-secondary text-slate-300 hidden md:flex flex-col flex-shrink-0 relative z-20">
+      <aside className="w-64 bg-secondary text-slate-300 hidden md:flex flex-col flex-shrink-0 h-full overflow-y-auto custom-scrollbar border-r border-[#1e293b]">
         <div className="p-6 border-b border-white/10 mb-4">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
