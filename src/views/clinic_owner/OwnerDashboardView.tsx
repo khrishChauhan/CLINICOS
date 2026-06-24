@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { 
   Users, Calendar, IndianRupee, Clock, TrendingUp, CheckCircle2, 
   AlertCircle, Pill, Activity, ChevronDown, Download, Bell, 
-  ArrowUpRight, ArrowDownRight, Package, Stethoscope
+  ArrowUpRight, ArrowDownRight, Package, Stethoscope, Zap,
+  MessageSquare, UserPlus, Zap as ZapIcon, Fingerprint
 } from 'lucide-react';
 import { 
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -51,24 +52,6 @@ const recentTransactions = [
   { id: 'INV-2023-8944', patient: 'Amit Singh', amount: 3200, method: 'Credit Card', status: 'Completed', time: '22 mins ago', dept: 'Pathology Lab' },
   { id: 'INV-2023-8945', patient: 'Neha Gupta', amount: 850, method: 'UPI', status: 'Completed', time: '28 mins ago', dept: 'Consultation' },
   { id: 'INV-2023-8946', patient: 'Kiran Reddy', amount: 1500, method: 'Pending', status: 'Pending', time: '35 mins ago', dept: 'Radiology' },
-  { id: 'INV-2023-8947', patient: 'Vikram Malhotra', amount: 450, method: 'Cash', status: 'Completed', time: '42 mins ago', dept: 'Pharmacy' },
-  { id: 'INV-2023-8948', patient: 'Sneha Patel', amount: 850, method: 'UPI', status: 'Completed', time: '1 hr ago', dept: 'Consultation' },
-  { id: 'INV-2023-8949', patient: 'Ananya Desai', amount: 2100, method: 'Debit Card', status: 'Completed', time: '1 hr ago', dept: 'Pathology Lab' },
-  { id: 'INV-2023-8950', patient: 'Suresh Kumar', amount: 1200, method: 'UPI', status: 'Completed', time: '1.5 hrs ago', dept: 'Consultation' },
-  { id: 'INV-2023-8951', patient: 'Ramesh Jain', amount: 350, method: 'Cash', status: 'Completed', time: '2 hrs ago', dept: 'Pharmacy' },
-  { id: 'INV-2023-8952', patient: 'Pooja Iyer', amount: 5000, method: 'Credit Card', status: 'Completed', time: '2 hrs ago', dept: 'Surgical Day Care' },
-  { id: 'INV-2023-8953', patient: 'Deepak Chopra', amount: 850, method: 'UPI', status: 'Refunded', time: '2.5 hrs ago', dept: 'Consultation' },
-  { id: 'INV-2023-8954', patient: 'Anita Dongre', amount: 1450, method: 'Cash', status: 'Completed', time: '3 hrs ago', dept: 'Pathology Lab' },
-  { id: 'INV-2023-8955', patient: 'Manish Malhotra', amount: 600, method: 'Pending', status: 'Pending', time: '3 hrs ago', dept: 'Pharmacy' },
-  { id: 'INV-2023-8956', patient: 'Sabyasachi M.', amount: 850, method: 'UPI', status: 'Completed', time: '3.5 hrs ago', dept: 'Consultation' },
-];
-
-const lowStockItems = [
-  { item: 'Paracetamol 500mg (Strip)', current: 12, threshold: 50, critical: true },
-  { item: 'Azithromycin 250mg', current: 8, threshold: 30, critical: true },
-  { item: 'Disposable Syringes 5ml', current: 45, threshold: 200, critical: false },
-  { item: 'Surgical Masks (Box)', current: 5, threshold: 20, critical: true },
-  { item: 'Pantoprazole 40mg', current: 28, threshold: 100, critical: false },
 ];
 
 const doctorsOnDuty = [
@@ -78,6 +61,12 @@ const doctorsOnDuty = [
   { name: 'Dr. Riya Sharma', spec: 'Gynecology', status: 'On Break', room: 'Room 205', wait: 2 },
 ];
 
+const activityTimeline = [
+  { type: 'patient', message: 'Rahul Sharma was registered.', time: '2 mins ago', icon: <UserPlus className="w-4 h-4 text-blue-500" /> },
+  { type: 'payment', message: 'Invoice INV-8942 settled via UPI.', time: '10 mins ago', icon: <IndianRupee className="w-4 h-4 text-emerald-500" /> },
+  { type: 'alert', message: 'Wait time for Orthopedics exceeded 30 mins.', time: '18 mins ago', icon: <AlertCircle className="w-4 h-4 text-rose-500" /> },
+  { type: 'system', message: 'Automated DB backup completed.', time: '1 hour ago', icon: <Fingerprint className="w-4 h-4 text-slate-500" /> },
+];
 
 export default function OwnerDashboardView() {
   return (
@@ -86,31 +75,45 @@ export default function OwnerDashboardView() {
       {/* Header Area */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-200 pb-6">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Business Overview</h1>
-          <p className="text-sm text-slate-500 mt-1">Live operational metrics for Durga Clinic (Multi-Specialty)</p>
+          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Clinic Command Center</h1>
+          <p className="text-sm text-slate-500 mt-1">Live operational metrics and AI insights for Durga Clinic (Main Branch)</p>
         </div>
         <div className="flex items-center gap-3">
           <div className="px-3 py-1.5 bg-emerald-50 text-emerald-700 rounded-md text-sm font-medium border border-emerald-200 flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-            Live Updates
+            System Live
           </div>
           <button className="px-4 py-2 bg-white border border-slate-200 text-slate-700 rounded-md text-sm font-medium hover:bg-slate-50 transition-colors flex items-center gap-2 shadow-sm">
             <Calendar className="w-4 h-4" />
-            Today, 22 Jun 2026
+            Today, 24 Jun 2026
             <ChevronDown className="w-4 h-4" />
           </button>
           <button className="px-4 py-2 bg-primary text-white rounded-md text-sm font-medium hover:bg-primary/90 transition-colors flex items-center gap-2 shadow-sm">
             <Download className="w-4 h-4" />
-            Export EOD
+            Export Data
           </button>
         </div>
+      </div>
+
+      {/* AI Insights Bar */}
+      <div className="bg-gradient-to-r from-indigo-50 to-blue-50 border border-indigo-100 rounded-xl p-4 flex items-start sm:items-center gap-4">
+         <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center flex-shrink-0 text-indigo-600">
+           <ZapIcon className="w-5 h-5 fill-indigo-600" />
+         </div>
+         <div className="flex-1">
+           <h4 className="text-sm font-bold text-slate-900">AI Command Center Insights</h4>
+           <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-6 mt-1">
+             <p className="text-sm text-slate-600"><strong>Revenue Spike:</strong> Pathology collections are up 22% compared to typical Mondays.</p>
+             <p className="text-sm text-slate-600"><strong>Action Required:</strong> Orthopedics queue wait time is averaging 32 mins. Consider adding a triage nurse.</p>
+           </div>
+         </div>
       </div>
 
       {/* Top Value Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         
         {/* Card 1 */}
-        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm relative overflow-hidden group">
+        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm relative overflow-hidden group hover:border-slate-300 transition-colors cursor-pointer">
           <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
             <IndianRupee className="w-16 h-16 text-primary" />
           </div>
@@ -127,12 +130,12 @@ export default function OwnerDashboardView() {
             <span className="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded flex items-center font-medium">
               <ArrowUpRight className="w-3 h-3 mr-1" /> 12.5%
             </span>
-            <span className="text-slate-400">vs yesterday (₹1,65,000)</span>
+            <span className="text-slate-400">vs yesterday</span>
           </div>
         </div>
 
         {/* Card 2 */}
-        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm relative overflow-hidden group">
+        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm relative overflow-hidden group hover:border-slate-300 transition-colors cursor-pointer">
           <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
             <Users className="w-16 h-16 text-indigo-600" />
           </div>
@@ -161,7 +164,7 @@ export default function OwnerDashboardView() {
         </div>
 
         {/* Card 3 */}
-        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm relative overflow-hidden group">
+        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm relative overflow-hidden group hover:border-slate-300 transition-colors cursor-pointer">
           <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
             <Clock className="w-16 h-16 text-amber-600" />
           </div>
@@ -178,12 +181,12 @@ export default function OwnerDashboardView() {
             <span className="bg-rose-100 text-rose-700 px-2 py-0.5 rounded flex items-center font-medium">
               <ArrowUpRight className="w-3 h-3 mr-1" /> 4 mins
             </span>
-            <span className="text-slate-400">higher than target (20m)</span>
+            <span className="text-slate-400">above target</span>
           </div>
         </div>
 
         {/* Card 4 */}
-        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm relative overflow-hidden group">
+        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm relative overflow-hidden group hover:border-slate-300 transition-colors cursor-pointer">
           <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
             <Activity className="w-16 h-16 text-rose-600" />
           </div>
@@ -216,10 +219,10 @@ export default function OwnerDashboardView() {
         <div className="lg:col-span-2 bg-white rounded-xl border border-slate-200 shadow-sm p-5">
           <div className="flex justify-between items-center mb-6">
             <div>
-              <h3 className="text-base font-bold text-slate-900">Today's Revenue Trajectory</h3>
+              <h3 className="text-base font-bold text-slate-900">Real-Time Revenue Trajectory</h3>
               <p className="text-xs text-slate-500">Cumulative collection across all departments</p>
             </div>
-            <select className="bg-slate-50 border border-slate-200 text-sm rounded-md px-3 py-1 outline-none focus:ring-2 focus:ring-primary">
+            <select className="bg-slate-50 border border-slate-200 text-sm rounded-md px-3 py-1 outline-none focus:ring-2 focus:ring-primary font-medium text-slate-700">
               <option>Today vs Yesterday</option>
               <option>This Week vs Last Week</option>
             </select>
@@ -285,13 +288,13 @@ export default function OwnerDashboardView() {
           </div>
           <div className="p-0 overflow-y-auto max-h-[350px] custom-scrollbar">
             {doctorsOnDuty.map((doc, idx) => (
-              <div key={idx} className="p-4 border-b border-slate-50 hover:bg-slate-50 transition-colors flex items-center justify-between">
+              <div key={idx} className="p-4 border-b border-slate-50 hover:bg-slate-50 transition-colors flex items-center justify-between cursor-pointer group">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-600 font-bold text-sm">
+                  <div className="w-10 h-10 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-600 font-bold text-sm group-hover:bg-indigo-50 transition-colors">
                     {doc.name.split(' ')[1][0]}{doc.name.split(' ')[2] ? doc.name.split(' ')[2][0] : ''}
                   </div>
                   <div>
-                    <h4 className="text-sm font-bold text-slate-900">{doc.name}</h4>
+                    <h4 className="text-sm font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">{doc.name}</h4>
                     <p className="text-xs text-slate-500">{doc.spec} • {doc.room}</p>
                   </div>
                 </div>
@@ -310,37 +313,57 @@ export default function OwnerDashboardView() {
           </div>
         </div>
 
+        {/* Live Activity Timeline */}
+        <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+          <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+            <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+              <Activity className="w-4 h-4 text-slate-500" />
+              Live Activity Feed
+            </h3>
+          </div>
+          <div className="p-4 overflow-y-auto max-h-[350px] custom-scrollbar">
+             <div className="relative border-l border-slate-200 ml-3 space-y-6 pb-4">
+                {activityTimeline.map((item, idx) => (
+                  <div key={idx} className="relative pl-6">
+                    <span className="absolute -left-3 top-0.5 bg-white border border-slate-200 w-6 h-6 rounded-full flex items-center justify-center shadow-sm">
+                      {item.icon}
+                    </span>
+                    <div>
+                       <p className="text-sm text-slate-800">{item.message}</p>
+                       <p className="text-xs text-slate-400 mt-0.5">{item.time}</p>
+                    </div>
+                  </div>
+                ))}
+             </div>
+          </div>
+        </div>
+
         {/* Recent Transactions Table */}
-        <div className="lg:col-span-2 bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+        <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
           <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
             <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
               <IndianRupee className="w-4 h-4 text-slate-500" />
               Latest Transactions
             </h3>
-            <button className="text-xs font-semibold text-primary hover:text-primary/80">View All Ledger</button>
+            <button className="text-xs font-semibold text-primary hover:text-primary/80">View Ledger</button>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
               <thead className="bg-slate-50 text-slate-500 border-b border-slate-200 font-medium">
                 <tr>
-                  <th className="px-4 py-3 font-medium">Receipt ID</th>
                   <th className="px-4 py-3 font-medium">Patient</th>
-                  <th className="px-4 py-3 font-medium">Category</th>
                   <th className="px-4 py-3 font-medium">Amount</th>
-                  <th className="px-4 py-3 font-medium">Method</th>
                   <th className="px-4 py-3 font-medium">Status</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {recentTransactions.slice(0, 8).map((txn, i) => (
-                  <tr key={i} className="hover:bg-slate-50/50 transition-colors">
-                    <td className="px-4 py-3 font-mono text-xs text-slate-500">{txn.id}</td>
-                    <td className="px-4 py-3 font-medium text-slate-900">{txn.patient}</td>
-                    <td className="px-4 py-3 text-slate-500">{txn.dept}</td>
-                    <td className="px-4 py-3 font-semibold text-slate-700">₹{txn.amount}</td>
-                    <td className="px-4 py-3">
-                      <span className="text-xs text-slate-600 bg-slate-100 px-2 py-1 rounded">{txn.method}</span>
+                {recentTransactions.map((txn, i) => (
+                  <tr key={i} className="hover:bg-slate-50/50 transition-colors cursor-pointer">
+                    <td className="px-4 py-3 font-medium text-slate-900">
+                       {txn.patient}
+                       <p className="text-[10px] text-slate-400 font-mono mt-0.5">{txn.id}</p>
                     </td>
+                    <td className="px-4 py-3 font-semibold text-slate-700">₹{txn.amount}</td>
                     <td className="px-4 py-3">
                        <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
                         txn.status === 'Completed' ? 'bg-emerald-100 text-emerald-700' :
