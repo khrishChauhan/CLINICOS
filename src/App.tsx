@@ -1,9 +1,10 @@
-import { useState, useRef, useEffect } from 'react';
-import { LayoutGrid, Type, Box, MessageSquare, Bell, Search, Menu, Stethoscope, LayoutDashboard, Users, Server, LifeBuoy, Activity, Pill, Receipt, UserPlus, Fingerprint, FileText, CalendarRange, ListTree, MonitorPlay, HeartPulse, Stethoscope as StethoscopeIcon, FileSignature, Wallet, FileSpreadsheet, Undo2, Package, Tags, Truck, PieChart, TrendingUp, BriefcaseMedical, LineChart, HelpCircle, MessageCircle, BookOpen, GraduationCap, ClipboardList, Clock, Phone, FileDigit, CalendarClock, MessageSquareText, Shield, Settings, FileBox, ChevronDown, Plus, Star, Zap, History } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Building2, LayoutGrid, Type, Box, MessageSquare, Bell, Search, Menu, Stethoscope, LayoutDashboard, Users, Server, LifeBuoy, Activity, Pill, Receipt, UserPlus, Fingerprint, FileText, CalendarRange, ListTree, MonitorPlay, HeartPulse, Stethoscope as StethoscopeIcon, FileSignature, Wallet, FileSpreadsheet, Undo2, Package, Tags, Truck, PieChart, TrendingUp, BriefcaseMedical, LineChart, HelpCircle, MessageCircle, BookOpen, GraduationCap, ClipboardList, Clock, Phone, FileDigit, CalendarClock, MessageSquareText, Shield, Settings, FileBox, ChevronDown, Plus, Star, Zap, History, Database, CheckSquare, Laptop, ToggleLeft, Megaphone, Bug, CreditCard, UserCircle } from 'lucide-react';
 import OwnerDashboardView from './views/clinic_owner/OwnerDashboardView';
 import PatientDirectoryView from './views/patient_management/PatientDirectoryView';
 import ApptCalendarView from './views/appointment_management/ApptCalendarView';
 import EmrDashboardView from './views/doctor_emr/EmrDashboardView';
+import EmrConsultationView from './views/doctor_emr/EmrConsultationView';
 import BillingDashboardView from './views/billing_payments/BillingDashboardView';
 import InvStockView from './views/inventory/InvStockView';
 import ExecRevenueView from './views/executive_analytics/ExecRevenueView';
@@ -23,10 +24,31 @@ import AuditLogsView from './views/administration/AuditLogsView';
 import SettingsView from './views/administration/SettingsView';
 import KnowledgeBaseView from './views/support/KnowledgeBaseView';
 
+import LoginView, { Role } from './views/LoginView';
+import DynamicTabRenderer from './views/DynamicTabRenderer';
 
-type Tab = 'co-dashboard' | 'pm-directory' | 'am-calendar' | 'emr-dashboard' | 'bp-dashboard' | 'inv-stock' | 'ea-revenue' | 'sup-dashboard' | 'fd-queue' | 'fd-followups' | 'cl-diagnostics' | 'op-staff' | 'op-attendance' | 'op-tasks' | 'fi-accounts' | 'cm-notifications' | 'cm-patient' | 'ad-reports' | 'ad-audit' | 'ad-settings' | 'sup-knowledge';
+type Tab = 
+  // Owner
+  'co-dashboard' | 'pm-directory' | 'am-calendar' | 'emr-dashboard' | 'bp-dashboard' | 'inv-stock' | 'ea-revenue' | 'sup-dashboard' | 'fd-queue' | 'fd-followups' | 'cl-diagnostics' | 'op-staff' | 'op-attendance' | 'op-tasks' | 'fi-accounts' | 'cm-notifications' | 'cm-patient' | 'ad-reports' | 'ad-audit' | 'ad-settings' | 'sup-knowledge' |
+  // Super Admin
+  'sa-dashboard' | 'sa-clinics' | 'sa-subscriptions' | 'sa-revenue' | 'sa-users' | 'sa-features' | 'sa-monitoring' | 'sa-backups' | 'sa-errors' | 'sa-announcements' |
+  // Receptionist
+  'rc-dashboard' |
+  // Doctor
+  'dr-dashboard' | 'dr-prescriptions' | 'emr-consultation' |
+  // Nurse
+  'nr-dashboard' | 'nr-vitals' | 'nr-procedures' | 'nr-monitoring' | 'nr-medication' |
+  // Accountant
+  'ac-dashboard' | 'ac-payments' | 'ac-gst' |
+  // Inventory
+  'iv-dashboard' | 'iv-vendors' | 'iv-purchases' | 'iv-alerts' | 'iv-expiry' |
+  // Support
+  'sp-dashboard' | 'sp-tickets' | 'sp-remote' | 'sp-features' | 'sp-training' |
+  // Patient
+  'pt-dashboard' | 'pt-appointments' | 'pt-reports' | 'pt-prescriptions' | 'pt-payments' | 'pt-profile';
 
 export default function App() {
+  const [role, setRole] = useState<Role | null>(null);
   const [activeTab, setActiveTab] = useState<Tab>('co-dashboard');
   const [showSearch, setShowSearch] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
@@ -34,196 +56,202 @@ export default function App() {
   const [showQuickActions, setShowQuickActions] = useState(false);
   const [showClinicSwitcher, setShowClinicSwitcher] = useState(false);
 
+  // Set default tab when role changes
+  useEffect(() => {
+    if (role === 'superadmin') setActiveTab('sa-dashboard');
+    if (role === 'owner') setActiveTab('co-dashboard');
+    if (role === 'receptionist') setActiveTab('rc-dashboard');
+    if (role === 'doctor') setActiveTab('dr-dashboard');
+    if (role === 'nurse') setActiveTab('nr-dashboard');
+    if (role === 'accountant') setActiveTab('ac-dashboard');
+    if (role === 'inventory') setActiveTab('iv-dashboard');
+    if (role === 'support') setActiveTab('sp-dashboard');
+    if (role === 'patient') setActiveTab('pt-dashboard');
+  }, [role]);
+
+  if (!role) {
+    return <LoginView onLogin={setRole} />;
+  }
+
+  const renderSidebarLinks = () => {
+    switch (role) {
+      case 'superadmin':
+        return (
+          <>
+            <SidebarSection title="Platform Operations" />
+            <SidebarItem icon={<LayoutDashboard size={18} />} label="SaaS Dashboard" active={activeTab === 'sa-dashboard'} onClick={() => setActiveTab('sa-dashboard')} />
+            <SidebarItem icon={<Building2 size={18} />} label="Clinics" active={activeTab === 'sa-clinics'} onClick={() => setActiveTab('sa-clinics')} />
+            <SidebarItem icon={<CreditCard size={18} />} label="Subscriptions" active={activeTab === 'sa-subscriptions'} onClick={() => setActiveTab('sa-subscriptions')} />
+            <SidebarItem icon={<TrendingUp size={18} />} label="Platform Revenue" active={activeTab === 'sa-revenue'} onClick={() => setActiveTab('sa-revenue')} />
+            <SidebarItem icon={<Users size={18} />} label="User Management" active={activeTab === 'sa-users'} onClick={() => setActiveTab('sa-users')} />
+            
+            <SidebarSection title="System Engineering" />
+            <SidebarItem icon={<MonitorPlay size={18} />} label="Monitoring & Health" active={activeTab === 'sa-monitoring'} onClick={() => setActiveTab('sa-monitoring')} />
+            <SidebarItem icon={<Database size={18} />} label="Database Backups" active={activeTab === 'sa-backups'} onClick={() => setActiveTab('sa-backups')} />
+            <SidebarItem icon={<Shield size={18} />} label="Audit Logs" active={activeTab === 'ad-audit'} onClick={() => setActiveTab('ad-audit')} />
+            <SidebarItem icon={<Bug size={18} />} label="Error Logs" active={activeTab === 'sa-errors'} onClick={() => setActiveTab('sa-errors')} />
+            
+            <SidebarSection title="Configuration" />
+            <SidebarItem icon={<ToggleLeft size={18} />} label="Feature Flags" active={activeTab === 'sa-features'} onClick={() => setActiveTab('sa-features')} />
+            <SidebarItem icon={<Megaphone size={18} />} label="Announcements" active={activeTab === 'sa-announcements'} onClick={() => setActiveTab('sa-announcements')} />
+            <SidebarItem icon={<Settings size={18} />} label="Global Settings" active={activeTab === 'ad-settings'} onClick={() => setActiveTab('ad-settings')} />
+          </>
+        );
+      case 'owner':
+        return (
+          <>
+            <SidebarItem icon={<LayoutGrid size={18} />} label="Command Center" active={activeTab === 'co-dashboard'} onClick={() => setActiveTab('co-dashboard')} />
+            <SidebarSection title="Analytics" />
+            <SidebarItem icon={<TrendingUp size={18} />} label="Revenue Reports" active={activeTab === 'ea-revenue'} onClick={() => setActiveTab('ea-revenue')} />
+            <SidebarItem icon={<PieChart size={18} />} label="Reports Center" active={activeTab === 'ad-reports'} onClick={() => setActiveTab('ad-reports')} />
+            <SidebarSection title="Operations" />
+            <SidebarItem icon={<UserPlus size={18} />} label="Doctors & Staff" active={activeTab === 'op-staff'} onClick={() => setActiveTab('op-staff')} />
+            <SidebarItem icon={<Users size={18} />} label="Patient Database" active={activeTab === 'pm-directory'} onClick={() => setActiveTab('pm-directory')} />
+            <SidebarItem icon={<CalendarRange size={18} />} label="Appointments" active={activeTab === 'am-calendar'} onClick={() => setActiveTab('am-calendar')} />
+            <SidebarItem icon={<CalendarClock size={18} />} label="Attendance & Leave" active={activeTab === 'op-attendance'} onClick={() => setActiveTab('op-attendance')} />
+            <SidebarSection title="Finance & Inventory" />
+            <SidebarItem icon={<Wallet size={18} />} label="Billing & Invoicing" active={activeTab === 'bp-dashboard'} onClick={() => setActiveTab('bp-dashboard')} />
+            <SidebarItem icon={<Receipt size={18} />} label="Accounts & Expenses" active={activeTab === 'fi-accounts'} onClick={() => setActiveTab('fi-accounts')} />
+            <SidebarItem icon={<Tags size={18} />} label="Inventory & Stock" active={activeTab === 'inv-stock'} onClick={() => setActiveTab('inv-stock')} />
+            <SidebarSection title="System" />
+            <SidebarItem icon={<Settings size={18} />} label="Settings" active={activeTab === 'ad-settings'} onClick={() => setActiveTab('ad-settings')} />
+          </>
+        );
+      case 'receptionist':
+        return (
+          <>
+            <SidebarItem icon={<LayoutDashboard size={18} />} label="Front Desk Hub" active={activeTab === 'rc-dashboard'} onClick={() => setActiveTab('rc-dashboard')} />
+            <SidebarSection title="Daily Operations" />
+            <SidebarItem icon={<ListTree size={18} />} label="Live Queue" active={activeTab === 'fd-queue'} onClick={() => setActiveTab('fd-queue')} />
+            <SidebarItem icon={<CalendarRange size={18} />} label="Appointments" active={activeTab === 'am-calendar'} onClick={() => setActiveTab('am-calendar')} />
+            <SidebarItem icon={<Users size={18} />} label="Patient Database" active={activeTab === 'pm-directory'} onClick={() => setActiveTab('pm-directory')} />
+            <SidebarItem icon={<Phone size={18} />} label="Follow-Ups" active={activeTab === 'fd-followups'} onClick={() => setActiveTab('fd-followups')} />
+            <SidebarSection title="Billing & Comms" />
+            <SidebarItem icon={<Wallet size={18} />} label="Billing" active={activeTab === 'bp-dashboard'} onClick={() => setActiveTab('bp-dashboard')} />
+            <SidebarItem icon={<Bell size={18} />} label="Notifications" active={activeTab === 'cm-notifications'} onClick={() => setActiveTab('cm-notifications')} />
+          </>
+        );
+      case 'doctor':
+        return (
+          <>
+            <SidebarItem icon={<LayoutDashboard size={18} />} label="Doctor Dashboard" active={activeTab === 'dr-dashboard'} onClick={() => setActiveTab('dr-dashboard')} />
+            <SidebarSection title="Clinical" />
+            <SidebarItem icon={<CalendarRange size={18} />} label="Today's Schedule" active={activeTab === 'am-calendar'} onClick={() => setActiveTab('am-calendar')} />
+            <SidebarItem icon={<HeartPulse size={18} />} label="EMR Console" active={activeTab === 'emr-dashboard'} onClick={() => setActiveTab('emr-dashboard')} />
+            <SidebarItem icon={<FileSignature size={18} />} label="Prescriptions" active={activeTab === 'dr-prescriptions'} onClick={() => setActiveTab('dr-prescriptions')} />
+            <SidebarItem icon={<FileDigit size={18} />} label="Diagnostic Reports" active={activeTab === 'cl-diagnostics'} onClick={() => setActiveTab('cl-diagnostics')} />
+            <SidebarSection title="Patients" />
+            <SidebarItem icon={<Users size={18} />} label="My Patients" active={activeTab === 'pm-directory'} onClick={() => setActiveTab('pm-directory')} />
+            <SidebarItem icon={<Phone size={18} />} label="Follow-Ups" active={activeTab === 'fd-followups'} onClick={() => setActiveTab('fd-followups')} />
+          </>
+        );
+      case 'nurse':
+        return (
+          <>
+            <SidebarItem icon={<LayoutDashboard size={18} />} label="Nursing Station" active={activeTab === 'nr-dashboard'} onClick={() => setActiveTab('nr-dashboard')} />
+            <SidebarSection title="Care Operations" />
+            <SidebarItem icon={<Activity size={18} />} label="Vitals & Triage" active={activeTab === 'nr-vitals'} onClick={() => setActiveTab('nr-vitals')} />
+            <SidebarItem icon={<StethoscopeIcon size={18} />} label="Procedures" active={activeTab === 'nr-procedures'} onClick={() => setActiveTab('nr-procedures')} />
+            <SidebarItem icon={<MonitorPlay size={18} />} label="Patient Monitoring" active={activeTab === 'nr-monitoring'} onClick={() => setActiveTab('nr-monitoring')} />
+            <SidebarItem icon={<Pill size={18} />} label="Medication Logs" active={activeTab === 'nr-medication'} onClick={() => setActiveTab('nr-medication')} />
+            <SidebarSection title="Patient Context" />
+            <SidebarItem icon={<Users size={18} />} label="Patient Directory" active={activeTab === 'pm-directory'} onClick={() => setActiveTab('pm-directory')} />
+          </>
+        );
+      case 'accountant':
+        return (
+          <>
+            <SidebarItem icon={<LayoutDashboard size={18} />} label="Finance Dashboard" active={activeTab === 'ac-dashboard'} onClick={() => setActiveTab('ac-dashboard')} />
+            <SidebarSection title="Receivables" />
+            <SidebarItem icon={<Wallet size={18} />} label="Invoices & Billing" active={activeTab === 'bp-dashboard'} onClick={() => setActiveTab('bp-dashboard')} />
+            <SidebarItem icon={<CreditCard size={18} />} label="Payments" active={activeTab === 'ac-payments'} onClick={() => setActiveTab('ac-payments')} />
+            <SidebarSection title="Payables & Core" />
+            <SidebarItem icon={<Receipt size={18} />} label="Expenses" active={activeTab === 'fi-accounts'} onClick={() => setActiveTab('fi-accounts')} />
+            <SidebarItem icon={<TrendingUp size={18} />} label="Revenue Reports" active={activeTab === 'ea-revenue'} onClick={() => setActiveTab('ea-revenue')} />
+            <SidebarItem icon={<FileSpreadsheet size={18} />} label="GST Reports" active={activeTab === 'ac-gst'} onClick={() => setActiveTab('ac-gst')} />
+          </>
+        );
+      case 'inventory':
+        return (
+          <>
+            <SidebarItem icon={<LayoutDashboard size={18} />} label="Inventory Hub" active={activeTab === 'iv-dashboard'} onClick={() => setActiveTab('iv-dashboard')} />
+            <SidebarSection title="Stock Management" />
+            <SidebarItem icon={<Pill size={18} />} label="Medicines & Items" active={activeTab === 'inv-stock'} onClick={() => setActiveTab('inv-stock')} />
+            <SidebarItem icon={<Truck size={18} />} label="Vendors" active={activeTab === 'iv-vendors'} onClick={() => setActiveTab('iv-vendors')} />
+            <SidebarItem icon={<Package size={18} />} label="Purchases (PO)" active={activeTab === 'iv-purchases'} onClick={() => setActiveTab('iv-purchases')} />
+            <SidebarSection title="Alerts & Tracking" />
+            <SidebarItem icon={<Bell size={18} />} label="Stock Alerts" active={activeTab === 'iv-alerts'} onClick={() => setActiveTab('iv-alerts')} />
+            <SidebarItem icon={<CalendarClock size={18} />} label="Expiry Tracking" active={activeTab === 'iv-expiry'} onClick={() => setActiveTab('iv-expiry')} />
+          </>
+        );
+      case 'support':
+        return (
+          <>
+            <SidebarItem icon={<LayoutDashboard size={18} />} label="Support Hub" active={activeTab === 'sp-dashboard'} onClick={() => setActiveTab('sp-dashboard')} />
+            <SidebarSection title="Service Desk" />
+            <SidebarItem icon={<LifeBuoy size={18} />} label="Active Tickets" active={activeTab === 'sp-tickets'} onClick={() => setActiveTab('sp-tickets')} />
+            <SidebarItem icon={<HelpCircle size={18} />} label="Helpdesk Console" active={activeTab === 'sup-dashboard'} onClick={() => setActiveTab('sup-dashboard')} />
+            <SidebarItem icon={<Laptop size={18} />} label="Remote Sessions" active={activeTab === 'sp-remote'} onClick={() => setActiveTab('sp-remote')} />
+            <SidebarSection title="Feedback & Content" />
+            <SidebarItem icon={<Star size={18} />} label="Feature Requests" active={activeTab === 'sp-features'} onClick={() => setActiveTab('sp-features')} />
+            <SidebarItem icon={<GraduationCap size={18} />} label="Training Requests" active={activeTab === 'sp-training'} onClick={() => setActiveTab('sp-training')} />
+            <SidebarItem icon={<BookOpen size={18} />} label="Knowledge Base" active={activeTab === 'sup-knowledge'} onClick={() => setActiveTab('sup-knowledge')} />
+          </>
+        );
+      case 'patient':
+        return (
+          <>
+            <SidebarItem icon={<LayoutDashboard size={18} />} label="My Health Hub" active={activeTab === 'pt-dashboard'} onClick={() => setActiveTab('pt-dashboard')} />
+            <SidebarSection title="Care & Records" />
+            <SidebarItem icon={<CalendarRange size={18} />} label="Appointments" active={activeTab === 'pt-appointments'} onClick={() => setActiveTab('pt-appointments')} />
+            <SidebarItem icon={<FileDigit size={18} />} label="Lab Reports" active={activeTab === 'pt-reports'} onClick={() => setActiveTab('pt-reports')} />
+            <SidebarItem icon={<FileSignature size={18} />} label="Prescriptions" active={activeTab === 'pt-prescriptions'} onClick={() => setActiveTab('pt-prescriptions')} />
+            <SidebarSection title="Account" />
+            <SidebarItem icon={<Wallet size={18} />} label="Payments & Bills" active={activeTab === 'pt-payments'} onClick={() => setActiveTab('pt-payments')} />
+            <SidebarItem icon={<UserCircle size={18} />} label="My Profile" active={activeTab === 'pt-profile'} onClick={() => setActiveTab('pt-profile')} />
+          </>
+        );
+      default:
+        return null;
+    }
+  };
+
+  const getProfileInfo = () => {
+    switch (role) {
+      case 'superadmin': return { name: 'Admin System', role: 'Super Admin', initials: 'SA' };
+      case 'owner': return { name: 'Dr. Alok Mehta', role: 'Clinic Owner', initials: 'AM' };
+      case 'receptionist': return { name: 'Anita Patel', role: 'Front Desk Lead', initials: 'AP' };
+      case 'doctor': return { name: 'Dr. Sarah Smith', role: 'Senior Physician', initials: 'SS' };
+      case 'nurse': return { name: 'Ravi Teja', role: 'Head Nurse', initials: 'RT' };
+      case 'accountant': return { name: 'Sanjay Gupta', role: 'Billing Specialist', initials: 'SG' };
+      case 'inventory': return { name: 'Priya Sharma', role: 'Pharmacy Head', initials: 'PS' };
+      case 'support': return { name: 'Agent 042', role: 'Platform Support', initials: '42' };
+      case 'patient': return { name: 'Rahul Sharma', role: 'Patient', initials: 'RS' };
+      default: return { name: 'User', role: 'Role', initials: 'U' };
+    }
+  };
+
+  const profile = getProfileInfo();
+
   return (
     <div className="h-screen flex bg-background overflow-hidden relative">
-      {/* Sidebar Design Implementation */}
       <aside className="w-64 bg-secondary text-slate-300 hidden md:flex flex-col flex-shrink-0 h-full overflow-y-auto custom-scrollbar border-r border-[#1e293b]">
         <div className="p-6 border-b border-white/10 mb-4 bg-slate-900 sticky top-0 z-10">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center shadow-sm">
-              <span className="text-white font-bold text-xs">DC</span>
+              <Activity className="w-5 h-5 text-white" />
             </div>
             <h1 className="text-white font-bold text-xs tracking-wider leading-tight">
-              DURGA CLINIC<br/><span className="text-accent font-medium opacity-80">WORKSPACE</span>
+              CLICK AARAMBH<br/>
+              <span className="text-accent font-medium opacity-80">
+                {role === 'superadmin' ? 'CLINICOS HQ' : role === 'patient' ? 'PATIENT PORTAL' : 'DURGA CLINIC'}
+              </span>
             </h1>
           </div>
         </div>
 
         <div className="flex-1 px-4 space-y-1">
-          <nav className="space-y-1 mt-2">
-            <SidebarItem 
-              icon={<LayoutGrid size={18} />} 
-              label="Command Center" 
-              active={activeTab === 'co-dashboard'} 
-              onClick={() => setActiveTab('co-dashboard')} 
-            />
-          </nav>
-
-          <div className="text-[10px] uppercase tracking-widest text-slate-500 font-bold px-2 py-3 border-t border-white/5 mt-4 pt-4 flex items-center gap-2">
-             <Star className="w-3 h-3 text-amber-500" /> Favorites
-          </div>
-          <nav className="space-y-1">
-            <SidebarItem 
-              icon={<CalendarRange size={18} />} 
-              label="Appointments" 
-              active={activeTab === 'am-calendar'} 
-              onClick={() => setActiveTab('am-calendar')} 
-            />
-            <SidebarItem 
-              icon={<Users size={18} />} 
-              label="Patient Database" 
-              active={activeTab === 'pm-directory'} 
-              onClick={() => setActiveTab('pm-directory')} 
-            />
-          </nav>
-          
-          <div className="text-[10px] uppercase tracking-widest text-slate-500 font-bold px-2 py-3 border-t border-white/5 mt-4 pt-4">Front Desk</div>
-          <nav className="space-y-1">
-            <SidebarItem 
-              icon={<Users size={18} />} 
-              label="Patient Database" 
-              active={activeTab === 'pm-directory'} 
-              onClick={() => setActiveTab('pm-directory')} 
-            />
-            <SidebarItem 
-              icon={<CalendarRange size={18} />} 
-              label="Appointments" 
-              active={activeTab === 'am-calendar'} 
-              onClick={() => setActiveTab('am-calendar')} 
-            />
-            <SidebarItem 
-              icon={<ListTree size={18} />} 
-              label="Queue Management" 
-              active={activeTab === 'fd-queue'} 
-              onClick={() => setActiveTab('fd-queue')} 
-            />
-            <SidebarItem 
-              icon={<Phone size={18} />} 
-              label="Follow-up Center" 
-              active={activeTab === 'fd-followups'} 
-              onClick={() => setActiveTab('fd-followups')} 
-            />
-          </nav>
-
-          <div className="text-[10px] uppercase tracking-widest text-slate-500 font-bold px-2 py-3 border-t border-white/5 mt-4 pt-4">Clinical</div>
-          <nav className="space-y-1">
-            <SidebarItem 
-              icon={<HeartPulse size={18} />} 
-              label="Doctor EMR Console" 
-              active={activeTab === 'emr-dashboard'} 
-              onClick={() => setActiveTab('emr-dashboard')} 
-            />
-            <SidebarItem 
-              icon={<FileDigit size={18} />} 
-              label="Diagnostic Reports" 
-              active={activeTab === 'cl-diagnostics'} 
-              onClick={() => setActiveTab('cl-diagnostics')} 
-            />
-          </nav>
-
-          <div className="text-[10px] uppercase tracking-widest text-slate-500 font-bold px-2 py-3 border-t border-white/5 mt-4 pt-4">Operations</div>
-          <nav className="space-y-1">
-            <SidebarItem 
-              icon={<UserPlus size={18} />} 
-              label="Staff Management" 
-              active={activeTab === 'op-staff'} 
-              onClick={() => setActiveTab('op-staff')} 
-            />
-            <SidebarItem 
-              icon={<CalendarClock size={18} />} 
-              label="Attendance & Leave" 
-              active={activeTab === 'op-attendance'} 
-              onClick={() => setActiveTab('op-attendance')} 
-            />
-            <SidebarItem 
-              icon={<ClipboardList size={18} />} 
-              label="Task Management" 
-              active={activeTab === 'op-tasks'} 
-              onClick={() => setActiveTab('op-tasks')} 
-            />
-            <SidebarItem 
-              icon={<Tags size={18} />} 
-              label="Inventory & Stock" 
-              active={activeTab === 'inv-stock'} 
-              onClick={() => setActiveTab('inv-stock')} 
-            />
-          </nav>
-
-          <div className="text-[10px] uppercase tracking-widest text-slate-500 font-bold px-2 py-3 border-t border-white/5 mt-4 pt-4">Finance</div>
-          <nav className="space-y-1">
-            <SidebarItem 
-              icon={<Wallet size={18} />} 
-              label="Billing & Invoicing" 
-              active={activeTab === 'bp-dashboard'} 
-              onClick={() => setActiveTab('bp-dashboard')} 
-            />
-            <SidebarItem 
-              icon={<Receipt size={18} />} 
-              label="Accounts & Expenses" 
-              active={activeTab === 'fi-accounts'} 
-              onClick={() => setActiveTab('fi-accounts')} 
-            />
-            <SidebarItem 
-              icon={<TrendingUp size={18} />} 
-              label="Revenue Reports" 
-              active={activeTab === 'ea-revenue'} 
-              onClick={() => setActiveTab('ea-revenue')} 
-            />
-          </nav>
-
-          <div className="text-[10px] uppercase tracking-widest text-slate-500 font-bold px-2 py-3 border-t border-white/5 mt-4 pt-4">Communication</div>
-          <nav className="space-y-1">
-            <SidebarItem 
-              icon={<Bell size={18} />} 
-              label="Notification Center" 
-              active={activeTab === 'cm-notifications'} 
-              onClick={() => setActiveTab('cm-notifications')} 
-            />
-            <SidebarItem 
-              icon={<MessageSquareText size={18} />} 
-              label="Patient Communication" 
-              active={activeTab === 'cm-patient'} 
-              onClick={() => setActiveTab('cm-patient')} 
-            />
-          </nav>
-
-          <div className="text-[10px] uppercase tracking-widest text-slate-500 font-bold px-2 py-3 border-t border-white/5 mt-4 pt-4">Administration</div>
-          <nav className="space-y-1">
-            <SidebarItem 
-              icon={<FileBox size={18} />} 
-              label="Reports Center" 
-              active={activeTab === 'ad-reports'} 
-              onClick={() => setActiveTab('ad-reports')} 
-            />
-            <SidebarItem 
-              icon={<Shield size={18} />} 
-              label="Audit Logs" 
-              active={activeTab === 'ad-audit'} 
-              onClick={() => setActiveTab('ad-audit')} 
-            />
-            <SidebarItem 
-              icon={<Settings size={18} />} 
-              label="Settings" 
-              active={activeTab === 'ad-settings'} 
-              onClick={() => setActiveTab('ad-settings')} 
-            />
-          </nav>
-
-          <div className="text-[10px] uppercase tracking-widest text-slate-500 font-bold px-2 py-3 border-t border-white/5 mt-4 pt-4">Support</div>
-          <nav className="space-y-1">
-            <SidebarItem 
-              icon={<BookOpen size={18} />} 
-              label="Knowledge Base" 
-              active={activeTab === 'sup-knowledge'} 
-              onClick={() => setActiveTab('sup-knowledge')} 
-            />
-            <SidebarItem 
-              icon={<HelpCircle size={18} />} 
-              label="Helpdesk & Support" 
-              active={activeTab === 'sup-dashboard'} 
-              onClick={() => setActiveTab('sup-dashboard')} 
-            />
-          </nav>
+          {renderSidebarLinks()}
         </div>
         
         <div className="mt-auto p-4 flex-shrink-0">
@@ -231,11 +259,11 @@ export default function App() {
             <div className="flex items-center justify-between">
                <div className="flex items-center gap-3">
                  <div className="w-8 h-8 rounded-full bg-indigo-500 text-white font-bold flex items-center justify-center text-xs">
-                   Dr
+                   {profile.initials}
                  </div>
                  <div>
-                    <h4 className="text-sm font-bold text-white leading-none">Dr. Alok Mehta</h4>
-                    <p className="text-xs text-slate-400 mt-1">Chief Medical Officer</p>
+                    <h4 className="text-sm font-bold text-white leading-none">{profile.name}</h4>
+                    <p className="text-xs text-slate-400 mt-1">{profile.role}</p>
                  </div>
                </div>
                <ChevronDown className="w-4 h-4 text-slate-400" />
@@ -244,10 +272,10 @@ export default function App() {
             {showProfile && (
               <div className="absolute bottom-full left-0 w-full mb-2 bg-slate-900 border border-slate-700 rounded-xl shadow-xl overflow-hidden z-50 animate-in fade-in slide-in-from-bottom-2">
                 <div className="p-2">
-                  <button className="w-full text-left px-3 py-2 text-sm text-slate-300 hover:text-white hover:bg-slate-800 rounded-md transition-colors flex items-center gap-2"><UserPlus className="w-4 h-4" /> My Profile</button>
+                  <button className="w-full text-left px-3 py-2 text-sm text-slate-300 hover:text-white hover:bg-slate-800 rounded-md transition-colors flex items-center gap-2"><UserCircle className="w-4 h-4" /> My Profile</button>
                   <button className="w-full text-left px-3 py-2 text-sm text-slate-300 hover:text-white hover:bg-slate-800 rounded-md transition-colors flex items-center gap-2"><Settings className="w-4 h-4" /> Account Settings</button>
                   <div className="h-px bg-slate-800 my-1"></div>
-                  <button className="w-full text-left px-3 py-2 text-sm text-rose-400 hover:text-rose-300 hover:bg-slate-800 rounded-md transition-colors flex items-center gap-2"><Undo2 className="w-4 h-4" /> Sign Out</button>
+                  <button onClick={() => setRole(null)} className="w-full text-left px-3 py-2 text-sm text-rose-400 hover:text-rose-300 hover:bg-slate-800 rounded-md transition-colors flex items-center gap-2"><Undo2 className="w-4 h-4" /> Sign Out</button>
                 </div>
               </div>
             )}
@@ -270,7 +298,7 @@ export default function App() {
                  onClick={() => setShowClinicSwitcher(!showClinicSwitcher)}
                  className="flex items-center gap-2 text-sm font-bold text-slate-900 hover:bg-slate-50 px-3 py-1.5 rounded-lg transition-colors border border-transparent hover:border-slate-200"
                >
-                 Durga Clinic - Main Branch
+                 {role === 'superadmin' ? 'Global Command Center' : role === 'patient' ? 'Durga Clinic - Main' : 'Durga Clinic - Main Branch'}
                  <ChevronDown className="w-4 h-4 text-slate-400" />
                </button>
 
@@ -278,45 +306,22 @@ export default function App() {
                  <div className="absolute top-full left-0 mt-1 w-64 bg-white border border-slate-200 rounded-xl shadow-lg z-50 overflow-hidden animate-in fade-in slide-in-from-top-2">
                    <div className="p-2 space-y-1">
                      <button className="w-full text-left px-3 py-2 text-sm text-slate-900 font-medium bg-indigo-50/50 text-indigo-700 rounded-md flex items-center justify-between">
-                       <span>Durga Clinic - Main Branch</span>
+                       <span>{role === 'superadmin' ? 'Global View' : 'Durga Clinic - Main Branch'}</span>
                        <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
                      </button>
-                     <button className="w-full text-left px-3 py-2 text-sm text-slate-600 font-medium hover:bg-slate-50 rounded-md transition-colors flex items-center justify-between">
-                       <span>Durga Clinic - South Wing</span>
-                     </button>
-                   </div>
-                   <div className="p-2 border-t border-slate-100 bg-slate-50">
-                     <button className="w-full text-left px-3 py-2 text-xs font-bold text-slate-500 hover:text-slate-700 uppercase tracking-wider flex items-center gap-2">
-                       <Plus className="w-3 h-3" /> Add New Clinic
-                     </button>
+                     {role !== 'superadmin' && role !== 'patient' && (
+                       <button className="w-full text-left px-3 py-2 text-sm text-slate-600 font-medium hover:bg-slate-50 rounded-md transition-colors flex items-center justify-between">
+                         <span>Durga Clinic - South Wing</span>
+                       </button>
+                     )}
                    </div>
                  </div>
                )}
             </div>
 
             <div className="hidden lg:flex items-center gap-2 ml-4 px-4 border-l border-slate-200 text-sm text-slate-500 font-medium tracking-tight">
-              <span className="text-slate-900 font-bold">
-                {activeTab === 'co-dashboard' && 'Command Center'}
-                {activeTab === 'pm-directory' && 'Patient Database'}
-                {activeTab === 'am-calendar' && 'Appointments'}
-                {activeTab === 'fd-queue' && 'Queue Management'}
-                {activeTab === 'fd-followups' && 'Follow-up Center'}
-                {activeTab === 'emr-dashboard' && 'Doctor EMR Console'}
-                {activeTab === 'cl-diagnostics' && 'Diagnostic Reports'}
-                {activeTab === 'op-staff' && 'Staff Management'}
-                {activeTab === 'op-attendance' && 'Attendance & Leave'}
-                {activeTab === 'op-tasks' && 'Task Management'}
-                {activeTab === 'inv-stock' && 'Inventory & Stock'}
-                {activeTab === 'bp-dashboard' && 'Billing & Invoicing'}
-                {activeTab === 'fi-accounts' && 'Accounts & Expenses'}
-                {activeTab === 'ea-revenue' && 'Revenue Reports'}
-                {activeTab === 'cm-notifications' && 'Notification Center'}
-                {activeTab === 'cm-patient' && 'Patient Communication'}
-                {activeTab === 'ad-reports' && 'Reports Center'}
-                {activeTab === 'ad-audit' && 'Audit Logs'}
-                {activeTab === 'ad-settings' && 'Settings'}
-                {activeTab === 'sup-knowledge' && 'Knowledge Base'}
-                {activeTab === 'sup-dashboard' && 'Helpdesk & Support'}
+              <span className="text-slate-900 font-bold capitalize">
+                {activeTab.replace(/^[a-z]+-/, '').replace('-', ' ')}
               </span>
               <button className="text-slate-400 hover:text-amber-500 ml-2"><Star className="w-4 h-4" /></button>
             </div>
@@ -338,16 +343,11 @@ export default function App() {
                   <div className="fixed inset-0 bg-slate-900/20 z-40" onClick={() => setShowSearch(false)}></div>
                   <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-xl border border-slate-200 z-50 overflow-hidden animate-in fade-in slide-in-from-top-2">
                     <div className="p-3 border-b border-slate-100">
-                       <input autoFocus type="text" placeholder="Search patients, doctors, appointments..." className="w-full text-sm font-medium focus:outline-none placeholder:font-normal" />
+                       <input autoFocus type="text" placeholder="Search across ClinicOS..." className="w-full text-sm font-medium focus:outline-none placeholder:font-normal" />
                     </div>
                     <div className="p-2">
                        <div className="px-3 py-1.5 text-xs font-bold text-slate-400 uppercase tracking-wider">Recent Searches</div>
-                       <button className="w-full text-left px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 rounded-md flex items-center gap-2"><History className="w-4 h-4 text-slate-400" /> Patient: Amit Singh</button>
-                       <button className="w-full text-left px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 rounded-md flex items-center gap-2"><History className="w-4 h-4 text-slate-400" /> Invoice INV-20261012</button>
-                    </div>
-                    <div className="p-2 bg-slate-50 border-t border-slate-100">
-                       <div className="px-3 py-1.5 text-xs font-bold text-slate-400 uppercase tracking-wider">AI Suggestions</div>
-                       <button className="w-full text-left px-3 py-2 text-sm text-indigo-700 hover:bg-indigo-50 rounded-md flex items-center gap-2 font-medium"><Zap className="w-4 h-4 text-indigo-500" /> View today's revenue summary</button>
+                       <button className="w-full text-left px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 rounded-md flex items-center gap-2"><History className="w-4 h-4 text-slate-400" /> Patient: Rahul Sharma</button>
                     </div>
                   </div>
                 </>
@@ -356,31 +356,30 @@ export default function App() {
 
             <div className="h-6 w-px bg-slate-200 mx-1"></div>
 
-            <div className="relative">
-              <button 
-                onClick={() => setShowQuickActions(!showQuickActions)}
-                className="flex items-center gap-1.5 bg-slate-900 text-white px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-slate-800 transition-colors shadow-sm"
-              >
-                <Plus className="w-4 h-4" />
-                <span className="hidden sm:inline">Create</span>
-              </button>
-              
-              {showQuickActions && (
-                <>
-                  <div className="fixed inset-0 z-40" onClick={() => setShowQuickActions(false)}></div>
-                  <div className="absolute top-full right-0 mt-2 w-56 bg-white border border-slate-200 rounded-xl shadow-xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-2">
-                    <div className="p-2 space-y-1">
-                      <button className="w-full text-left px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-indigo-600 rounded-md transition-colors flex items-center gap-2 font-medium"><CalendarRange className="w-4 h-4" /> New Appointment</button>
-                      <button className="w-full text-left px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-indigo-600 rounded-md transition-colors flex items-center gap-2 font-medium"><UserPlus className="w-4 h-4" /> Register Patient</button>
-                      <button className="w-full text-left px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-indigo-600 rounded-md transition-colors flex items-center gap-2 font-medium"><FileSignature className="w-4 h-4" /> Write Prescription</button>
-                      <div className="h-px bg-slate-100 my-1"></div>
-                      <button className="w-full text-left px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-indigo-600 rounded-md transition-colors flex items-center gap-2 font-medium"><Wallet className="w-4 h-4" /> Generate Invoice</button>
-                      <button className="w-full text-left px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-indigo-600 rounded-md transition-colors flex items-center gap-2 font-medium"><Receipt className="w-4 h-4" /> Log Expense</button>
+            {role !== 'patient' && role !== 'superadmin' && (
+              <div className="relative">
+                <button 
+                  onClick={() => setShowQuickActions(!showQuickActions)}
+                  className="flex items-center gap-1.5 bg-slate-900 text-white px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-slate-800 transition-colors shadow-sm"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span className="hidden sm:inline">Create</span>
+                </button>
+                
+                {showQuickActions && (
+                  <>
+                    <div className="fixed inset-0 z-40" onClick={() => setShowQuickActions(false)}></div>
+                    <div className="absolute top-full right-0 mt-2 w-56 bg-white border border-slate-200 rounded-xl shadow-xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-2">
+                      <div className="p-2 space-y-1">
+                        <button className="w-full text-left px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-indigo-600 rounded-md transition-colors flex items-center gap-2 font-medium"><CalendarRange className="w-4 h-4" /> New Appointment</button>
+                        <button className="w-full text-left px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-indigo-600 rounded-md transition-colors flex items-center gap-2 font-medium"><UserPlus className="w-4 h-4" /> Register Patient</button>
+                        <button className="w-full text-left px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-indigo-600 rounded-md transition-colors flex items-center gap-2 font-medium"><FileSignature className="w-4 h-4" /> Write Prescription</button>
+                      </div>
                     </div>
-                  </div>
-                </>
-              )}
-            </div>
+                  </>
+                )}
+              </div>
+            )}
 
             <button 
               onClick={() => setShowNotifications(!showNotifications)}
@@ -390,7 +389,7 @@ export default function App() {
               <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-rose-500 rounded-full border-2 border-white box-content"></span>
             </button>
 
-            {/* Notification Drawer (Simplified) */}
+            {/* Notification Drawer */}
             {showNotifications && (
                <>
                  <div className="fixed inset-0 z-40" onClick={() => setShowNotifications(false)}></div>
@@ -401,40 +400,28 @@ export default function App() {
                    </div>
                    <div className="max-h-80 overflow-y-auto divide-y divide-slate-100">
                      <div className="p-3 hover:bg-slate-50 transition-colors cursor-pointer bg-blue-50/30">
-                       <p className="text-xs font-bold text-slate-900 mb-0.5">Low Stock Alert</p>
-                       <p className="text-xs text-slate-600">Paracetamol 500mg is below minimum threshold.</p>
+                       <p className="text-xs font-bold text-slate-900 mb-0.5">System Update</p>
+                       <p className="text-xs text-slate-600">New features have been deployed.</p>
                        <p className="text-[10px] text-slate-400 mt-1">10 mins ago</p>
                      </div>
-                     <div className="p-3 hover:bg-slate-50 transition-colors cursor-pointer">
-                       <p className="text-xs font-medium text-slate-900 mb-0.5">Patient Waiting</p>
-                       <p className="text-xs text-slate-600">Amit Singh has been waiting for 45 mins.</p>
-                       <p className="text-[10px] text-slate-400 mt-1">1 hour ago</p>
-                     </div>
-                     <div className="p-3 hover:bg-slate-50 transition-colors cursor-pointer">
-                       <p className="text-xs font-medium text-slate-900 mb-0.5">Report Ready</p>
-                       <p className="text-xs text-slate-600">Lipid Profile for Priya Sharma is available.</p>
-                       <p className="text-[10px] text-slate-400 mt-1">2 hours ago</p>
-                     </div>
-                   </div>
-                   <div className="p-2 border-t border-slate-100 bg-slate-50 text-center">
-                     <button className="text-xs font-bold text-slate-500 hover:text-indigo-600 transition-colors" onClick={() => { setActiveTab('cm-notifications'); setShowNotifications(false); }}>View all notifications</button>
                    </div>
                  </div>
                </>
             )}
-
           </div>
         </header>
 
         {/* Scrollable Content */}
         <main className="flex-1 overflow-y-auto p-4 lg:p-8">
           <div className="max-w-7xl mx-auto">
+            {/* Existing views... */}
             {activeTab === 'co-dashboard' && <OwnerDashboardView />}
             {activeTab === 'pm-directory' && <PatientDirectoryView />}
             {activeTab === 'am-calendar' && <ApptCalendarView />}
             {activeTab === 'fd-queue' && <ApptQueueView />}
             {activeTab === 'fd-followups' && <FollowUpCenterView />}
-            {activeTab === 'emr-dashboard' && <EmrDashboardView />}
+            {activeTab === 'emr-dashboard' && <EmrDashboardView setActiveTab={setActiveTab} />}
+            {activeTab === 'emr-consultation' && <EmrConsultationView />}
             {activeTab === 'cl-diagnostics' && <DiagnosticReportsView />}
             {activeTab === 'op-staff' && <StaffManagementView />}
             {activeTab === 'op-attendance' && <AttendanceLeaveView />}
@@ -450,9 +437,27 @@ export default function App() {
             {activeTab === 'ad-settings' && <SettingsView />}
             {activeTab === 'sup-knowledge' && <KnowledgeBaseView />}
             {activeTab === 'sup-dashboard' && <SupportDashboardView />}
+            
+            {/* Catch-all for views that don't exist yet but need to look real */}
+            {![
+              'co-dashboard', 'pm-directory', 'am-calendar', 'fd-queue', 'fd-followups', 
+              'emr-dashboard', 'emr-consultation', 'cl-diagnostics', 'op-staff', 'op-attendance', 'op-tasks',
+              'inv-stock', 'bp-dashboard', 'fi-accounts', 'ea-revenue', 'cm-notifications',
+              'cm-patient', 'ad-reports', 'ad-audit', 'ad-settings', 'sup-knowledge', 'sup-dashboard'
+            ].includes(activeTab) && (
+              <DynamicTabRenderer activeTab={activeTab} />
+            )}
           </div>
         </main>
       </div>
+    </div>
+  );
+}
+
+function SidebarSection({ title }: { title: string }) {
+  return (
+    <div className="text-[10px] uppercase tracking-widest text-slate-500 font-bold px-2 py-3 border-t border-white/5 mt-4 pt-4">
+      {title}
     </div>
   );
 }

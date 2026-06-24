@@ -6,24 +6,54 @@ import {
 } from 'lucide-react';
 import PatientProfileView from './PatientProfileView';
 
-const patientsData = [
-  { uhid: 'UHID-23091', name: 'Rahul Sharma', age: 34, gender: 'Male', phone: '+91 9876543210', lastVisit: '12 Jun 2026', doctor: 'Dr. Alok Mehta', status: 'Active', tags: ['VIP'] },
-  { uhid: 'UHID-23092', name: 'Priya Verma', age: 28, gender: 'Female', phone: '+91 8765432109', lastVisit: '18 Jun 2026', doctor: 'Dr. Sarah Thomas', status: 'Active', tags: [] },
-  { uhid: 'UHID-23093', name: 'Amit Singh', age: 45, gender: 'Male', phone: '+91 7654321098', lastVisit: '05 May 2026', doctor: 'Dr. Vikram Sethi', status: 'Inactive', tags: ['Diabetic'] },
-  { uhid: 'UHID-23094', name: 'Neha Gupta', age: 31, gender: 'Female', phone: '+91 6543210987', lastVisit: '20 Jun 2026', doctor: 'Dr. Riya Sharma', status: 'Active', tags: ['Maternity'] },
-  { uhid: 'UHID-23095', name: 'Kiran Reddy', age: 52, gender: 'Male', phone: '+91 9988776655', lastVisit: '15 Apr 2026', doctor: 'Dr. Alok Mehta', status: 'Active', tags: ['Hypertension'] },
-  { uhid: 'UHID-23096', name: 'Vikram Malhotra', age: 29, gender: 'Male', phone: '+91 8877665544', lastVisit: '22 Jun 2026', doctor: 'Dr. Sarah Thomas', status: 'Active', tags: [] },
-  { uhid: 'UHID-23097', name: 'Sneha Patel', age: 41, gender: 'Female', phone: '+91 7766554433', lastVisit: '10 Jun 2026', doctor: 'Dr. Riya Sharma', status: 'Active', tags: [] },
-  { uhid: 'UHID-23098', name: 'Ananya Desai', age: 36, gender: 'Female', phone: '+91 6655443322', lastVisit: '28 May 2026', doctor: 'Dr. Vikram Sethi', status: 'Inactive', tags: ['Post-Op'] },
-  { uhid: 'UHID-23099', name: 'Suresh Kumar', age: 60, gender: 'Male', phone: '+91 5544332211', lastVisit: '01 Jun 2026', doctor: 'Dr. Alok Mehta', status: 'Active', tags: ['Senior', 'Cardiac'] },
-  { uhid: 'UHID-23100', name: 'Ramesh Jain', age: 48, gender: 'Male', phone: '+91 4433221100', lastVisit: '19 Jun 2026', doctor: 'Dr. Sarah Thomas', status: 'Active', tags: [] },
-];
+// Generate 500+ realistic patients
+const firstNames = ['Amit', 'Rahul', 'Priya', 'Sneha', 'Vikram', 'Anjali', 'Karan', 'Neha', 'Sanjay', 'Pooja', 'Ravi', 'Kavita', 'Arjun', 'Roshni', 'Aditya', 'Maya', 'Nitin', 'Shruti', 'Deepak', 'Swati'];
+const lastNames = ['Sharma', 'Patel', 'Singh', 'Desai', 'Reddy', 'Kumar', 'Gupta', 'Mehta', 'Verma', 'Jain', 'Shah', 'Nair', 'Bose', 'Rao', 'Yadav', 'Chauhan', 'Iyer', 'Bhat', 'Joshi', 'Chopra'];
+const doctors = ['Dr. Alok Mehta', 'Dr. Sarah Smith', 'Dr. Rajiv Menon', 'Dr. Neha Gupta'];
+const possibleTags = [['VIP'], ['Allergy: Penicillin'], ['Diabetic'], ['Hypertension'], ['Cardiac', 'VIP'], ['Allergy: Peanuts'], []];
+
+const generatePatients = (count: number) => {
+  return Array.from({ length: count }).map((_, i) => {
+    const fn = firstNames[Math.floor(Math.random() * firstNames.length)];
+    const ln = lastNames[Math.floor(Math.random() * lastNames.length)];
+    const age = Math.floor(Math.random() * 60) + 18;
+    const gender = Math.random() > 0.5 ? 'Male' : 'Female';
+    const hasPhone = Math.random() > 0.1;
+    const phone = hasPhone ? `+91 ${9000000000 + Math.floor(Math.random() * 999999999)}` : 'N/A';
+    
+    // Recent dates for last visit
+    const lastVisitDays = Math.floor(Math.random() * 90);
+    const d = new Date();
+    d.setDate(d.getDate() - lastVisitDays);
+    const lastVisit = `${d.getDate()} ${d.toLocaleString('default', { month: 'short' })} ${d.getFullYear()}`;
+    
+    const doctor = doctors[Math.floor(Math.random() * doctors.length)];
+    const status = Math.random() > 0.2 ? 'Active' : 'Inactive';
+    const tags = possibleTags[Math.floor(Math.random() * possibleTags.length)];
+
+    return {
+      uhid: `UHID-${20000 + i}`,
+      name: `${fn} ${ln}`,
+      age,
+      gender,
+      phone,
+      lastVisit,
+      doctor,
+      status,
+      tags
+    };
+  });
+};
+
+const patientsData = generatePatients(542);
 
 export default function PatientDirectoryView() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedRows, setSelectedRows] = useState<number[]>([]);
   const [showBulkActions, setShowBulkActions] = useState(false);
   const [selectedPatient, setSelectedPatient] = useState<any>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   if (selectedPatient) {
     return <PatientProfileView onBack={() => setSelectedPatient(null)} />;
@@ -35,11 +65,14 @@ export default function PatientDirectoryView() {
     p.phone.includes(searchTerm)
   );
 
+  const totalPages = Math.ceil(filteredPatients.length / itemsPerPage);
+  const paginatedPatients = filteredPatients.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
   const toggleSelectAll = () => {
-    if (selectedRows.length === filteredPatients.length && filteredPatients.length > 0) {
+    if (selectedRows.length === paginatedPatients.length && paginatedPatients.length > 0) {
       setSelectedRows([]);
     } else {
-      setSelectedRows(filteredPatients.map((_, i) => i));
+      setSelectedRows(paginatedPatients.map((_, i) => i));
     }
   };
 
@@ -152,7 +185,7 @@ export default function PatientDirectoryView() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
-                  {filteredPatients.map((patient, i) => {
+                  {paginatedPatients.map((patient, i) => {
                     const isSelected = selectedRows.includes(i);
                     return (
                     <tr key={i} className={`transition-colors group ${isSelected ? 'bg-indigo-50/30' : 'hover:bg-slate-50/80'}`}>
@@ -219,18 +252,26 @@ export default function PatientDirectoryView() {
             {/* Pagination */}
             <div className="p-4 border-t border-slate-200 bg-slate-50 flex items-center justify-between text-sm text-slate-600 mt-auto">
               <div>
-                Showing <span className="font-semibold text-slate-900">1</span> to <span className="font-semibold text-slate-900">{filteredPatients.length}</span> of <span className="font-semibold text-slate-900">5,432</span> patients
+                Showing <span className="font-semibold text-slate-900">{(currentPage - 1) * itemsPerPage + 1}</span> to <span className="font-semibold text-slate-900">{Math.min(currentPage * itemsPerPage, filteredPatients.length)}</span> of <span className="font-semibold text-slate-900">{filteredPatients.length}</span> patients
               </div>
               <div className="flex items-center gap-1">
-                <button className="px-3 py-1.5 rounded bg-white border border-slate-200 text-slate-400 cursor-not-allowed">
+                <button 
+                  onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                  disabled={currentPage === 1}
+                  className="px-3 py-1.5 rounded bg-white border border-slate-200 text-slate-600 hover:bg-slate-100 disabled:text-slate-400 disabled:hover:bg-white transition-colors"
+                >
                   <ChevronLeft className="w-4 h-4" />
                 </button>
-                <button className="px-3 py-1 bg-primary text-white font-medium rounded shadow-sm">1</button>
-                <button className="px-3 py-1 hover:bg-slate-200 rounded transition-colors">2</button>
-                <button className="px-3 py-1 hover:bg-slate-200 rounded transition-colors">3</button>
-                <span className="px-2">...</span>
-                <button className="px-3 py-1 hover:bg-slate-200 rounded transition-colors">544</button>
-                <button className="px-3 py-1.5 rounded bg-white border border-slate-200 hover:bg-slate-100 transition-colors">
+                <button className="px-3 py-1 bg-primary text-white font-medium rounded shadow-sm">{currentPage}</button>
+                {currentPage < totalPages && <button onClick={() => setCurrentPage(currentPage + 1)} className="px-3 py-1 hover:bg-slate-200 rounded transition-colors">{currentPage + 1}</button>}
+                {currentPage + 1 < totalPages && <button onClick={() => setCurrentPage(currentPage + 2)} className="px-3 py-1 hover:bg-slate-200 rounded transition-colors">{currentPage + 2}</button>}
+                {currentPage + 2 < totalPages && <span className="px-2">...</span>}
+                {currentPage + 3 < totalPages && <button onClick={() => setCurrentPage(totalPages)} className="px-3 py-1 hover:bg-slate-200 rounded transition-colors">{totalPages}</button>}
+                <button 
+                  onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                  disabled={currentPage === totalPages}
+                  className="px-3 py-1.5 rounded bg-white border border-slate-200 hover:bg-slate-100 disabled:text-slate-400 disabled:hover:bg-white transition-colors"
+                >
                   <ChevronRight className="w-4 h-4" />
                 </button>
               </div>

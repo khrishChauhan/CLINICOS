@@ -14,19 +14,84 @@ const doctors = [
 
 const timeSlots = Array.from({ length: 12 }, (_, i) => i + 8); // 8 AM to 7 PM
 
-const appointments = [
-  { id: 1, doctorId: 'd1', patient: 'Rahul Sharma', time: '09:00', duration: 30, type: 'Consultation', status: 'Checked In', typeColor: 'bg-blue-100/50 border-blue-300' },
-  { id: 2, doctorId: 'd1', patient: 'Priya Verma', time: '10:00', duration: 45, type: 'Follow-up', status: 'Confirmed', typeColor: 'bg-blue-100/50 border-blue-300' },
-  { id: 3, doctorId: 'd1', patient: 'Amit Singh', time: '11:15', duration: 30, type: 'Consultation', status: 'Waiting', typeColor: 'bg-blue-100/50 border-blue-300' },
-  { id: 4, doctorId: 'd2', patient: 'Suresh Kumar', time: '09:30', duration: 60, type: 'ECG Review', status: 'In Progress', typeColor: 'bg-amber-50 border-amber-300' },
-  { id: 5, doctorId: 'd2', patient: 'Meera Rajput', time: '11:00', duration: 30, type: 'Consultation', status: 'Confirmed', typeColor: 'bg-indigo-100/50 border-indigo-300' },
-  { id: 6, doctorId: 'd2', patient: 'Deepak Chopra', time: '14:00', duration: 45, type: 'Consultation', status: 'Confirmed', typeColor: 'bg-indigo-100/50 border-indigo-300' },
-  { id: 7, doctorId: 'd3', patient: 'Kiran Reddy', time: '08:30', duration: 30, type: 'Follow-up', status: 'Checked In', typeColor: 'bg-emerald-100/50 border-emerald-300' },
-  { id: 8, doctorId: 'd3', patient: 'Surgey Block', time: '10:00', duration: 120, type: 'Procedure', status: 'Blocked', typeColor: 'bg-slate-100 border-slate-300 pattern-diagonal-lines pattern-slate-200 pattern-bg-white pattern-size-4 pattern-opacity-100' },
-  { id: 9, doctorId: 'd4', patient: 'Neha Gupta', time: '09:15', duration: 30, type: 'Consultation', status: 'Confirmed', typeColor: 'bg-rose-100/50 border-rose-300' },
-  { id: 10, doctorId: 'd4', patient: 'Anita Dongre', time: '10:30', duration: 45, type: 'Procedure', status: 'Waiting', typeColor: 'bg-purple-50 border-purple-300' },
-  { id: 11, doctorId: 'd4', patient: 'Lunch Break', time: '13:00', duration: 60, type: 'Break', status: 'Blocked', typeColor: 'bg-slate-50 border-slate-200' },
-];
+const generateAppointments = () => {
+  const types = ['Consultation', 'Follow-up', 'Procedure', 'Vaccination', 'Routine Checkup'];
+  const statuses = ['Checked In', 'Confirmed', 'Waiting', 'In Progress', 'Completed', 'No Show'];
+  const colors = [
+    'bg-blue-100/50 border-blue-300',
+    'bg-amber-50 border-amber-300',
+    'bg-indigo-100/50 border-indigo-300',
+    'bg-emerald-100/50 border-emerald-300',
+    'bg-rose-100/50 border-rose-300',
+    'bg-purple-50 border-purple-300'
+  ];
+
+  const firstNames = ['Amit', 'Rahul', 'Priya', 'Sneha', 'Vikram', 'Anjali', 'Karan', 'Neha', 'Sanjay', 'Pooja'];
+  const lastNames = ['Sharma', 'Patel', 'Singh', 'Desai', 'Reddy', 'Kumar', 'Gupta', 'Mehta', 'Verma', 'Jain'];
+
+  let appts = [];
+  let idCounter = 1;
+
+  doctors.forEach(doctor => {
+    // Generate 6-10 appointments per doctor per day
+    const numAppts = Math.floor(Math.random() * 5) + 6;
+    let currentHour = 8;
+    let currentMinute = 0;
+
+    for (let i = 0; i < numAppts; i++) {
+      // Add gap (0 to 60 mins)
+      currentMinute += Math.floor(Math.random() * 4) * 15;
+      if (currentMinute >= 60) {
+        currentHour += Math.floor(currentMinute / 60);
+        currentMinute = currentMinute % 60;
+      }
+
+      if (currentHour >= 19) break; // End of day
+
+      const duration = [15, 30, 45, 60][Math.floor(Math.random() * 4)];
+      
+      const timeStr = `${currentHour.toString().padStart(2, '0')}:${currentMinute.toString().padStart(2, '0')}`;
+      const name = `${firstNames[Math.floor(Math.random() * firstNames.length)]} ${lastNames[Math.floor(Math.random() * lastNames.length)]}`;
+      const type = types[Math.floor(Math.random() * types.length)];
+      
+      // Randomly make some blocks 'Lunch Break' or 'Surgery'
+      const isBlock = Math.random() < 0.1;
+      let apptStatus = statuses[Math.floor(Math.random() * statuses.length)];
+      let color = colors[Math.floor(Math.random() * colors.length)];
+      let finalName = name;
+      let finalType = type;
+
+      if (isBlock) {
+         apptStatus = 'Blocked';
+         color = 'bg-slate-100 border-slate-300 pattern-diagonal-lines pattern-slate-200 pattern-bg-white pattern-size-4 pattern-opacity-100';
+         finalName = Math.random() > 0.5 ? 'Lunch Break' : 'Surgery Block';
+         finalType = finalName;
+      }
+
+      appts.push({
+        id: idCounter++,
+        doctorId: doctor.id,
+        patient: finalName,
+        time: timeStr,
+        duration: duration,
+        type: finalType,
+        status: apptStatus,
+        typeColor: color
+      });
+
+      // Advance time by duration
+      currentMinute += duration;
+      if (currentMinute >= 60) {
+        currentHour += Math.floor(currentMinute / 60);
+        currentMinute = currentMinute % 60;
+      }
+    }
+  });
+
+  return appts;
+};
+
+const appointments = generateAppointments();
 
 export default function ApptCalendarView() {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -44,6 +109,14 @@ export default function ApptCalendarView() {
       height: `${(duration / 60) * 80}px`,
     };
   };
+
+  // Calculate current time line position
+  const now = new Date();
+  const currentHours = now.getHours();
+  const currentMinutes = now.getMinutes();
+  const minutesFromStart = ((currentHours - 8) * 60) + currentMinutes;
+  const showCurrentTimeLine = currentHours >= 8 && currentHours < 20;
+  const currentTimeTop = (minutesFromStart / 60) * 80;
 
   return (
     <div className="flex flex-col h-[calc(100vh-4rem)] -m-4 lg:-m-8 animate-in fade-in duration-500 bg-white">
@@ -130,10 +203,15 @@ export default function ApptCalendarView() {
               ))}
             </div>
 
-            {/* Current Time Indicator Line (example at 10:45 AM) */}
-            <div className="absolute left-0 right-0 border-t-2 border-rose-500 z-10 flex items-center pointer-events-none" style={{ top: `${(2.75) * 80}px` }}>
-              <div className="w-2 h-2 rounded-full bg-rose-500 -ml-1"></div>
-            </div>
+            {/* Current Time Indicator Line */}
+            {showCurrentTimeLine && (
+              <div 
+                className="absolute left-0 right-0 border-t-2 border-rose-500 z-10 flex items-center pointer-events-none" 
+                style={{ top: `${currentTimeTop}px` }}
+              >
+                <div className="w-2 h-2 rounded-full bg-rose-500 -ml-1"></div>
+              </div>
+            )}
 
             {/* Appointment Blocks */}
             <div className="absolute inset-0 flex">

@@ -4,21 +4,58 @@ import {
   Clock, Calendar, ArrowRight, PlayCircle, XCircle, Volume2, Search, Plus
 } from 'lucide-react';
 
-const patientQueue = [
-  { id: '1', name: 'Rahul Sharma', time: '10:00 AM', status: 'In Consultation', type: 'Follow-up', current: true },
-  { id: '2', name: 'Priya Verma', time: '10:15 AM', status: 'Waiting', type: 'New Visit', current: false },
-  { id: '3', name: 'Amit Singh', time: '10:30 AM', status: 'Waiting', type: 'Report Review', current: false },
-  { id: '4', name: 'Neha Gupta', time: '10:45 AM', status: 'Waiting', type: 'Follow-up', current: false },
-  { id: '5', name: 'Vikram Sethi', time: '11:00 AM', status: 'Not Arrived', type: 'New Visit', current: false },
-];
+const generatePatientQueue = () => {
+  const firstNames = ['Amit', 'Rahul', 'Priya', 'Sneha', 'Vikram', 'Anjali', 'Karan', 'Neha', 'Sanjay', 'Pooja', 'Ravi', 'Kavita'];
+  const lastNames = ['Sharma', 'Patel', 'Singh', 'Desai', 'Reddy', 'Kumar', 'Gupta', 'Mehta', 'Verma', 'Jain'];
+  const types = ['Follow-up', 'New Visit', 'Report Review', 'Consultation', 'Routine Checkup'];
+  
+  let queue = [];
+  let baseHour = 9;
+  let baseMin = 0;
+
+  for (let i = 0; i < 24; i++) {
+    const fn = firstNames[Math.floor(Math.random() * firstNames.length)];
+    const ln = lastNames[Math.floor(Math.random() * lastNames.length)];
+    const time = `${baseHour > 12 ? baseHour - 12 : baseHour}:${baseMin.toString().padStart(2, '0')} ${baseHour >= 12 ? 'PM' : 'AM'}`;
+    
+    let status = 'Waiting';
+    let current = false;
+    if (i < 5) status = 'Completed';
+    else if (i === 5) {
+      status = 'In Consultation';
+      current = true;
+    } else if (i > 15) {
+      status = 'Scheduled';
+    }
+
+    queue.push({
+      id: `Q-${100 + i}`,
+      name: `${fn} ${ln}`,
+      time: time,
+      status: status,
+      type: types[Math.floor(Math.random() * types.length)],
+      current: current
+    });
+
+    baseMin += 15;
+    if (baseMin >= 60) {
+      baseHour++;
+      baseMin = 0;
+    }
+  }
+  return queue;
+};
+
+const patientQueue = generatePatientQueue();
 
 const pendingReviews = [
   { id: 'PR-102', patient: 'Deepak Chopra', type: 'Blood Test - CBC', status: 'Urgent', time: '1 hour ago' },
   { id: 'PR-103', patient: 'Ananya Desai', type: 'MRI - Lumbar Spine', status: 'Standard', time: '3 hours ago' },
   { id: 'PR-104', patient: 'Suresh Kumar', type: 'ECG Report', status: 'Standard', time: '4 hours ago' },
+  { id: 'PR-105', patient: 'Kiran Reddy', type: 'X-Ray Chest', status: 'Urgent', time: '5 hours ago' },
 ];
 
-export default function EmrDashboardView() {
+export default function EmrDashboardView({ setActiveTab }: { setActiveTab?: (tab: string) => void }) {
   return (
     <div className="space-y-6 animate-in fade-in duration-500 pb-20">
       
@@ -32,7 +69,10 @@ export default function EmrDashboardView() {
           <button className="px-4 py-2 bg-indigo-50 border border-indigo-200 text-indigo-700 rounded-md text-sm font-medium hover:bg-indigo-100 transition-colors flex items-center gap-2 shadow-sm">
             <Volume2 className="w-4 h-4" /> Call Next Patient
           </button>
-          <button className="px-6 py-2 bg-primary text-white rounded-md text-sm font-bold hover:bg-primary/90 transition-colors flex items-center gap-2 shadow-sm">
+          <button 
+            onClick={() => setActiveTab?.('emr-consultation')}
+            className="px-6 py-2 bg-primary text-white rounded-md text-sm font-bold hover:bg-primary/90 transition-colors flex items-center gap-2 shadow-sm"
+          >
             <PlayCircle className="w-4 h-4" /> Start Next Consultation
           </button>
         </div>
@@ -130,6 +170,8 @@ export default function EmrDashboardView() {
                       <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${
                         patient.status === 'In Consultation' ? 'bg-blue-100 text-blue-700' :
                         patient.status === 'Waiting' ? 'bg-amber-100 text-amber-700' :
+                        patient.status === 'Completed' ? 'bg-emerald-100 text-emerald-700' :
+                        patient.status === 'Scheduled' ? 'bg-slate-100 text-slate-700 border border-slate-200' :
                         'bg-slate-100 text-slate-500'
                       }`}>
                         {patient.status}
