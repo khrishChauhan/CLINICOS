@@ -448,6 +448,10 @@ export default function App() {
               <DynamicTabRenderer activeTab={activeTab} />
             )}
           </div>
+          
+          <footer className="mt-12 pt-6 pb-2 text-center text-sm text-slate-500 border-t border-slate-200">
+            Built with ❤️ by Click Aarambh Ventures
+          </footer>
         </main>
       </div>
     </div>

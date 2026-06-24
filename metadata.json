@@ -1,6 +1,6 @@
 {
   "name": "Click Aarambh ClinicOS",
-  "description": "Design system and component specifications for Click Aarambh ClinicOS, a multi-tenant enterprise healthcare platform.",
+  "description": "Enterprise Clinic Operating System by Click Aarambh Ventures. Designed to manage patients, appointments, EMR, billing, inventory, analytics, staff, support, and clinic operations from a single platform.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }
