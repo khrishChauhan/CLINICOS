@@ -1,5 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
-import { findPatients } from '@/repositories/patients/patientRepository'
+import { findPatients, getPatientById as repoGetPatientById } from '@/repositories/patients/patientRepository'
 import type {
   PatientFilters,
   PatientListItem,
@@ -80,4 +80,16 @@ async function list(
   }
 }
 
-export const patientService = { list }
+async function getPatientById(
+  supabase: SupabaseClient,
+  id: string
+): Promise<PatientListItem | null> {
+  const row = await repoGetPatientById(supabase, id)
+  if (!row) return null
+  return toListItem(row)
+}
+
+export const patientService = { 
+  list,
+  getPatientById
+}

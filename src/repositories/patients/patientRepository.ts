@@ -21,8 +21,7 @@ const PATIENT_LIST_COLUMNS = [
 
 /**
  * Fetches a paginated, filtered list of patients for the authenticated clinic.
- * RLS on `patients` table enforces clinic_id isolation automatically —
- * the server Supabase client passes the user's session cookie.
+ * RLS on `patients` table enforces clinic_id isolation automatically.
  */
 export async function findPatients(
   supabase: SupabaseClient,
@@ -69,4 +68,26 @@ export async function findPatients(
     pageSize,
     totalPages: Math.max(1, Math.ceil(totalCount / pageSize)),
   }
+}
+
+/**
+ * Fetch a single patient by ID.
+ * RLS automatically enforces clinic isolation.
+ */
+export async function getPatientById(
+  supabase: SupabaseClient,
+  id: string
+): Promise<PatientRow | null> {
+  const { data, error } = await supabase
+    .from('patients')
+    .select(PATIENT_LIST_COLUMNS)
+    .eq('id', id)
+    .eq('is_deleted', false)
+    .single()
+
+  if (error) {
+    if (error.code === 'PGRST116') return null // Not found
+    throw new Error(`Failed to fetch patient details: ${error.message}`)
+  }
+  return data as unknown as PatientRow
 }
