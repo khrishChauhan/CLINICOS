@@ -1,12 +1,30 @@
+'use client'
+
 import React from 'react';
-import { Menu, CloudLightning, Bell } from 'lucide-react';
+import { Menu, CloudLightning, Bell, LogOut, Loader2 } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+import { useRouter } from 'next/navigation';
 
 export default function Header() {
+  const { session, loading, signOut } = useAuth();
+  const router = useRouter();
+
   const currentDate = new Date().toLocaleDateString('en-US', {
     month: 'long',
     day: 'numeric',
     year: 'numeric'
   });
+
+  // Build display name: prefer username, fallback to email prefix
+  const displayName = session?.username ?? session?.email?.split('@')[0] ?? '…';
+  const roleName = session?.role_name ?? '…';
+  const clinicName = session?.clinic_name ?? 'ClinicOS';
+  const clinicCity = session?.clinic_city ?? '';
+
+  const handleSignOut = async () => {
+    await signOut();
+    router.push('/login');
+  };
 
   return (
     <header className="bg-white/40 backdrop-blur-md border-b border-slate-200/50 h-14 px-6 flex justify-between items-center sticky top-0 z-30 shadow-xs">
@@ -15,8 +33,8 @@ export default function Header() {
           <Menu className="w-5 h-5" />
         </button>
         <div className="text-xs">
-          <span className="font-bold text-slate-800 block">Delhi NCR Desk</span>
-          <span className="text-slate-400 text-[10px] font-semibold">{currentDate} | Durga Clinic</span>
+          <span className="font-bold text-slate-800 block">{clinicCity ? `${clinicCity} Desk` : clinicName}</span>
+          <span className="text-slate-400 text-[10px] font-semibold">{currentDate} | {clinicName}</span>
         </div>
       </div>
       <div className="flex items-center gap-4">
@@ -30,9 +48,24 @@ export default function Header() {
           </button>
         </div>
         <div className="flex items-center gap-2 border-l border-slate-200/50 pl-4 text-xs">
-          <span className="font-bold text-slate-700">R. Kumar</span>
-          <span className="text-[10px] bg-slate-100/80 text-slate-600 px-1.5 py-0.5 rounded font-bold uppercase border border-slate-200/30">Cashier</span>
+          {loading ? (
+            <Loader2 className="w-4 h-4 animate-spin text-slate-400" />
+          ) : (
+            <>
+              <span className="font-bold text-slate-700">{displayName}</span>
+              <span className="text-[10px] bg-slate-100/80 text-slate-600 px-1.5 py-0.5 rounded font-bold uppercase border border-slate-200/30">
+                {roleName}
+              </span>
+            </>
+          )}
         </div>
+        <button
+          onClick={handleSignOut}
+          title="Sign out"
+          className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition border border-transparent hover:border-red-200/50"
+        >
+          <LogOut className="w-4 h-4" />
+        </button>
       </div>
     </header>
   );
