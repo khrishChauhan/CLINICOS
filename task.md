@@ -1,0 +1,29 @@
+- `[x]` Database Schema (Sprint 3)
+  - `[x]` doctor_schedules table
+  - `[x]` doctor_leaves table
+  - `[x]` appointments table
+  - `[x]` appointment_status_logs table
+- `[x]` RBAC Integration
+  - `[x]` Add module `appointments` to permissions
+  - `[x]` Insert permissions (`view`, `create`, `edit`, `delete`, `checkin`, `consult`)
+  - `[x]` Map permissions to Roles (Super Admin, Receptionist, Doctor)
+  - `[x]` RLS Policies for all new tables
+- `[x]` Types and Interfaces
+  - `[x]` Create `src/types/appointments.ts`
+- `[x]` Repository Layer
+  - `[x]` `scheduleRepository.ts`
+  - `[x]` `appointmentRepository.ts`
+- `[x]` Service Layer
+  - `[x]` `availabilityService.ts`
+  - `[x]` `appointmentService.ts`
+  - `[x]` `queueService.ts`
+- `[x]` Server Actions
+  - `[x]` `bookAppointment.ts`
+  - `[x]` `getAvailableSlots.ts`
+  - `[x]` `updateAppointmentStatus.ts`
+- `[x]` UI Components
+  - `[x]` `BookAppointmentModal.tsx`
+  - `[x]` Receptionist Queue Dashboard
+  - `[x]` Doctor Queue Dashboard
+- `[x]` Fix Build Issues
+  - `[x]` Type checking fixes for Patient Registration Wizard validation schema

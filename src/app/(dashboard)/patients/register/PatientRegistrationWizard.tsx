@@ -44,7 +44,7 @@ export default function PatientRegistrationWizard() {
   const [successData, setSuccessData] = useState<{ patientId: string; uhid: string } | null>(null)
 
   const methods = useForm<PatientRegistrationInput>({
-    resolver: zodResolver(patientRegistrationSchema),
+    resolver: zodResolver(patientRegistrationSchema) as any,
     mode: 'onTouched',
     defaultValues: {
       patient_type: 'OPD',
@@ -88,7 +88,7 @@ export default function PatientRegistrationWizard() {
       if (result.ok) {
         setSuccessData({ patientId: result.patientId, uhid: result.uhid })
       } else {
-        setSubmitError(result.message || result.error || 'Failed to register patient.')
+        setSubmitError((result as any).message || (result as any).error || 'Failed to register patient.')
       }
     } catch (err) {
       setSubmitError('An unexpected error occurred during submission.')

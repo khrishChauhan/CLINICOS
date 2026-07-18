@@ -5,9 +5,7 @@ import { z } from 'zod'
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const step1Schema = z.object({
-  patient_type: z.enum(['OPD', 'IPD', 'Emergency'], {
-    required_error: 'Patient type is required',
-  }),
+  patient_type: z.enum(['OPD', 'IPD', 'Emergency']),
   referred_by: z.string().max(255).optional(),
   primary_doctor_id: z.string().uuid().nullable().optional(),
 })
@@ -15,14 +13,14 @@ export const step1Schema = z.object({
 export const step2Schema = z.object({
   title: z.enum(['Mr.', 'Mrs.', 'Ms.', 'Dr.', 'Master', 'Baby', 'Baby of']).optional(),
   first_name: z
-    .string({ required_error: 'First name is required' })
+    .string()
     .min(1, 'First name is required')
     .max(100, 'Maximum 100 characters'),
   middle_name: z.string().max(100).optional(),
   last_name: z.string().max(100).optional(),
   date_of_birth: z.string().optional().nullable(),
   age: z
-    .number({ invalid_type_error: 'Age must be a number' })
+    .number()
     .int()
     .min(0)
     .max(150)
@@ -36,7 +34,7 @@ export const step2Schema = z.object({
 
 export const step3Schema = z.object({
   mobile_number: z
-    .string({ required_error: 'Mobile number is required' })
+    .string()
     .min(10, 'Enter a valid 10-digit mobile number')
     .max(20, 'Maximum 20 characters'),
   alternate_mobile: z.string().max(20).optional(),
@@ -59,7 +57,7 @@ export const step4Schema = z.object({
 export const addressSchema = z.object({
   address_type: z.enum(['Home', 'Office', 'Other']).default('Home'),
   address_line_1: z
-    .string({ required_error: 'Address is required' })
+    .string()
     .min(1, 'Address is required'),
   address_line_2: z.string().optional(),
   landmark: z.string().optional(),
@@ -77,11 +75,11 @@ export const step5Schema = z.object({
 
 export const emergencyContactSchema = z.object({
   contact_name: z
-    .string({ required_error: 'Contact name is required' })
+    .string()
     .min(1, 'Contact name is required'),
   relationship: z.string().max(100).optional(),
   mobile_number: z
-    .string({ required_error: 'Mobile is required' })
+    .string()
     .min(10, 'Enter a valid mobile number'),
   alternate_mobile: z.string().max(20).optional(),
   email: z.string().email().optional().or(z.literal('')),
