@@ -1,102 +1,74 @@
-import React from 'react';
-import { Plus, Eye, CircleCheck } from 'lucide-react';
-import { Card } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
-import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/Table';
+import { createClient } from '@/lib/supabase/server'
+import Link from 'next/link'
 
-export default function Lab() {
-  const mockLabTests = [
-    { id: 'LAB-001', name: 'Knee Joint X-Ray', patient: 'Nisha Nair', patId: 'PAT-0076', category: 'X-Ray', doctor: 'Dr. Komal Saxena', date: '2026-06-12', status: 'Completed' },
-    { id: 'LAB-002', name: 'HbA1c (Glycated Haemoglobin)', patient: 'Divya Gill', patId: 'PAT-0039', category: 'Blood Test', doctor: 'Dr. Rajeev Mehta', date: '2026-06-24', status: 'Pending' },
-    { id: 'LAB-003', name: 'Lipid Profile', patient: 'Tanvi Mishra', patId: 'PAT-0107', category: 'Blood Test', doctor: 'Dr. Amit Trivedi', date: '2026-06-22', status: 'Completed' },
-    { id: 'LAB-004', name: 'Thyroid Panel (T3, T4, TSH)', patient: 'Deepak Dwivedi', patId: 'PAT-0016', category: 'Blood Test', doctor: 'Dr. Sanjay Nair', date: '2026-06-14', status: 'Completed' },
-    { id: 'LAB-005', name: 'Thyroid Panel (T3, T4, TSH)', patient: 'Deepika Mishra', patId: 'PAT-0186', category: 'Blood Test', doctor: 'Dr. Alok Verma', date: '2026-06-20', status: 'Completed' },
-    { id: 'LAB-006', name: 'Chest X-Ray PA View', patient: 'Aarav Reddy', patId: 'PAT-0166', category: 'X-Ray', doctor: 'Dr. Alok Verma', date: '2026-06-22', status: 'Completed' },
-    { id: 'LAB-007', name: 'Chest X-Ray PA View', patient: 'Jay Reddy', patId: 'PAT-0151', category: 'X-Ray', doctor: 'Dr. Vikram Shah', date: '2026-06-16', status: 'Completed' },
-    { id: 'LAB-010', name: 'Lipid Profile', patient: 'Sanjay Sen', patId: 'PAT-0237', category: 'Blood Test', doctor: 'Dr. Priya Rao', date: '2026-06-24', status: 'Pending' },
-    { id: 'LAB-012', name: 'Standard 12-Lead ECG', patient: 'Siddharth Yadav', patId: 'PAT-0080', category: 'ECG', doctor: 'Dr. Priya Rao', date: '2026-06-11', status: 'Completed' },
-    { id: 'LAB-013', name: 'Complete Blood Count (CBC)', patient: 'Divya Shah', patId: 'PAT-0183', category: 'Blood Test', doctor: 'Dr. Sanjay Nair', date: '2026-06-24', status: 'Pending' }
-  ];
+const STATUS_COLORS: Record<string, string> = {
+  'Ordered': 'bg-slate-100 text-slate-700',
+  'Sample Collected': 'bg-blue-100 text-blue-700',
+  'Processing': 'bg-amber-100 text-amber-700',
+  'Result Ready': 'bg-purple-100 text-purple-700',
+  'Verified': 'bg-emerald-100 text-emerald-700',
+}
 
-  const categories = [
-    'All Departments', 'Blood Test', 'ECG', 'X-Ray', 'MRI', 'CT Scan', 'Ultrasound'
-  ];
+export default async function LabDashboard() {
+  const supabase = await createClient()
+  const { data: orders } = await supabase
+    .from('lab_orders')
+    .select('*, patients(first_name, last_name)')
+    .order('created_at', { ascending: false })
 
   return (
-    <main className="flex-1 p-6 max-w-7xl w-full mx-auto space-y-6 z-10 relative">
-      <div className="space-y-6">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 text-xs">
-          <div>
-            <h1 className="text-xl font-bold text-slate-800">Durga Clinic Diagnostic Laboratory</h1>
-            <p className="text-slate-500 text-xs mt-0.5">Publish haematology profiles, ECG tracings, radiology results and CT scan folders</p>
-          </div>
-          <Button>
-            <Plus className="w-4 h-4" /> Upload Diagnostic Report
-          </Button>
+    <div className="p-8 max-w-6xl mx-auto">
+      <div className="flex justify-between items-center mb-6">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-800">Laboratory Dashboard</h1>
+          <p className="text-sm text-gray-500 mt-1">All lab orders queue</p>
         </div>
-
-        <div className="space-y-5">
-          <Card className="p-4 flex flex-col md:flex-row gap-4 items-center">
-            <div className="flex gap-3 flex-wrap">
-              {categories.map((cat, idx) => (
-                <button key={cat} className={`px-3 py-1.5 rounded-lg text-xs font-bold transition ${idx === 0 ? 'bg-blue-600 text-white' : 'bg-slate-50 text-slate-600 hover:bg-slate-100'}`}>
-                  {cat}
-                </button>
-              ))}
-            </div>
-            <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-lg text-xs md:ml-auto">
-              <span className="text-slate-500 font-semibold">Test status:</span>
-              <select className="bg-transparent font-bold text-slate-700 focus:outline-none text-xs">
-                <option value="All">All Tests</option>
-                <option value="Completed">Completed</option>
-                <option value="Pending">Pending</option>
-              </select>
-            </div>
-          </Card>
-
-          <Card className="overflow-hidden">
-            <Table>
-              <TableHeader>
-                <TableRow className="border-b border-slate-100 text-slate-400 bg-slate-50/50 font-bold uppercase tracking-wider py-3 hover:bg-slate-50/50">
-                  <TableHead className="py-3 px-4 bg-transparent">Test ID & Investigation Name</TableHead>
-                  <TableHead className="py-3 px-4 bg-transparent">Patient details</TableHead>
-                  <TableHead className="py-3 px-4 bg-transparent">Tested Category</TableHead>
-                  <TableHead className="py-3 px-4 bg-transparent">Assigned Doctor</TableHead>
-                  <TableHead className="py-3 px-4 bg-transparent">Complete Date</TableHead>
-                  <TableHead className="py-3 px-4 text-center bg-transparent">Status</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {mockLabTests.map((test) => (
-                  <TableRow key={test.id}>
-                    <TableCell className="py-3.5 px-4">
-                      <button className="font-bold text-slate-800 hover:text-blue-600 text-left" disabled={test.status === 'Pending'}>{test.name}</button>
-                      <div className="text-[10px] text-slate-400 mt-0.5 font-mono">{test.id}</div>
-                    </TableCell>
-                    <TableCell className="py-3.5 px-4 font-semibold">
-                      {test.patient} <span className="text-[10px] text-slate-400 font-mono font-normal">({test.patId})</span>
-                    </TableCell>
-                    <TableCell className="py-3.5 px-4 font-medium text-slate-600">{test.category}</TableCell>
-                    <TableCell className="py-3.5 px-4 font-semibold text-slate-500">{test.doctor}</TableCell>
-                    <TableCell className="py-3.5 px-4 text-slate-400 font-mono">{test.date}</TableCell>
-                    <TableCell className="py-3.5 px-4 text-center">
-                      {test.status === 'Completed' ? (
-                        <button className="inline-flex items-center gap-1 text-[10px] font-bold text-green-700 bg-green-50 border border-green-100 px-2 py-0.5 rounded transition hover:bg-green-100">
-                          <Eye className="w-3 h-3" /> View Report
-                        </button>
-                      ) : (
-                        <button className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-700 bg-amber-50 border border-amber-100 px-2 py-0.5 rounded transition hover:bg-amber-100">
-                          <CircleCheck className="w-3 h-3 animate-pulse" /> Complete Report
-                        </button>
-                      )}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </Card>
-        </div>
+        <Link href="/lab/catalog" className="bg-blue-600 text-white px-4 py-2 rounded font-medium hover:bg-blue-700">
+          Manage Catalog
+        </Link>
       </div>
-    </main>
-  );
+
+      <div className="bg-white rounded-lg border shadow-sm overflow-hidden">
+        <table className="w-full text-left">
+          <thead className="bg-slate-50 border-b text-slate-700 text-sm">
+            <tr>
+              <th className="p-4">Order #</th>
+              <th className="p-4">Patient</th>
+              <th className="p-4">Priority</th>
+              <th className="p-4">Status</th>
+              <th className="p-4">Date</th>
+              <th className="p-4">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {orders?.map(o => (
+              <tr key={o.id} className="border-b hover:bg-slate-50 text-sm">
+                <td className="p-4 font-mono font-medium">{o.order_number}</td>
+                <td className="p-4">{o.patients?.first_name} {o.patients?.last_name}</td>
+                <td className="p-4">
+                  <span className={`px-2 py-0.5 rounded text-xs font-semibold ${o.priority === 'STAT' ? 'bg-red-100 text-red-700' : o.priority === 'Urgent' ? 'bg-orange-100 text-orange-700' : 'bg-gray-100 text-gray-600'}`}>
+                    {o.priority}
+                  </span>
+                </td>
+                <td className="p-4">
+                  <span className={`px-2 py-0.5 rounded text-xs font-semibold ${STATUS_COLORS[o.status] || ''}`}>
+                    {o.status}
+                  </span>
+                </td>
+                <td className="p-4 text-gray-500">{new Date(o.created_at).toLocaleDateString('en-IN')}</td>
+                <td className="p-4">
+                  <Link href={`/lab/orders/${o.id}`} className="text-blue-600 font-medium hover:underline">
+                    Open
+                  </Link>
+                </td>
+              </tr>
+            ))}
+            {!orders?.length && (
+              <tr><td colSpan={6} className="p-8 text-center text-gray-400">No lab orders found.</td></tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
 }

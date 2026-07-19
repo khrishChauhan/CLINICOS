@@ -4,7 +4,7 @@ import type { BillingInvoiceRow, BillingInvoiceItemRow } from '@/types/billing'
 export async function getInvoice(supabase: SupabaseClient, invoiceId: string): Promise<{ invoice: BillingInvoiceRow, items: BillingInvoiceItemRow[] }> {
   const { data: invoice, error } = await supabase
     .from('billing_invoices')
-    .select('*')
+    .select('*').limit(100)
     .eq('id', invoiceId)
     .single()
 
@@ -12,7 +12,7 @@ export async function getInvoice(supabase: SupabaseClient, invoiceId: string): P
 
   const { data: items, error: itemsErr } = await supabase
     .from('billing_invoice_items')
-    .select('*')
+    .select('*').limit(100)
     .eq('invoice_id', invoiceId)
     .order('created_at', { ascending: true })
 

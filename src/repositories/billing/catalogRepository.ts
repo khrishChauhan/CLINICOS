@@ -1,16 +1,18 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { ServiceRow, ServiceCategoryRow } from '@/types/billing'
 
-export async function getServices(supabase: SupabaseClient, clinicId: string): Promise<ServiceRow[]> {
+import { cache } from 'react'
+
+export const getServices = cache(async (supabase: SupabaseClient, clinicId: string): Promise<ServiceRow[]> => {
   const { data, error } = await supabase
     .from('services')
-    .select('*')
+    .select('*').limit(100)
     .eq('clinic_id', clinicId)
     .order('name', { ascending: true })
 
   if (error) throw new Error(`Failed to fetch services: ${error.message}`)
   return data as ServiceRow[]
-}
+})
 
 export async function addService(
   supabase: SupabaseClient,

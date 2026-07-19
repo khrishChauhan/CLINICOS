@@ -9,7 +9,7 @@ export async function getAppointmentsByDate(
 ): Promise<AppointmentRow[]> {
   const { data, error } = await supabase
     .from('appointments')
-    .select('*')
+    .select('*').limit(100)
     .eq('clinic_id', clinicId)
     .eq('doctor_id', doctorId)
     .eq('appointment_date', date)
@@ -26,7 +26,7 @@ export async function getAppointmentsByPatient(
 ): Promise<AppointmentRow[]> {
   const { data, error } = await supabase
     .from('appointments')
-    .select('*')
+    .select('*').limit(100)
     .eq('clinic_id', clinicId)
     .eq('patient_id', patientId)
     .order('appointment_date', { ascending: false })

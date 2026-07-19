@@ -7,7 +7,7 @@ export async function getSoapNote(
 ): Promise<SoapNoteRow | null> {
   const { data, error } = await supabase
     .from('soap_notes')
-    .select('*')
+    .select('*').limit(100)
     .eq('consultation_id', consultationId)
     .maybeSingle()
 

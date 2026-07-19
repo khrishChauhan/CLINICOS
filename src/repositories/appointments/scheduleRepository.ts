@@ -11,7 +11,7 @@ export async function getDoctorSchedules(
 ): Promise<DoctorScheduleRow[]> {
   const { data, error } = await supabase
     .from('doctor_schedules')
-    .select('*')
+    .select('*').limit(100)
     .eq('clinic_id', clinicId)
     .eq('doctor_id', doctorId)
     .eq('is_active', true)
@@ -32,7 +32,7 @@ export async function getDoctorLeaves(
 ): Promise<DoctorLeaveRow[]> {
   const { data, error } = await supabase
     .from('doctor_leaves')
-    .select('*')
+    .select('*').limit(100)
     .eq('clinic_id', clinicId)
     .eq('doctor_id', doctorId)
     .eq('status', 'Approved')

@@ -7,7 +7,7 @@ export async function getConsultationById(
 ): Promise<ConsultationRow> {
   const { data, error } = await supabase
     .from('consultations')
-    .select('*')
+    .select('*').limit(100)
     .eq('id', consultationId)
     .single()
 
@@ -28,7 +28,7 @@ export async function getOrCreateConsultation(
   if (appointmentId) {
     const { data: existing } = await supabase
       .from('consultations')
-      .select('*')
+      .select('*').limit(100)
       .eq('appointment_id', appointmentId)
       .single()
 

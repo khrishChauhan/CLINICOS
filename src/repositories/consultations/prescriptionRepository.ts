@@ -7,7 +7,7 @@ export async function getPrescription(
 ): Promise<{ prescription: PrescriptionRow | null; items: PrescriptionItemRow[] }> {
   const { data: rx, error: rxErr } = await supabase
     .from('prescriptions')
-    .select('*')
+    .select('*').limit(100)
     .eq('consultation_id', consultationId)
     .maybeSingle()
 
@@ -16,7 +16,7 @@ export async function getPrescription(
 
   const { data: items, error: itemsErr } = await supabase
     .from('prescription_items')
-    .select('*')
+    .select('*').limit(100)
     .eq('prescription_id', rx.id)
     .order('created_at', { ascending: true })
 
@@ -34,7 +34,7 @@ export async function ensurePrescriptionExists(
 ): Promise<PrescriptionRow> {
   const existing = await supabase
     .from('prescriptions')
-    .select('*')
+    .select('*').limit(100)
     .eq('consultation_id', consultationId)
     .maybeSingle()
 

@@ -4,6 +4,7 @@ import React from 'react';
 import { Menu, CloudLightning, Bell, LogOut, Loader2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useRouter } from 'next/navigation';
+import NotificationBellClient from './NotificationBellClient';
 
 export default function Header() {
   const { session, loading, signOut } = useAuth();
@@ -41,12 +42,7 @@ export default function Header() {
         <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded-full text-[10px] font-bold text-emerald-700 backdrop-blur-xs">
           <CloudLightning className="w-3 h-3 text-emerald-500 animate-pulse" /> LOCAL SERVER LIVE
         </div>
-        <div className="relative">
-          <button className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-white/80 rounded-lg relative transition border border-transparent hover:border-slate-200/50">
-            <Bell className="w-4.5 h-4.5" />
-            <span className="absolute top-1 right-1 bg-blue-600 w-2 h-2 rounded-full ring-2 ring-white"></span>
-          </button>
-        </div>
+        <NotificationBellClient />
         <div className="flex items-center gap-2 border-l border-slate-200/50 pl-4 text-xs">
           {loading ? (
             <Loader2 className="w-4 h-4 animate-spin text-slate-400" />

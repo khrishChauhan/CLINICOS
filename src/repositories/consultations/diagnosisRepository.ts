@@ -7,7 +7,7 @@ export async function getDiagnoses(
 ): Promise<DiagnosisRow[]> {
   const { data, error } = await supabase
     .from('diagnoses')
-    .select('*')
+    .select('*').limit(100)
     .eq('consultation_id', consultationId)
     .order('created_at', { ascending: true })
 
