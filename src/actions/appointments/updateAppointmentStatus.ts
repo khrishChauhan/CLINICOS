@@ -11,11 +11,9 @@ export async function updateAppointmentStatusAction(
 ) {
   try {
     const supabase = await createClient()
-    const { data: sessionData } = await supabase.rpc('get_session_context')
-    
-    if (!sessionData) throw new Error('Unauthorized')
-    
-    const userId = sessionData.user_id
+    const { data: { user }, error: userError } = await supabase.auth.getUser()
+    if (userError || !user) throw new Error('Unauthorized')
+    const userId = user.id
     let apt: AppointmentRow
 
     switch(action) {

@@ -59,12 +59,12 @@ export default function DoctorDashboardClient({ initialQueue, doctorId }: Props)
                   <p className="text-xs text-slate-500 font-mono">{apt.patient.uhid}</p>
                 </div>
                 <div className="w-8 h-8 rounded-full bg-blue-50 text-blue-700 flex items-center justify-center font-bold text-xs">
-                  {apt.token_number || '-'}
+                  {apt.appointment_number || '-'}
                 </div>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold text-slate-400 flex items-center gap-1">
-                  <Clock className="w-3 h-3" /> {apt.start_time.substring(0, 5)}
+                  <Clock className="w-3 h-3" /> {apt.appointment_start_time.substring(0, 5)}
                 </span>
                 <button 
                   onClick={() => handleStatusChange(apt.id, 'start-consult')}
@@ -92,7 +92,7 @@ export default function DoctorDashboardClient({ initialQueue, doctorId }: Props)
             <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-6 text-white flex justify-between items-start">
               <div>
                 <span className="bg-white/20 text-white px-2 py-1 rounded text-xs font-bold mb-3 inline-block uppercase tracking-wider">
-                  In Consultation • Token {activeConsultation.token_number}
+                  In Consultation • Apt {activeConsultation.appointment_number}
                 </span>
                 <h2 className="text-3xl font-bold">{activeConsultation.patient.first_name} {activeConsultation.patient.last_name}</h2>
                 <p className="text-blue-100 font-mono mt-1">{activeConsultation.patient.uhid}</p>

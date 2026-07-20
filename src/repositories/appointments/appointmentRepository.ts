@@ -30,7 +30,7 @@ export async function getAppointmentsByPatient(
     .eq('clinic_id', clinicId)
     .eq('patient_id', patientId)
     .order('appointment_date', { ascending: false })
-    .order('start_time', { ascending: false })
+    .order('appointment_start_time', { ascending: false })
 
   if (error) throw new Error(`Failed to fetch patient appointments: ${error.message}`)
   return data as AppointmentRow[]
@@ -52,7 +52,7 @@ export async function getQueueForToday(
     query = query.eq('doctor_id', doctorId)
   }
 
-  const { data, error } = await query.order('start_time', { ascending: true })
+  const { data, error } = await query.order('appointment_start_time', { ascending: true })
 
   if (error) throw new Error(`Failed to fetch queue: ${error.message}`)
   return data as AppointmentRow[]

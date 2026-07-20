@@ -1,19 +1,24 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
-import { availabilityService } from '@/services/appointments/availabilityService'
+import { slotGenerationService } from '@/services/appointments/slotGenerationService'
 
 export async function getAvailableSlotsAction(doctorId: string, date: string) {
   try {
     const supabase = await createClient()
-    const { data: sessionData } = await supabase.rpc('get_session_context')
+    const { data: { user }, error: userError } = await supabase.auth.getUser()
+    if (userError || !user) throw new Error('Unauthorized')
     
-    if (!sessionData) {
-      throw new Error('Unauthorized')
-    }
+    const { data: profile } = await supabase
+      .from('users')
+      .select('clinic_id')
+      .eq('id', user.id)
+      .single()
+      
+    if (!profile) throw new Error('User profile not found')
     
-    const clinicId = sessionData.clinic_id
-    const slots = await availabilityService.getAvailableSlots(supabase, clinicId, doctorId, date)
+    const clinicId = profile.clinic_id
+    const slots = await slotGenerationService.getAvailableSlots(supabase, clinicId, doctorId, date)
     
     return { ok: true, slots }
   } catch (error: any) {

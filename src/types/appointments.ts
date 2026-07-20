@@ -1,14 +1,33 @@
-export interface DoctorScheduleRow {
+export interface DoctorAvailabilityRow {
+  id: string
+  doctor_id: string
+  clinic_id: string
+  available_from: string
+  available_to: string
+  available_days: number[]
+  consultation_mode: string
+  appointment_limit: number | null
+  break_start: string | null
+  break_end: string | null
+  status: string
+  created_at: string
+  updated_at: string
+}
+
+export interface AppointmentSlotRow {
   id: string
   clinic_id: string
   doctor_id: string
+  branch_id: string | null
   day_of_week: number
-  start_time: string
-  end_time: string
-  slot_duration_minutes: number
-  buffer_time_minutes: number
-  max_patients: number | null
-  is_active: boolean
+  slot_start_time: string
+  slot_end_time: string
+  slot_duration: number
+  maximum_patients: number
+  booking_window: number | null
+  status: string
+  created_at: string
+  updated_at: string
 }
 
 export interface DoctorLeaveRow {
@@ -26,18 +45,31 @@ export interface AppointmentRow {
   clinic_id: string
   patient_id: string
   doctor_id: string
+  branch_id: string | null
+  department_id: string | null
+  appointment_number: string | null
+  appointment_source: string
   appointment_date: string
-  start_time: string
-  end_time: string
-  appointment_type: 'Scheduled' | 'Walk-in' | 'Emergency'
-  status: 'Scheduled' | 'Checked In' | 'Waiting' | 'In Consultation' | 'Completed' | 'Cancelled' | 'No Show'
-  token_number: number | null
-  priority: 'Normal' | 'High' | 'Urgent'
+  appointment_start_time: string
+  appointment_end_time: string
+  slot_id: string | null
+  token_id: string | null
+  consultation_type: string | null
+  priority: string | null
+  visit_type: string | null
+  referred_by: string | null
   reason_for_visit: string | null
   notes: string | null
-  parent_appointment_id: string | null
-  created_by: string | null
+  status: string
+  checked_in_at: string | null
+  consultation_started_at: string | null
+  consultation_completed_at: string | null
+  cancelled_at: string | null
+  cancelled_by: string | null
+  cancellation_reason: string | null
+  booked_by: string | null
   created_at: string
+  updated_at: string
 }
 
 export interface TimeSlot {
@@ -56,4 +88,7 @@ export interface BookAppointmentPayload {
   type: 'Scheduled' | 'Walk-in' | 'Emergency'
   priority: 'Normal' | 'High' | 'Urgent'
   reasonForVisit?: string
+  visitType?: string
+  consultationType?: string
+  appointmentSource?: string
 }

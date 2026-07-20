@@ -1,6 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { createAppointment } from '@/repositories/appointments/appointmentRepository'
-import { availabilityService } from './availabilityService'
+import { slotGenerationService } from './slotGenerationService'
 import type { BookAppointmentPayload, AppointmentRow } from '@/types/appointments'
 
 export const appointmentService = {
@@ -25,7 +25,7 @@ export const appointmentService = {
     }
 
     // 2. Validate double booking by pulling available slots
-    const availableSlots = await availabilityService.getAvailableSlots(
+    const availableSlots = await slotGenerationService.getAvailableSlots(
       supabase,
       clinicId,
       payload.doctorId,
@@ -55,18 +55,26 @@ export const appointmentService = {
       }
     }
 
+    // Generate appointment number
+    const rand = Math.floor(1000 + Math.random() * 9000);
+    const dateStr = payload.date.replace(/-/g, '')
+    const appointmentNumber = `APT-${dateStr}-${rand}`
+
     // 3. Create the appointment
     const newApt = await createAppointment(supabase, {
       clinic_id: clinicId,
       patient_id: payload.patientId,
       doctor_id: payload.doctorId,
       appointment_date: payload.date,
-      start_time: payload.startTime,
-      end_time: payload.endTime,
-      appointment_type: payload.type,
+      appointment_start_time: payload.startTime,
+      appointment_end_time: payload.endTime,
+      appointment_number: appointmentNumber,
+      appointment_source: payload.appointmentSource || 'Manual',
+      visit_type: payload.visitType || 'New',
+      consultation_type: payload.consultationType || 'In-Person',
       priority: payload.priority,
       reason_for_visit: payload.reasonForVisit,
-      created_by: userId,
+      booked_by: userId,
       status: 'Scheduled',
     })
 

@@ -1,4 +1,7 @@
-import React from 'react';
+'use client'
+
+import React, { useState } from 'react';
+import { BookAppointmentModal } from '@/components/appointments/BookAppointmentModal';
 import { CalendarDays, Filter, Plus, Search, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
@@ -7,8 +10,11 @@ import { Badge } from '@/components/ui/Badge';
 import { mockAppointments, mockDoctors } from '@/data/mockData';
 
 export default function Appointments() {
+  const [isBookingOpen, setIsBookingOpen] = useState(false);
+
   return (
     <main className="flex-1 p-6 max-w-7xl w-full mx-auto space-y-6 z-10 relative">
+      <BookAppointmentModal isOpen={isBookingOpen} onClose={() => setIsBookingOpen(false)} />
       <div className="space-y-6">
         <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 bg-white p-4 rounded-xl border border-slate-100 shadow-sm">
           <div className="text-center p-3 border-r border-slate-100">
@@ -54,8 +60,8 @@ export default function Appointments() {
                   ))}
                 </select>
               </div>
-              <Button size="sm">
-                <Plus className="w-3.5 h-3.5" /> Walk-in Token
+              <Button size="sm" onClick={() => setIsBookingOpen(true)}>
+                <Plus className="w-3.5 h-3.5" /> Book Appointment
               </Button>
             </Card>
 

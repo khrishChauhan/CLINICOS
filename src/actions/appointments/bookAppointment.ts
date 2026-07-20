@@ -8,16 +8,21 @@ import { notificationService } from '@/services/notifications/notificationServic
 export async function bookAppointmentAction(payload: BookAppointmentPayload) {
   try {
     const supabase = await createClient()
-    const { data: sessionData, error: sessionErr } = await supabase.rpc('get_session_context')
+    const { data: { user }, error: userError } = await supabase.auth.getUser()
+    if (userError || !user) throw new Error('Unauthorized')
     
-    if (sessionErr || !sessionData) {
-      throw new Error('Unauthorized')
-    }
+    const { data: profile } = await supabase
+      .from('users')
+      .select('clinic_id')
+      .eq('id', user.id)
+      .single()
+      
+    if (!profile) throw new Error('User profile not found')
     
     // In a real app we check `appointments.create` permission here via an auth utility
     
-    const clinicId = sessionData.clinic_id
-    const userId = sessionData.user_id
+    const clinicId = profile.clinic_id
+    const userId = user.id
 
     const apt = await appointmentService.bookAppointment(supabase, clinicId, userId, payload)
     

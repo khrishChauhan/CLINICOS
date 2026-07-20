@@ -24,7 +24,7 @@ export default function QueueDashboardClient({ initialQueue }: Props) {
     setLoadingId(id)
     const res = await updateAppointmentStatusAction(id, action)
     if (res.ok && res.appointment) {
-      setQueue(prev => prev.map(q => q.id === id ? { ...q, status: res.appointment.status, token_number: res.appointment.token_number } : q))
+      setQueue(prev => prev.map(q => q.id === id ? { ...q, status: res.appointment.status, appointment_number: res.appointment.appointment_number } : q))
     } else {
       alert(`Error: ${res.error}`)
     }
@@ -33,7 +33,7 @@ export default function QueueDashboardClient({ initialQueue }: Props) {
 
   // Grouping
   const scheduled = queue.filter(q => q.status === 'Scheduled')
-  const waiting = queue.filter(q => q.status === 'Checked In' || q.status === 'Waiting')
+  const waiting = queue.filter(q => q.status === 'Checked In' || q.status === 'Waiting').sort((a,b) => (a.appointment_number || '').localeCompare(b.appointment_number || ''))
   const inConsult = queue.filter(q => q.status === 'In Consultation')
   const completed = queue.filter(q => q.status === 'Completed')
 
@@ -42,13 +42,14 @@ export default function QueueDashboardClient({ initialQueue }: Props) {
       <div className="flex items-center gap-4">
         <div className="w-12 h-12 rounded-full bg-blue-50 flex flex-col items-center justify-center text-blue-700">
           <span className="text-xs font-semibold">TKN</span>
-          <span className="font-bold">{apt.token_number || '-'}</span>
+          <span className="font-bold text-slate-800">No. {apt.appointment_number || '-'}</span>
         </div>
         <div>
           <h4 className="font-bold text-slate-800">{apt.patient?.first_name} {apt.patient?.last_name}</h4>
           <p className="text-xs font-mono text-slate-500">{apt.patient?.uhid}</p>
           <div className="flex items-center gap-1 mt-1 text-xs font-medium text-slate-500">
-            <Clock className="w-3 h-3" /> {apt.start_time?.substring(0, 5)} - {apt.appointment_type}
+            <Clock className="w-3 h-3" /> 
+            <span>{apt.appointment_start_time?.substring(0, 5)} • {apt.visit_type}</span>
           </div>
         </div>
       </div>
