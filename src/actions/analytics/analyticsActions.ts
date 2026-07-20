@@ -7,8 +7,18 @@ import { reportExportService } from '@/services/analytics/reportExportService'
 export async function fetchDashboardDataAction() {
   try {
     const supabase = await createClient()
-    const { data: session } = await supabase.rpc('get_session_context')
-    if (!session) throw new Error('Unauthorized')
+    const { data: { user }, error: userError } = await supabase.auth.getUser()
+    if (userError || !user) throw new Error('Unauthorized')
+    
+    const { data: profile } = await supabase
+      .from('users')
+      .select('clinic_id')
+      .eq('id', user.id)
+      .single()
+      
+    if (!profile) throw new Error('User profile not found')
+    
+    const session = { user_id: user.id, clinic_id: profile.clinic_id }
 
     // Fetch user role to determine which dashboard to show
     const { data: userRole } = await supabase
@@ -34,8 +44,18 @@ export async function fetchDashboardDataAction() {
 export async function generateReportAction(reportType: string, startDate: string, endDate: string) {
   try {
     const supabase = await createClient()
-    const { data: session } = await supabase.rpc('get_session_context')
-    if (!session) throw new Error('Unauthorized')
+    const { data: { user }, error: userError } = await supabase.auth.getUser()
+    if (userError || !user) throw new Error('Unauthorized')
+    
+    const { data: profile } = await supabase
+      .from('users')
+      .select('clinic_id')
+      .eq('id', user.id)
+      .single()
+      
+    if (!profile) throw new Error('User profile not found')
+    
+    const session = { user_id: user.id, clinic_id: profile.clinic_id }
 
     const data = await reportExportService.generateReport(supabase, session.clinic_id, reportType, startDate, endDate)
     return { ok: true, data }
