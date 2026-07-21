@@ -2,8 +2,9 @@
 
 import React, { useState } from 'react'
 import { updateAppointmentStatusAction } from '@/actions/appointments/updateAppointmentStatus'
+import FollowUpCreationDialog from '@/components/appointments/FollowUpCreationDialog'
 import type { AppointmentRow } from '@/types/appointments'
-import { Clock, Play, CheckCircle, User, FileText, Settings } from 'lucide-react'
+import { Clock, Play, CheckCircle, User, FileText, Settings, CalendarPlus } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
 interface ExtendedApt extends AppointmentRow {
@@ -18,13 +19,14 @@ interface Props {
 export default function DoctorDashboardClient({ initialQueue, doctorId }: Props) {
   const [queue, setQueue] = useState<ExtendedApt[]>(initialQueue as ExtendedApt[])
   const [loadingId, setLoadingId] = useState<string | null>(null)
+  const [followUpApt, setFollowUpApt] = useState<ExtendedApt | null>(null)
   const router = useRouter()
 
   const handleStatusChange = async (id: string, action: 'start-consult' | 'complete-consult') => {
     setLoadingId(id)
     const res = await updateAppointmentStatusAction(id, action)
-    if (res.ok && res.appointment) {
-      setQueue(prev => prev.map(q => q.id === id ? { ...q, status: res.appointment.status } : q))
+    if (res.ok && res.data && res.data.appointment) {
+      setQueue(prev => prev.map(q => q.id === id ? { ...q, status: res.data.appointment.status } : q))
     } else {
       alert(`Error: ${res.error}`)
     }
@@ -40,6 +42,18 @@ export default function DoctorDashboardClient({ initialQueue, doctorId }: Props)
 
   return (
     <div className="flex-1 p-6 max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {followUpApt && (
+        <FollowUpCreationDialog
+          parentAppointmentId={followUpApt.id}
+          patientId={followUpApt.patient_id}
+          doctorId={doctorId}
+          onClose={() => setFollowUpApt(null)}
+          onSuccess={() => {
+            setFollowUpApt(null)
+            alert('Follow-up scheduled successfully')
+          }}
+        />
+      )}
       
       {/* Left Column: Queue */}
       <div className="lg:col-span-1 space-y-6">
@@ -151,7 +165,16 @@ export default function DoctorDashboardClient({ initialQueue, doctorId }: Props)
                   {completed.map(apt => (
                     <div key={apt.id} className="flex justify-between items-center p-3 bg-slate-50 rounded-lg text-sm border border-slate-100">
                       <span className="font-medium text-slate-700">{apt.patient.first_name}</span>
-                      <span className="text-emerald-600 font-semibold text-xs flex items-center gap-1"><CheckCircle className="w-3 h-3"/> Done</span>
+                      <div className="flex items-center gap-2">
+                        <button 
+                          onClick={() => setFollowUpApt(apt)}
+                          className="text-xs text-blue-600 hover:text-blue-800 flex items-center gap-1 font-semibold"
+                          title="Create Follow-up"
+                        >
+                          <CalendarPlus className="w-3.5 h-3.5" /> Follow-up
+                        </button>
+                        <span className="text-emerald-600 font-semibold text-xs flex items-center gap-1"><CheckCircle className="w-3 h-3"/> Done</span>
+                      </div>
                     </div>
                   ))}
                 </div>

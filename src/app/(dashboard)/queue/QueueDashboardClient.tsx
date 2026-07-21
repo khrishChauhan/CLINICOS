@@ -5,7 +5,7 @@ import { updateAppointmentStatusAction } from '@/actions/appointments/updateAppo
 import type { AppointmentRow } from '@/types/appointments'
 import { Clock, Play, CheckCircle, XCircle, Stethoscope } from 'lucide-react'
 
-import BookAppointmentModal from './BookAppointmentModal'
+import WalkInRegistrationModal from './WalkInRegistrationModal'
 
 interface ExtendedApt extends AppointmentRow {
   patient: { first_name: string; last_name: string; uhid: string }
@@ -23,8 +23,8 @@ export default function QueueDashboardClient({ initialQueue }: Props) {
   const handleStatusChange = async (id: string, action: 'check-in' | 'start-consult' | 'complete-consult' | 'cancel') => {
     setLoadingId(id)
     const res = await updateAppointmentStatusAction(id, action)
-    if (res.ok && res.appointment) {
-      setQueue(prev => prev.map(q => q.id === id ? { ...q, status: res.appointment.status, appointment_number: res.appointment.appointment_number } : q))
+    if (res.ok && res.data && res.data.appointment) {
+      setQueue(prev => prev.map(q => q.id === id ? { ...q, status: res.data.appointment.status, appointment_number: res.data.appointment.appointment_number } : q))
     } else {
       alert(`Error: ${res.error}`)
     }
@@ -62,7 +62,7 @@ export default function QueueDashboardClient({ initialQueue }: Props) {
   return (
     <div className="flex-1 p-6 max-w-7xl mx-auto w-full space-y-6">
       {isBookingModalOpen && (
-        <BookAppointmentModal 
+        <WalkInRegistrationModal 
           onClose={() => setIsBookingModalOpen(false)} 
           onSuccess={() => {
             setIsBookingModalOpen(false)

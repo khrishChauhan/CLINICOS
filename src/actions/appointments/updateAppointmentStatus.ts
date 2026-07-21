@@ -14,26 +14,36 @@ export async function updateAppointmentStatusAction(
     const { data: { user }, error: userError } = await supabase.auth.getUser()
     if (userError || !user) throw new Error('Unauthorized')
     const userId = user.id
-    let apt: AppointmentRow
+
+    // Fetch the appointment first to get clinic_id and doctor_id
+    const { data: appointment, error: fetchError } = await supabase
+      .from('appointments')
+      .select('clinic_id, doctor_id')
+      .eq('id', appointmentId)
+      .single()
+      
+    if (fetchError || !appointment) throw new Error('Appointment not found')
+    
+    let result: any;
 
     switch(action) {
       case 'check-in':
-        apt = await queueService.checkInPatient(supabase, appointmentId, userId)
+        result = await queueService.checkInPatient(supabase, appointmentId, appointment.clinic_id, appointment.doctor_id, userId)
         break
       case 'start-consult':
-        apt = await queueService.startConsultation(supabase, appointmentId, userId)
+        result = await queueService.startConsultation(supabase, appointmentId, userId)
         break
       case 'complete-consult':
-        apt = await queueService.completeConsultation(supabase, appointmentId, userId)
+        result = await queueService.completeConsultation(supabase, appointmentId, userId)
         break
       case 'cancel':
-        apt = await queueService.cancelAppointment(supabase, appointmentId, userId, reason || 'Cancelled by user')
+        result = await queueService.cancelAppointment(supabase, appointmentId, userId, reason || 'Cancelled by user')
         break
       default:
         throw new Error('Invalid action')
     }
     
-    return { ok: true, appointment: apt }
+    return { ok: true, data: result }
   } catch (error: any) {
     console.error(`Failed to ${action} appointment:`, error)
     return { ok: false, error: error.message }
