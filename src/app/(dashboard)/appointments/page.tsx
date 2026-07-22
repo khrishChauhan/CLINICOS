@@ -7,7 +7,9 @@ import CancelAppointmentDialog from '@/components/appointments/CancelAppointment
 import RescheduleAppointmentDialog from '@/components/appointments/RescheduleAppointmentDialog';
 import AppointmentDocumentsDialog from '@/components/appointments/AppointmentDocumentsDialog';
 import AppointmentCommunicationDialog from '@/components/appointments/AppointmentCommunicationDialog';
-import { CalendarDays, Filter, Plus, Search, Clock, FileText, Bell } from 'lucide-react';
+import AppointmentFeedbackDialog from '@/components/appointments/AppointmentFeedbackDialog';
+import AppointmentAuditTimeline from '@/components/appointments/AppointmentAuditTimeline';
+import { CalendarDays, Filter, Plus, Search, Clock, FileText, Bell, Star, Activity } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
@@ -21,6 +23,8 @@ export default function Appointments() {
   const [rescheduleAptId, setRescheduleAptId] = useState<string | null>(null);
   const [docsAptId, setDocsAptId] = useState<string | null>(null);
   const [commAptId, setCommAptId] = useState<string | null>(null);
+  const [feedbackAptId, setFeedbackAptId] = useState<string | null>(null);
+  const [auditAptId, setAuditAptId] = useState<string | null>(null);
 
   return (
     <main className="flex-1 p-6 max-w-7xl w-full mx-auto space-y-6 z-10 relative">
@@ -30,6 +34,8 @@ export default function Appointments() {
       {rescheduleAptId && <RescheduleAppointmentDialog appointmentId={rescheduleAptId} onClose={() => setRescheduleAptId(null)} onSuccess={() => { setRescheduleAptId(null); window.location.reload(); }} />}
       {docsAptId && <AppointmentDocumentsDialog appointmentId={docsAptId} onClose={() => setDocsAptId(null)} />}
       {commAptId && <AppointmentCommunicationDialog appointmentId={commAptId} onClose={() => setCommAptId(null)} />}
+      {feedbackAptId && <AppointmentFeedbackDialog appointmentId={feedbackAptId} onClose={() => setFeedbackAptId(null)} />}
+      {auditAptId && <AppointmentAuditTimeline appointmentId={auditAptId} onClose={() => setAuditAptId(null)} />}
       <div className="space-y-6">
         <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 bg-white p-4 rounded-xl border border-slate-100 shadow-sm">
           <div className="text-center p-3 border-r border-slate-100">
@@ -145,12 +151,27 @@ export default function Appointments() {
                         {apt.status !== 'Completed' && (
                           <button 
                             onClick={() => setRescheduleAptId(apt.id)}
-                            className="px-2 py-1 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded text-xs font-semibold transition" 
-                            title="Reschedule"
+                            className="px-2 py-1 bg-slate-100 text-slate-600 hover:bg-slate-200 rounded text-xs font-semibold transition"
                           >
                             Reschedule
                           </button>
                         )}
+                        {apt.status === 'Completed' && (
+                          <button 
+                            onClick={() => setFeedbackAptId(apt.id)}
+                            className="px-2 py-1 bg-amber-50 text-amber-600 hover:bg-amber-100 rounded text-xs font-semibold transition flex items-center gap-1"
+                            title="Patient Feedback"
+                          >
+                            <Star className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                        <button 
+                          onClick={() => setAuditAptId(apt.id)}
+                          className="px-2 py-1 bg-slate-100 text-slate-600 hover:bg-slate-200 rounded text-xs font-semibold transition"
+                          title="Audit Trail"
+                        >
+                          <Activity className="w-3.5 h-3.5" />
+                        </button>
                         <button 
                           onClick={() => setCancelAptId(apt.id)}
                           className="px-2 py-1 bg-red-50 text-red-600 hover:bg-red-100 rounded text-xs font-semibold transition" 

@@ -49,7 +49,20 @@ export const appointmentLifecycleService = {
       remarks: remarks || null
     })
 
-    // 4. Dispatch Notification based on status
+    // 4. Drop Audit Log
+    const { appointmentAuditService } = await import('@/services/appointments/appointmentAuditService')
+    await appointmentAuditService.logAction(
+      supabase,
+      clinicId,
+      appointmentId,
+      'Appointment Status Changed',
+      userId,
+      { status: previousStatus },
+      { status: newStatus },
+      { remarks }
+    )
+
+    // 5. Dispatch Notification based on status
     let eventType = null
     switch (newStatus) {
       case 'Confirmed': eventType = 'Appointment Confirmed'; break;

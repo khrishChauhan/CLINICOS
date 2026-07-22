@@ -44,3 +44,14 @@ export async function getInventoryValue(supabase: SupabaseClient, clinicId: stri
   
   return totalValue
 }
+
+export async function getFeedbackMetrics(supabase: SupabaseClient, clinicId: string) {
+  const { data, error } = await supabase
+    .from('appointment_feedback')
+    .select('overall_rating, doctor_experience_rating, waiting_time_rating, staff_rating')
+    .eq('clinic_id', clinicId)
+    
+  if (error) throw new Error(`Failed to fetch feedback metrics: ${error.message}`)
+  
+  return data
+}

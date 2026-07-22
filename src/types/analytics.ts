@@ -19,6 +19,9 @@ export interface ExecutiveDashboardData {
   totalNoShows: number
   inventoryValue: number
   revenueData: { date: string; amount: number }[]
+  averageDoctorRating?: number
+  averageSatisfaction?: number
+  feedbackCount?: number
 }
 
 export interface ClinicalDashboardData {

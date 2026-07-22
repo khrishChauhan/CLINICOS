@@ -1,5 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
-import { getDailyRevenue, getAppointmentMetrics, getInventoryValue } from '@/repositories/analytics/dashboardRepository'
+import { getDailyRevenue, getAppointmentMetrics, getInventoryValue, getFeedbackMetrics } from '@/repositories/analytics/dashboardRepository'
 import type { ExecutiveDashboardData, ClinicalDashboardData } from '@/types/analytics'
 
 export const dashboardService = {
@@ -26,12 +26,25 @@ export const dashboardService = {
       if (r.status === 'No Show') totalNoShows += r.appointment_count
     }
 
+    // Fetch Feedback Metrics
+    const feedbackRows = await getFeedbackMetrics(supabase, clinicId)
+    const feedbackCount = feedbackRows.length
+    let avgDoctor = 0
+    let avgSat = 0
+    if (feedbackCount > 0) {
+      avgDoctor = feedbackRows.reduce((sum, f) => sum + (f.doctor_experience_rating || 0), 0) / feedbackCount
+      avgSat = feedbackRows.reduce((sum, f) => sum + (f.overall_rating || 0), 0) / feedbackCount
+    }
+
     return {
       totalRevenue,
       totalConsultations,
       totalNoShows,
       inventoryValue,
-      revenueData
+      revenueData,
+      feedbackCount,
+      averageDoctorRating: Number(avgDoctor.toFixed(1)),
+      averageSatisfaction: Number(avgSat.toFixed(1))
     }
   },
 

@@ -267,3 +267,31 @@ export interface AppointmentDocumentRow {
   remarks: string | null
   uploaded_at: string
 }
+
+export interface AppointmentFeedbackRow {
+  id: string
+  clinic_id: string
+  appointment_id: string
+  overall_rating: number
+  waiting_time_rating: number | null
+  doctor_experience_rating: number | null
+  staff_rating: number | null
+  cleanliness_rating: number | null
+  comments: string | null
+  submitted_at: string
+  created_at: string
+}
+
+export interface AppointmentAuditRow {
+  id: string
+  clinic_id: string
+  appointment_id: string
+  action: string
+  performed_by: string | null
+  previous_value: Record<string, any> | null
+  new_value: Record<string, any> | null
+  ip_address: string | null
+  metadata: Record<string, any> | null
+  timestamp: string
+  created_at: string
+}
