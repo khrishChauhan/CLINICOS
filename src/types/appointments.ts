@@ -76,7 +76,7 @@ export interface TimeSlot {
   startTime: string
   endTime: string
   isAvailable: boolean
-  reason?: 'Leave' | 'Booked' | 'Outside Hours'
+  reason?: 'Leave' | 'Booked' | 'Outside Hours' | 'Blocked'
 }
 
 export interface BookAppointmentPayload {

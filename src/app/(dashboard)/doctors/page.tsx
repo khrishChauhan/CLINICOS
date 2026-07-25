@@ -1,86 +1,104 @@
-import React from 'react';
-import { Stethoscope } from 'lucide-react';
-import { Card } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
-import { Badge } from '@/components/ui/Badge';
-import { mockDoctors } from '@/data/mockData';
+'use client'
 
-export default function Doctors() {
-  const departments = [
-    'All Departments', 'General Medicine', 'Gynecology', 'Pediatrics', 
-    'Cardiology', 'Dermatology', 'Orthopedics', 'General Surgery', 
-    'Ophthalmology', 'Neurology', 'ENT Specialization'
-  ];
+import React, { useState, useEffect } from 'react'
+import { Card, CardHeader, CardContent } from '@/components/ui/Card'
+import { Button } from '@/components/ui/Button'
+import { Input } from '@/components/ui/Input'
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/Table'
+import { Badge } from '@/components/ui/Badge'
+import { Search, UserPlus } from 'lucide-react'
+import { getDoctorsAction } from '@/actions/doctors/doctorActions'
+import type { DoctorRow } from '@/types/doctors'
+import Link from 'next/link'
+
+export default function DoctorsListPage() {
+  const [doctors, setDoctors] = useState<DoctorRow[]>([])
+  const [loading, setLoading] = useState(true)
+  const [search, setSearch] = useState('')
+
+  useEffect(() => {
+    async function fetchDoctors() {
+      const res = await getDoctorsAction()
+      if (res.success) {
+        setDoctors(res.data)
+      }
+      setLoading(false)
+    }
+    fetchDoctors()
+  }, [])
+
+  const filteredDoctors = doctors.filter(doc => 
+    `${doc.first_name} ${doc.last_name}`.toLowerCase().includes(search.toLowerCase()) ||
+    doc.doctor_code.toLowerCase().includes(search.toLowerCase()) ||
+    (doc.email && doc.email.toLowerCase().includes(search.toLowerCase()))
+  )
 
   return (
-    <main className="flex-1 p-6 max-w-7xl w-full mx-auto space-y-6 z-10 relative">
-      <div className="space-y-6">
-        <div className="space-y-5 animate-fade-in">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-xl font-bold text-slate-800">Durga Clinic Specialist Panel</h1>
-              <p className="text-slate-500 text-xs mt-0.5">Manage physician duties, availability schedules, and OPD queues</p>
-            </div>
-          </div>
-
-          <Card className="p-4 flex flex-col md:flex-row gap-4 items-center justify-between">
-            <div className="flex gap-2 flex-wrap">
-              {departments.map((dept, idx) => (
-                <button 
-                  key={dept}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition ${idx === 0 ? 'bg-blue-600 text-white' : 'bg-slate-50 text-slate-600 hover:bg-slate-100'}`}
-                >
-                  {dept}
-                </button>
-              ))}
-            </div>
-            <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-lg text-xs">
-              <span className="text-slate-500 font-medium">Duty status:</span>
-              <select className="bg-transparent font-bold text-slate-700 focus:outline-none">
-                <option value="All">All Statuses</option>
-                <option value="Available">Available</option>
-                <option value="Busy">Busy</option>
-                <option value="On Leave">On Leave</option>
-              </select>
-            </div>
-          </Card>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {mockDoctors.map((doc) => (
-              <Card key={doc.id} className="p-5 hover:border-blue-200 hover:shadow-md transition duration-300 flex flex-col justify-between space-y-4">
-                <div className="space-y-3">
-                  <div className="flex justify-between items-start">
-                    <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-lg border border-blue-100 shadow-xs">
-                      <Stethoscope className="w-6 h-6" />
-                    </div>
-                    <Badge variant={doc.available ? 'success' : 'default'} className={!doc.available ? 'bg-slate-100 text-slate-500 border-slate-200' : ''}>
-                      {doc.available ? 'Available' : 'On Leave'}
-                    </Badge>
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-slate-800 text-base leading-snug">{doc.name}</h3>
-                    <p className="text-xs font-semibold text-blue-600 mt-0.5">{doc.specialty}</p>
-                    <p className="text-[11px] text-slate-400 mt-1">{doc.education}</p>
-                  </div>
-                  <div className="grid grid-cols-2 gap-3 pt-3 border-t border-slate-100 text-xs text-slate-500">
-                    <div>
-                      <span className="font-bold text-slate-400 text-[9px] uppercase tracking-wider block">Today's Token</span>
-                      <span className="text-sm font-bold text-slate-800">{doc.patientsToday}</span>
-                    </div>
-                    <div>
-                      <span className="font-bold text-slate-400 text-[9px] uppercase tracking-wider block">Waiting</span>
-                      <span className="text-sm font-bold text-amber-600">{Math.floor(doc.patientsToday / 3)}</span>
-                    </div>
-                  </div>
-                </div>
-                <button className="w-full text-center py-2 bg-slate-50 hover:bg-blue-600 text-slate-700 hover:text-white rounded-lg text-xs font-bold transition shadow-2xs hover:shadow-xs border border-slate-100">
-                  View Schedule & History
-                </button>
-              </Card>
-            ))}
-          </div>
+    <div className="flex-1 p-6 max-w-7xl w-full mx-auto space-y-6">
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-800">Doctors Registry</h1>
+          <p className="text-sm text-slate-500">Manage doctor identities and professional profiles</p>
         </div>
+        <Link href="/doctors/new/profile">
+          <Button className="flex items-center gap-2">
+            <UserPlus className="w-4 h-4" /> Add Doctor
+          </Button>
+        </Link>
       </div>
-    </main>
-  );
+
+      <Card>
+        <CardHeader className="flex flex-row justify-between items-center bg-slate-50/50 border-b border-slate-100">
+          <div className="relative w-72">
+            <Search className="w-4 h-4 absolute left-3 top-3 text-slate-400" />
+            <Input 
+              placeholder="Search doctors..." 
+              className="pl-9"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+        </CardHeader>
+        <CardContent className="p-0">
+          {loading ? (
+            <div className="p-8 text-center text-slate-500">Loading doctors...</div>
+          ) : filteredDoctors.length === 0 ? (
+            <div className="p-8 text-center text-slate-500">No doctors found.</div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Doctor Code</TableHead>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Contact</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="text-right">Action</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredDoctors.map(doc => (
+                  <TableRow key={doc.id}>
+                    <TableCell className="font-mono text-sm">{doc.doctor_code}</TableCell>
+                    <TableCell className="font-semibold text-slate-800">Dr. {doc.first_name} {doc.last_name}</TableCell>
+                    <TableCell>
+                      <div className="text-sm">{doc.email || 'No email'}</div>
+                      <div className="text-xs text-slate-500">{doc.mobile_number || 'No phone'}</div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={doc.status === 'Active' ? 'success' : 'default'}>{doc.status}</Badge>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Link href={`/doctors/${doc.id}/profile`}>
+                        <Button variant="outline" size="sm">Manage Profile</Button>
+                      </Link>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  )
 }
