@@ -5,11 +5,14 @@ import { getVisitAction, updateVisitAction, completeVisitAction } from '@/action
 import VitalsPanel from './VitalsPanel'
 import ChiefComplaintsPanel from './ChiefComplaintsPanel'
 import SoapNotesPanel from './SoapNotesPanel'
+import DiagnosesPanel from './DiagnosesPanel'
+import ProceduresPanel from './ProceduresPanel'
+import PrescriptionBuilder from './PrescriptionBuilder'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import type { VisitRow } from '@/types/emr'
 
-type Tab = 'complaints' | 'vitals' | 'soap' | 'summary'
+type Tab = 'complaints' | 'vitals' | 'diagnoses' | 'procedures' | 'soap' | 'prescription' | 'summary'
 
 interface VisitWorkspaceProps {
   visitId: string
@@ -70,8 +73,11 @@ export default function VisitWorkspace({ visitId, onComplete }: VisitWorkspacePr
   const TABS: { id: Tab; label: string }[] = [
     { id: 'complaints', label: 'Chief Complaints' },
     { id: 'vitals', label: 'Vitals' },
+    { id: 'diagnoses', label: 'Diagnoses' },
+    { id: 'procedures', label: 'Procedures' },
     { id: 'soap', label: 'SOAP Notes' },
-    { id: 'summary', label: 'Summary & Diagnosis' },
+    { id: 'prescription', label: 'Prescription (Rx)' },
+    { id: 'summary', label: 'Summary' },
   ]
 
   return (
@@ -116,7 +122,10 @@ export default function VisitWorkspace({ visitId, onComplete }: VisitWorkspacePr
       <div className="flex-1">
         {activeTab === 'complaints' && <ChiefComplaintsPanel visitId={visitId} />}
         {activeTab === 'vitals' && <VitalsPanel visitId={visitId} />}
+        {activeTab === 'diagnoses' && <DiagnosesPanel visitId={visitId} />}
+        {activeTab === 'procedures' && <ProceduresPanel visitId={visitId} />}
         {activeTab === 'soap' && <SoapNotesPanel visitId={visitId} />}
+        {activeTab === 'prescription' && <PrescriptionBuilder visitId={visitId} doctorId={visit.doctor_id} />}
         {activeTab === 'summary' && (
           <div className="space-y-5">
             <div>

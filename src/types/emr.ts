@@ -82,3 +82,72 @@ export interface VitalsRow {
   recorded_by: string | null
   recorded_at: string
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Phase 2 Types
+// ─────────────────────────────────────────────────────────────────────────────
+
+export type DiagnosisStatus = 'Active' | 'Resolved' | 'Chronic' | 'Ruled Out'
+export type DiagnosisType = 'Primary' | 'Secondary'
+
+export interface DiagnosisRow {
+  id: string
+  clinic_id: string
+  visit_id: string
+  diagnosis_code: string | null
+  diagnosis_name: string
+  diagnosis_type: DiagnosisType
+  icd_code: string | null
+  diagnosis_notes: string | null
+  status: DiagnosisStatus
+  created_by: string | null
+  created_at: string
+  updated_at: string
+}
+
+export type ProcedureStatus = 'Planned' | 'In Progress' | 'Completed' | 'Cancelled'
+
+export interface ProcedureRow {
+  id: string
+  clinic_id: string
+  visit_id: string
+  procedure_code: string | null
+  procedure_name: string
+  procedure_date: string | null
+  performed_by: string | null
+  remarks: string | null
+  status: ProcedureStatus
+  created_at: string
+  updated_at: string
+}
+
+export interface PrescriptionRow {
+  id: string
+  clinic_id: string
+  visit_id: string
+  doctor_id: string
+  prescription_date: string
+  advice: string | null
+  dietary_advice: string | null
+  next_visit: string | null
+  digital_signature: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface PrescriptionItemRow {
+  id: string
+  clinic_id: string
+  prescription_id: string
+  medicine_id: string | null
+  medicine_name: string
+  dosage: string | null
+  frequency: string | null
+  duration: string | null
+  quantity: number | null
+  route: string | null
+  before_after_food: string | null
+  instructions: string | null
+  created_at: string
+}
+
