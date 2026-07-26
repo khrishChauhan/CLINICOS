@@ -200,4 +200,72 @@ export interface ClinicalAttachmentRow {
   uploaded_at: string
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Phase 4 Types
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface ReferralRow {
+  id: string
+  clinic_id: string
+  visit_id: string
+  referred_doctor: string | null
+  referred_hospital: string | null
+  referral_reason: string
+  referral_date: string
+  status: string
+  created_at: string
+  updated_at: string
+}
+
+export interface ClinicalAlertRow {
+  id: string
+  clinic_id: string
+  patient_id: string
+  visit_id: string | null
+  alert_type: string
+  alert_message: string
+  severity: 'High' | 'Medium' | 'Low'
+  resolved: boolean
+  created_at: string
+  updated_at: string
+}
+
+export interface TreatmentPlanRow {
+  id: string
+  clinic_id: string
+  patient_id: string
+  visit_id: string
+  treatment_goal: string
+  treatment_description: string
+  expected_duration: string | null
+  review_date: string | null
+  status: 'Active' | 'Completed' | 'Discontinued'
+  created_at: string
+  updated_at: string
+}
+
+export interface ClinicalOrderRow {
+  id: string
+  clinic_id: string
+  visit_id: string
+  order_type: string
+  order_reference: string | null
+  ordered_by: string
+  order_date: string
+  status: 'Ordered' | 'In Progress' | 'Resulted' | 'Cancelled'
+  created_at: string
+  updated_at: string
+}
+
+export interface TimelineEvent {
+  id: string
+  event_type: string
+  event_description: string
+  event_date: string
+  source_table: string
+  source_id: string
+  metadata?: any
+}
+
+
 

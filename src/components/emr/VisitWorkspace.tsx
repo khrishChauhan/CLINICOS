@@ -11,11 +11,17 @@ import PrescriptionBuilder from './PrescriptionBuilder'
 import ClinicalNotesPanel from './ClinicalNotesPanel'
 import FollowUpPlanPanel from './FollowUpPlanPanel'
 import ClinicalAttachmentsPanel from './ClinicalAttachmentsPanel'
+import ClinicalTimelineTab from './ClinicalTimelineTab'
+import ClinicalAlertsBanner from './ClinicalAlertsBanner'
+import ClinicalAlertsPanel from './ClinicalAlertsPanel'
+import ReferralsPanel from './ReferralsPanel'
+import TreatmentPlansPanel from './TreatmentPlansPanel'
+import ClinicalOrdersPanel from './ClinicalOrdersPanel'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import type { VisitRow } from '@/types/emr'
 
-type Tab = 'complaints' | 'vitals' | 'diagnoses' | 'procedures' | 'prescription' | 'clinical_notes' | 'followup' | 'attachments' | 'summary'
+type Tab = 'timeline' | 'complaints' | 'vitals' | 'diagnoses' | 'procedures' | 'prescription' | 'clinical_notes' | 'orders' | 'followup' | 'referrals' | 'alerts' | 'treatment_plans' | 'attachments' | 'summary'
 
 interface VisitWorkspaceProps {
   visitId: string
@@ -24,7 +30,7 @@ interface VisitWorkspaceProps {
 
 export default function VisitWorkspace({ visitId, onComplete }: VisitWorkspaceProps) {
   const [visit, setVisit] = useState<VisitRow | null>(null)
-  const [activeTab, setActiveTab] = useState<Tab>('complaints')
+  const [activeTab, setActiveTab] = useState<Tab>('timeline')
   const [completing, setCompleting] = useState(false)
   const [notes, setNotes] = useState('')
   const [provDiag, setProvDiag] = useState('')
@@ -74,19 +80,26 @@ export default function VisitWorkspace({ visitId, onComplete }: VisitWorkspacePr
   const isCompleted = visit.consultation_status === 'Completed'
 
   const TABS: { id: Tab; label: string }[] = [
+    { id: 'timeline', label: 'Timeline' },
     { id: 'complaints', label: 'Chief Complaints' },
     { id: 'vitals', label: 'Vitals' },
     { id: 'diagnoses', label: 'Diagnoses' },
     { id: 'procedures', label: 'Procedures' },
-    { id: 'prescription', label: 'Prescription (Rx)' },
+    { id: 'prescription', label: 'Prescription' },
+    { id: 'orders', label: 'Orders' },
     { id: 'clinical_notes', label: 'Clinical Notes' },
-    { id: 'followup', label: 'Follow-up Plan' },
+    { id: 'alerts', label: 'Alerts' },
+    { id: 'treatment_plans', label: 'Treatment' },
+    { id: 'referrals', label: 'Referrals' },
+    { id: 'followup', label: 'Follow-up' },
     { id: 'attachments', label: 'Attachments' },
     { id: 'summary', label: 'Summary' },
   ]
 
   return (
     <div className="flex flex-col h-full min-h-[600px]">
+      <ClinicalAlertsBanner patientId={visit.patient_id} />
+
       {/* Visit Header */}
       <div className="flex items-center justify-between gap-4 pb-4 border-b border-slate-200 mb-4 flex-wrap">
         <div>
@@ -125,12 +138,17 @@ export default function VisitWorkspace({ visitId, onComplete }: VisitWorkspacePr
 
       {/* Tab Content */}
       <div className="flex-1">
+        {activeTab === 'timeline' && <ClinicalTimelineTab visitId={visitId} />}
         {activeTab === 'complaints' && <ChiefComplaintsPanel visitId={visitId} />}
         {activeTab === 'vitals' && <VitalsPanel visitId={visitId} />}
         {activeTab === 'diagnoses' && <DiagnosesPanel visitId={visitId} />}
         {activeTab === 'procedures' && <ProceduresPanel visitId={visitId} />}
         {activeTab === 'prescription' && <PrescriptionBuilder visitId={visitId} doctorId={visit.doctor_id} />}
+        {activeTab === 'orders' && <ClinicalOrdersPanel visitId={visitId} />}
         {activeTab === 'clinical_notes' && <ClinicalNotesPanel visitId={visitId} />}
+        {activeTab === 'alerts' && <ClinicalAlertsPanel patientId={visit.patient_id} visitId={visitId} />}
+        {activeTab === 'treatment_plans' && <TreatmentPlansPanel patientId={visit.patient_id} visitId={visitId} />}
+        {activeTab === 'referrals' && <ReferralsPanel visitId={visitId} />}
         {activeTab === 'followup' && <FollowUpPlanPanel visitId={visitId} />}
         {activeTab === 'attachments' && <ClinicalAttachmentsPanel visitId={visitId} />}
         {activeTab === 'summary' && (
