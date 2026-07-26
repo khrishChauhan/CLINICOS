@@ -151,3 +151,53 @@ export interface PrescriptionItemRow {
   created_at: string
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Phase 3 Types
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface EditHistoryEntry {
+  edited_at: string
+  previous_content: string
+  edited_by: string
+}
+
+export interface ClinicalNoteRow {
+  id: string
+  clinic_id: string
+  visit_id: string
+  note_type: string
+  note: string
+  entered_by: string
+  entered_at: string
+  edit_history: EditHistoryEntry[]
+  created_at: string
+  updated_at: string
+}
+
+export interface FollowUpPlanRow {
+  id: string
+  clinic_id: string
+  visit_id: string
+  followup_date: string
+  followup_reason: string | null
+  instructions: string | null
+  reminder_required: boolean
+  created_at: string
+  updated_at: string
+}
+
+export interface ClinicalAttachmentRow {
+  id: string
+  clinic_id: string
+  visit_id: string
+  attachment_path: string
+  attachment_type: string
+  file_name: string
+  file_size: number
+  mime_type: string | null
+  remarks: string | null
+  uploaded_by: string | null
+  uploaded_at: string
+}
+
+

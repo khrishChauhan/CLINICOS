@@ -8,11 +8,14 @@ import SoapNotesPanel from './SoapNotesPanel'
 import DiagnosesPanel from './DiagnosesPanel'
 import ProceduresPanel from './ProceduresPanel'
 import PrescriptionBuilder from './PrescriptionBuilder'
+import ClinicalNotesPanel from './ClinicalNotesPanel'
+import FollowUpPlanPanel from './FollowUpPlanPanel'
+import ClinicalAttachmentsPanel from './ClinicalAttachmentsPanel'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import type { VisitRow } from '@/types/emr'
 
-type Tab = 'complaints' | 'vitals' | 'diagnoses' | 'procedures' | 'soap' | 'prescription' | 'summary'
+type Tab = 'complaints' | 'vitals' | 'diagnoses' | 'procedures' | 'prescription' | 'clinical_notes' | 'followup' | 'attachments' | 'summary'
 
 interface VisitWorkspaceProps {
   visitId: string
@@ -75,8 +78,10 @@ export default function VisitWorkspace({ visitId, onComplete }: VisitWorkspacePr
     { id: 'vitals', label: 'Vitals' },
     { id: 'diagnoses', label: 'Diagnoses' },
     { id: 'procedures', label: 'Procedures' },
-    { id: 'soap', label: 'SOAP Notes' },
     { id: 'prescription', label: 'Prescription (Rx)' },
+    { id: 'clinical_notes', label: 'Clinical Notes' },
+    { id: 'followup', label: 'Follow-up Plan' },
+    { id: 'attachments', label: 'Attachments' },
     { id: 'summary', label: 'Summary' },
   ]
 
@@ -124,8 +129,10 @@ export default function VisitWorkspace({ visitId, onComplete }: VisitWorkspacePr
         {activeTab === 'vitals' && <VitalsPanel visitId={visitId} />}
         {activeTab === 'diagnoses' && <DiagnosesPanel visitId={visitId} />}
         {activeTab === 'procedures' && <ProceduresPanel visitId={visitId} />}
-        {activeTab === 'soap' && <SoapNotesPanel visitId={visitId} />}
         {activeTab === 'prescription' && <PrescriptionBuilder visitId={visitId} doctorId={visit.doctor_id} />}
+        {activeTab === 'clinical_notes' && <ClinicalNotesPanel visitId={visitId} />}
+        {activeTab === 'followup' && <FollowUpPlanPanel visitId={visitId} />}
+        {activeTab === 'attachments' && <ClinicalAttachmentsPanel visitId={visitId} />}
         {activeTab === 'summary' && (
           <div className="space-y-5">
             <div>
