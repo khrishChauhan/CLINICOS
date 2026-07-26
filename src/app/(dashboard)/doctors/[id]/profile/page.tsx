@@ -9,11 +9,16 @@ import LeaveManagement from '@/components/doctors/LeaveManagement'
 import ConsultationFeeManager from '@/components/doctors/ConsultationFeeManager'
 import SignatureManager from '@/components/doctors/SignatureManager'
 import DocumentManager from '@/components/doctors/DocumentManager'
+import PerformanceDashboard from '@/components/doctors/PerformanceDashboard'
+import NotesManager from '@/components/doctors/NotesManager'
+import AwardsManager from '@/components/doctors/AwardsManager'
+import LanguagesManager from '@/components/doctors/LanguagesManager'
+import CommunicationPreferencesManager from '@/components/doctors/CommunicationPreferencesManager'
 
 export default function DoctorProfilePage({ params }: { params: { id: string } }) {
   const doctorId = params.id
   const isNew = doctorId === 'new'
-  const [activeTab, setActiveTab] = useState<'profile' | 'qualifications' | 'registrations' | 'blocks' | 'leaves' | 'fees' | 'signature' | 'documents'>('profile')
+  const [activeTab, setActiveTab] = useState<'profile' | 'qualifications' | 'registrations' | 'blocks' | 'leaves' | 'fees' | 'signature' | 'documents' | 'performance' | 'notes' | 'awards' | 'languages' | 'communication'>('profile')
 
   return (
     <div className="flex-1 p-6 max-w-7xl w-full mx-auto space-y-6">
@@ -62,10 +67,40 @@ export default function DoctorProfilePage({ params }: { params: { id: string } }
               Leaves
             </button>
             <button 
+              onClick={() => setActiveTab('performance')}
+              className={`pb-2 px-1 text-sm font-semibold border-b-2 whitespace-nowrap ${activeTab === 'performance' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+            >
+              Performance
+            </button>
+            <button 
+              onClick={() => setActiveTab('languages')}
+              className={`pb-2 px-1 text-sm font-semibold border-b-2 whitespace-nowrap ${activeTab === 'languages' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+            >
+              Languages
+            </button>
+            <button 
+              onClick={() => setActiveTab('awards')}
+              className={`pb-2 px-1 text-sm font-semibold border-b-2 whitespace-nowrap ${activeTab === 'awards' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+            >
+              Awards
+            </button>
+            <button 
+              onClick={() => setActiveTab('notes')}
+              className={`pb-2 px-1 text-sm font-semibold border-b-2 whitespace-nowrap ${activeTab === 'notes' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+            >
+              Notes
+            </button>
+            <button 
+              onClick={() => setActiveTab('communication')}
+              className={`pb-2 px-1 text-sm font-semibold border-b-2 whitespace-nowrap ${activeTab === 'communication' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+            >
+              Communication
+            </button>
+            <button 
               onClick={() => setActiveTab('signature')}
               className={`pb-2 px-1 text-sm font-semibold border-b-2 whitespace-nowrap ${activeTab === 'signature' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
             >
-              Digital Signature
+              Signature
             </button>
             <button 
               onClick={() => setActiveTab('documents')}
@@ -84,6 +119,11 @@ export default function DoctorProfilePage({ params }: { params: { id: string } }
         {activeTab === 'fees' && !isNew && <ConsultationFeeManager doctorId={doctorId} />}
         {activeTab === 'blocks' && !isNew && <BlockedSlotManager doctorId={doctorId} />}
         {activeTab === 'leaves' && !isNew && <LeaveManagement doctorId={doctorId} />}
+        {activeTab === 'performance' && !isNew && <PerformanceDashboard doctorId={doctorId} />}
+        {activeTab === 'languages' && !isNew && <LanguagesManager doctorId={doctorId} />}
+        {activeTab === 'awards' && !isNew && <AwardsManager doctorId={doctorId} />}
+        {activeTab === 'notes' && !isNew && <NotesManager doctorId={doctorId} />}
+        {activeTab === 'communication' && !isNew && <CommunicationPreferencesManager doctorId={doctorId} />}
         {activeTab === 'signature' && !isNew && <SignatureManager doctorId={doctorId} />}
         {activeTab === 'documents' && !isNew && <DocumentManager doctorId={doctorId} />}
       </div>

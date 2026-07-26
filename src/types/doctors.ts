@@ -148,3 +148,59 @@ export interface DoctorDocumentRow {
   uploaded_at: string;
   created_by?: string | null;
 }
+
+export interface DoctorPerformanceRow {
+  id: string;
+  clinic_id: string;
+  doctor_id: string;
+  report_month: string;
+  total_patients: number;
+  completed_consultations: number;
+  followups: number;
+  cancelled_appointments: number;
+  average_consultation_time: number;
+  patient_rating?: number | null;
+  revenue_generated: number;
+  updated_at: string;
+}
+
+export interface DoctorNoteRow {
+  id: string;
+  clinic_id: string;
+  doctor_id: string;
+  note_type: string;
+  note: string;
+  created_by?: string | null;
+  created_at: string;
+}
+
+export interface DoctorAwardRow {
+  id: string;
+  clinic_id: string;
+  doctor_id: string;
+  award_name: string;
+  organization: string;
+  award_date?: string | null;
+  description?: string | null;
+  created_at: string;
+}
+
+export interface DoctorLanguageRow {
+  id: string;
+  clinic_id: string;
+  doctor_id: string;
+  language_name: string;
+  proficiency: string;
+  created_at: string;
+}
+
+export interface DoctorCommunicationPreferenceRow {
+  id: string;
+  clinic_id: string;
+  doctor_id: string;
+  sms_enabled: boolean;
+  email_enabled: boolean;
+  whatsapp_enabled: boolean;
+  in_app_enabled: boolean;
+  updated_at: string;
+}
