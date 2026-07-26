@@ -106,3 +106,45 @@ export interface DoctorLeaveRow {
   created_at: string;
   updated_at: string;
 }
+
+export interface DoctorConsultationFeeRow {
+  id: string;
+  clinic_id: string;
+  doctor_id: string;
+  consultation_type: string;
+  consultation_fee: number;
+  followup_fee: number;
+  emergency_fee: number;
+  teleconsultation_fee: number;
+  effective_from: string;
+  status: string;
+  created_at: string;
+  updated_at: string;
+  created_by?: string | null;
+}
+
+export interface DoctorDigitalSignatureRow {
+  id: string;
+  clinic_id: string;
+  doctor_id: string;
+  file_path: string;
+  signature_type: string;
+  issue_date?: string | null;
+  expiry_date?: string | null;
+  status: string;
+  created_at: string;
+  updated_at: string;
+  created_by?: string | null;
+}
+
+export interface DoctorDocumentRow {
+  id: string;
+  clinic_id: string;
+  doctor_id: string;
+  file_path: string;
+  document_type: string;
+  document_name: string;
+  remarks?: string | null;
+  uploaded_at: string;
+  created_by?: string | null;
+}
