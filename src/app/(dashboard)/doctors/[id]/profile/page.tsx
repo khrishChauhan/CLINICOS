@@ -14,11 +14,13 @@ import NotesManager from '@/components/doctors/NotesManager'
 import AwardsManager from '@/components/doctors/AwardsManager'
 import LanguagesManager from '@/components/doctors/LanguagesManager'
 import CommunicationPreferencesManager from '@/components/doctors/CommunicationPreferencesManager'
+import LoginDevicesManager from '@/components/doctors/LoginDevicesManager'
+import AuditTimeline from '@/components/doctors/AuditTimeline'
 
 export default function DoctorProfilePage({ params }: { params: { id: string } }) {
   const doctorId = params.id
   const isNew = doctorId === 'new'
-  const [activeTab, setActiveTab] = useState<'profile' | 'qualifications' | 'registrations' | 'blocks' | 'leaves' | 'fees' | 'signature' | 'documents' | 'performance' | 'notes' | 'awards' | 'languages' | 'communication'>('profile')
+  const [activeTab, setActiveTab] = useState<'profile' | 'qualifications' | 'registrations' | 'blocks' | 'leaves' | 'fees' | 'signature' | 'documents' | 'performance' | 'notes' | 'awards' | 'languages' | 'communication' | 'devices' | 'audit'>('profile')
 
   return (
     <div className="flex-1 p-6 max-w-7xl w-full mx-auto space-y-6">
@@ -108,6 +110,18 @@ export default function DoctorProfilePage({ params }: { params: { id: string } }
             >
               Documents
             </button>
+            <button 
+              onClick={() => setActiveTab('devices')}
+              className={`pb-2 px-1 text-sm font-semibold border-b-2 whitespace-nowrap ${activeTab === 'devices' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+            >
+              Login Devices
+            </button>
+            <button 
+              onClick={() => setActiveTab('audit')}
+              className={`pb-2 px-1 text-sm font-semibold border-b-2 whitespace-nowrap ${activeTab === 'audit' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+            >
+              Audit Log
+            </button>
           </>
         )}
       </div>
@@ -126,6 +140,8 @@ export default function DoctorProfilePage({ params }: { params: { id: string } }
         {activeTab === 'communication' && !isNew && <CommunicationPreferencesManager doctorId={doctorId} />}
         {activeTab === 'signature' && !isNew && <SignatureManager doctorId={doctorId} />}
         {activeTab === 'documents' && !isNew && <DocumentManager doctorId={doctorId} />}
+        {activeTab === 'devices' && !isNew && <LoginDevicesManager doctorId={doctorId} />}
+        {activeTab === 'audit' && !isNew && <AuditTimeline doctorId={doctorId} />}
       </div>
     </div>
   )

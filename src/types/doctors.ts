@@ -204,3 +204,29 @@ export interface DoctorCommunicationPreferenceRow {
   in_app_enabled: boolean;
   updated_at: string;
 }
+
+export interface DoctorLoginDeviceRow {
+  id: string;
+  clinic_id: string;
+  doctor_id: string;
+  device_name?: string | null;
+  operating_system?: string | null;
+  browser?: string | null;
+  ip_address?: string | null;
+  last_login: string;
+  trusted_device: boolean;
+  created_at: string;
+}
+
+export interface DoctorAuditRow {
+  id: string;
+  clinic_id: string;
+  doctor_id: string;
+  action: string;
+  action_by?: string | null;
+  previous_value?: any;
+  new_value?: any;
+  ip_address?: string | null;
+  metadata?: any;
+  action_time: string;
+}
