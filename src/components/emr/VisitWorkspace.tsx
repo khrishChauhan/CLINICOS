@@ -17,11 +17,12 @@ import ClinicalAlertsPanel from './ClinicalAlertsPanel'
 import ReferralsPanel from './ReferralsPanel'
 import TreatmentPlansPanel from './TreatmentPlansPanel'
 import ClinicalOrdersPanel from './ClinicalOrdersPanel'
+import EMRAuditPanel from './EMRAuditPanel'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import type { VisitRow } from '@/types/emr'
 
-type Tab = 'timeline' | 'complaints' | 'vitals' | 'diagnoses' | 'procedures' | 'prescription' | 'clinical_notes' | 'orders' | 'followup' | 'referrals' | 'alerts' | 'treatment_plans' | 'attachments' | 'summary'
+type Tab = 'timeline' | 'complaints' | 'vitals' | 'diagnoses' | 'procedures' | 'prescription' | 'clinical_notes' | 'orders' | 'followup' | 'referrals' | 'alerts' | 'treatment_plans' | 'attachments' | 'audit' | 'summary'
 
 interface VisitWorkspaceProps {
   visitId: string
@@ -93,6 +94,7 @@ export default function VisitWorkspace({ visitId, onComplete }: VisitWorkspacePr
     { id: 'referrals', label: 'Referrals' },
     { id: 'followup', label: 'Follow-up' },
     { id: 'attachments', label: 'Attachments' },
+    { id: 'audit', label: 'Audit Logs' },
     { id: 'summary', label: 'Summary' },
   ]
 
@@ -141,7 +143,7 @@ export default function VisitWorkspace({ visitId, onComplete }: VisitWorkspacePr
         {activeTab === 'timeline' && <ClinicalTimelineTab visitId={visitId} />}
         {activeTab === 'complaints' && <ChiefComplaintsPanel visitId={visitId} />}
         {activeTab === 'vitals' && <VitalsPanel visitId={visitId} />}
-        {activeTab === 'diagnoses' && <DiagnosesPanel visitId={visitId} />}
+        {activeTab === 'diagnoses' && <DiagnosesPanel visitId={visitId} patientId={visit.patient_id} />}
         {activeTab === 'procedures' && <ProceduresPanel visitId={visitId} />}
         {activeTab === 'prescription' && <PrescriptionBuilder visitId={visitId} doctorId={visit.doctor_id} />}
         {activeTab === 'orders' && <ClinicalOrdersPanel visitId={visitId} />}
@@ -151,6 +153,7 @@ export default function VisitWorkspace({ visitId, onComplete }: VisitWorkspacePr
         {activeTab === 'referrals' && <ReferralsPanel visitId={visitId} />}
         {activeTab === 'followup' && <FollowUpPlanPanel visitId={visitId} />}
         {activeTab === 'attachments' && <ClinicalAttachmentsPanel visitId={visitId} />}
+        {activeTab === 'audit' && <EMRAuditPanel patientId={visit.patient_id} />}
         {activeTab === 'summary' && (
           <div className="space-y-5">
             <div>

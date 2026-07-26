@@ -267,5 +267,37 @@ export interface TimelineEvent {
   metadata?: any
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Phase 5 Types
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface DiagnosisHistoryRow {
+  id: string
+  clinic_id: string
+  patient_id: string
+  visit_id: string
+  diagnosis_name: string
+  diagnosis_date: string
+  resolved_date: string
+  status: string
+  created_at: string
+}
+
+export interface EMRAuditRow {
+  id: string
+  clinic_id: string
+  visit_id: string | null
+  patient_id: string | null
+  action: string
+  action_by: string
+  table_name: string
+  record_id: string
+  previous_value: any | null
+  new_value: any | null
+  ip_address: string | null
+  action_time: string
+}
+
+
 
 

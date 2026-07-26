@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react'
 import { getDiagnosesAction, addDiagnosisAction, updateDiagnosisAction, deleteDiagnosisAction } from '@/actions/emr/diagnosisActions'
+import { resolveDiagnosisTxAction } from '@/actions/emr/diagnosisHistoryActions'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Badge } from '@/components/ui/Badge'
@@ -19,7 +20,7 @@ const TYPE_COLORS: Record<DiagnosisType, 'danger' | 'default'> = {
   'Secondary': 'default'
 }
 
-export default function DiagnosesPanel({ visitId }: { visitId: string }) {
+export default function DiagnosesPanel({ visitId, patientId }: { visitId: string; patientId: string }) {
   const [diagnoses, setDiagnoses] = useState<DiagnosisRow[]>([])
   const [loading, setLoading] = useState(false)
   const [form, setForm] = useState({
@@ -58,8 +59,13 @@ export default function DiagnosesPanel({ visitId }: { visitId: string }) {
   }
 
   const handleStatusChange = async (d: DiagnosisRow, status: DiagnosisStatus) => {
-    const res = await updateDiagnosisAction(visitId, d.id, { status })
-    if (res.success) setDiagnoses(prev => prev.map(x => x.id === d.id ? { ...x, status } : x))
+    if (status === 'Resolved' || status === 'Ruled Out') {
+      const res = await resolveDiagnosisTxAction(d.id, status, patientId)
+      if (res.success) setDiagnoses(prev => prev.map(x => x.id === d.id ? { ...x, status } : x))
+    } else {
+      const res = await updateDiagnosisAction(visitId, d.id, { status })
+      if (res.success) setDiagnoses(prev => prev.map(x => x.id === d.id ? { ...x, status } : x))
+    }
   }
 
   const handleDelete = async (id: string) => {
