@@ -179,3 +179,49 @@ export interface MasterRadiologyTest {
   modality?: string
   status: string
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Phase 4: Pharmacy & Medication Reference Masters
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface MasterMedicineCategory {
+  id: string
+  category_name: string
+  status: string
+}
+
+export interface MasterUnitOfMeasure {
+  id: string
+  unit_name: string
+  unit_symbol?: string
+  status: string
+}
+
+export interface MasterDosageForm {
+  id: string
+  dosage_form: string
+  status: string
+}
+
+export interface MasterRouteOfAdministration {
+  id: string
+  route_name: string
+  status: string
+}
+
+export interface MasterFrequency {
+  id: string
+  frequency_name: string
+  instructions?: string
+  status: string
+}
+
+export interface MasterMedicine {
+  id: string
+  medicine_code?: string
+  generic_name: string
+  brand_name?: string
+  category_id?: string
+  unit_id?: string
+  status: string
+}

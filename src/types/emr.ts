@@ -157,6 +157,10 @@ export interface PrescriptionItemRow {
   before_after_food: string | null
   instructions: string | null
   created_at: string
+  master_medicine_id?: string | null
+  master_frequency_id?: string | null
+  master_unit_id?: string | null
+  master_route_id?: string | null
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

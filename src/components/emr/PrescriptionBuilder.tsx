@@ -5,7 +5,9 @@ import { getPrescriptionAction, savePrescriptionAction, addPrescriptionItemActio
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import PrescriptionPrintView from './PrescriptionPrintView'
+import { getMasterDataAction } from '@/actions/master/masterActions'
 import type { PrescriptionRow, PrescriptionItemRow } from '@/types/emr'
+import type { MasterMedicine, MasterFrequency, MasterUnitOfMeasure, MasterRouteOfAdministration } from '@/types/master'
 
 interface MedicineForm {
   medicine_name: string
@@ -42,6 +44,11 @@ export default function PrescriptionBuilder({ visitId, doctorId, patientName, do
   const [saving, setSaving] = useState(false)
   const [showPrint, setShowPrint] = useState(false)
 
+  const [masterMedicines, setMasterMedicines] = useState<MasterMedicine[]>([])
+  const [masterFrequencies, setMasterFrequencies] = useState<MasterFrequency[]>([])
+  const [masterUnits, setMasterUnits] = useState<MasterUnitOfMeasure[]>([])
+  const [masterRoutes, setMasterRoutes] = useState<MasterRouteOfAdministration[]>([])
+
   const loadPrescription = useCallback(async () => {
     const res = await getPrescriptionAction(visitId, doctorId)
     if (res.success && res.data) {
@@ -53,7 +60,13 @@ export default function PrescriptionBuilder({ visitId, doctorId, patientName, do
     }
   }, [visitId, doctorId])
 
-  useEffect(() => { loadPrescription() }, [loadPrescription])
+  useEffect(() => { 
+    loadPrescription() 
+    getMasterDataAction<MasterMedicine>('medicines').then(res => res.success && res.data && setMasterMedicines(res.data))
+    getMasterDataAction<MasterFrequency>('frequencies').then(res => res.success && res.data && setMasterFrequencies(res.data))
+    getMasterDataAction<MasterUnitOfMeasure>('units_of_measure').then(res => res.success && res.data && setMasterUnits(res.data))
+    getMasterDataAction<MasterRouteOfAdministration>('routes_of_administration').then(res => res.success && res.data && setMasterRoutes(res.data))
+  }, [loadPrescription])
 
   const handleSave = async () => {
     setSaving(true)
@@ -76,7 +89,10 @@ export default function PrescriptionBuilder({ visitId, doctorId, patientName, do
       quantity: medForm.quantity ? parseInt(medForm.quantity) : undefined,
       route: medForm.route || undefined,
       before_after_food: medForm.before_after_food || undefined,
-      instructions: medForm.instructions || undefined
+      instructions: medForm.instructions || undefined,
+      master_medicine_id: masterMedicines.find(m => m.generic_name === medForm.medicine_name || m.brand_name === medForm.medicine_name)?.id,
+      master_frequency_id: masterFrequencies.find(f => f.frequency_name === medForm.frequency)?.id,
+      master_route_id: masterRoutes.find(r => r.route_name === medForm.route)?.id
     })
     if (res.success && res.data) {
       setItems(prev => [...prev, res.data!])
@@ -151,11 +167,38 @@ export default function PrescriptionBuilder({ visitId, doctorId, patientName, do
               {/* Inline Add Medicine Row */}
               {addingMed && (
                 <tr className="border-b border-blue-100 bg-blue-50/30">
-                  <td className="p-2"><Input required value={medForm.medicine_name} onChange={e => setMedForm({...medForm, medicine_name: e.target.value})} placeholder="Medicine name *" /></td>
-                  <td className="p-2"><Input value={medForm.dosage} onChange={e => setMedForm({...medForm, dosage: e.target.value})} placeholder="e.g. 500mg" /></td>
-                  <td className="p-2"><Input value={medForm.frequency} onChange={e => setMedForm({...medForm, frequency: e.target.value})} placeholder="e.g. 1-0-1" /></td>
+                  <td className="p-2">
+                    <Input required list="medicine-list" value={medForm.medicine_name} onChange={e => setMedForm({...medForm, medicine_name: e.target.value})} placeholder="Medicine name *" />
+                    <datalist id="medicine-list">
+                      {masterMedicines.map(m => (
+                        <option key={m.id} value={m.generic_name}>{m.brand_name ? `(${m.brand_name})` : ''}</option>
+                      ))}
+                    </datalist>
+                  </td>
+                  <td className="p-2">
+                    <Input value={medForm.dosage} onChange={e => setMedForm({...medForm, dosage: e.target.value})} placeholder="e.g. 500mg" />
+                  </td>
+                  <td className="p-2">
+                    <Input list="freq-list" value={medForm.frequency} onChange={e => setMedForm({...medForm, frequency: e.target.value})} placeholder="e.g. 1-0-1 or OD" />
+                    <datalist id="freq-list">
+                      {masterFrequencies.map(f => (
+                        <option key={f.id} value={f.frequency_name}>{f.instructions}</option>
+                      ))}
+                    </datalist>
+                  </td>
                   <td className="p-2"><Input value={medForm.duration} onChange={e => setMedForm({...medForm, duration: e.target.value})} placeholder="e.g. 5 Days" /></td>
                   <td className="p-2">
+                    <select className="w-full border border-slate-300 rounded-lg p-2 text-xs outline-none mb-1" value={medForm.route} onChange={e => setMedForm({...medForm, route: e.target.value})}>
+                      {masterRoutes.length > 0 ? masterRoutes.map(r => (
+                        <option key={r.id} value={r.route_name}>{r.route_name}</option>
+                      )) : (
+                        <>
+                          <option>Oral</option>
+                          <option>IV</option>
+                          <option>Topical</option>
+                        </>
+                      )}
+                    </select>
                     <select className="w-full border border-slate-300 rounded-lg p-2 text-xs outline-none" value={medForm.before_after_food} onChange={e => setMedForm({...medForm, before_after_food: e.target.value})}>
                       <option>After Food</option>
                       <option>Before Food</option>

@@ -29,6 +29,12 @@ const TABS = [
   { id: 'procedure_codes', label: 'Procedure Codes', title: 'Procedure_name' },
   { id: 'laboratory_tests', label: 'Laboratory Tests', title: 'Test_name' },
   { id: 'radiology_tests', label: 'Radiology Tests', title: 'Test_name' },
+  { id: 'medicine_categories', label: 'Medicine Categories', title: 'Category_name' },
+  { id: 'units_of_measure', label: 'Units Of Measure', title: 'Unit_name' },
+  { id: 'dosage_forms', label: 'Dosage Forms', title: 'Dosage_form' },
+  { id: 'routes_of_administration', label: 'Routes Of Administration', title: 'Route_name' },
+  { id: 'frequencies', label: 'Frequencies', title: 'Frequency_name' },
+  { id: 'medicines', label: 'Medicines', title: 'Generic_name' },
 ]
 
 export default function MasterDataManagementPage() {
