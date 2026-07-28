@@ -225,3 +225,24 @@ export interface MasterMedicine {
   unit_id?: string
   status: string
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Phase 5: Business Reference Masters
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface MasterAllergyType { id: string; allergy_type: string; status: string; }
+export interface MasterInsuranceProvider { id: string; provider_name: string; contact_number?: string; status: string; }
+export interface MasterPaymentMode { id: string; payment_mode: string; status: string; }
+export interface MasterTaxRate { id: string; tax_name: string; percentage: number; status: string; }
+export interface MasterCurrency { id: string; currency_code: string; currency_name: string; symbol?: string; status: string; }
+export interface MasterDocumentType { id: string; document_type: string; module_name?: string; status: string; }
+export interface MasterFileType { id: string; file_extension: string; mime_type: string; status: string; }
+export interface MasterNotificationChannel { id: string; channel_name: string; status: string; }
+export interface MasterLeaveType { id: string; leave_type: string; status: string; }
+export interface MasterShiftType { id: string; shift_name: string; start_time: string; end_time: string; status: string; }
+export interface MasterVendorCategory { id: string; category_name: string; status: string; }
+export interface MasterInventoryCategory { id: string; category_name: string; status: string; }
+export interface MasterExpenseCategory { id: string; category_name: string; status: string; }
+export interface MasterServiceCatalog { id: string; service_code: string; service_name: string; department_id?: string; default_price?: number; status: string; }
+export interface MasterReferralSource { id: string; source_name: string; status: string; }
+export interface MasterCancellationReason { id: string; reason: string; status: string; }

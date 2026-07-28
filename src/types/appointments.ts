@@ -69,7 +69,8 @@ export interface AppointmentRow {
   consultation_completed_at: string | null
   cancelled_at: string | null
   cancelled_by: string | null
-  cancellation_reason: string | null
+  cancellation_reason?: string
+  master_cancellation_reason_id?: string
   booked_by: string | null
   created_at: string
   updated_at: string
@@ -175,6 +176,7 @@ export interface AppointmentCancellationRow {
   appointment_id: string
   cancelled_by: string | null
   cancellation_reason: string
+  master_cancellation_reason_id?: string
   refund_required: boolean | null
   refund_status: string | null
   cancelled_at: string

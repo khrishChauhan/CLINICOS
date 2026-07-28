@@ -9,7 +9,8 @@ export const cancellationService = {
     appointmentId: string,
     clinicId: string,
     reason: string,
-    userId: string
+    userId: string,
+    masterReasonId?: string
   ) {
     // 1. Change Status to Cancelled (Logs history)
     const apt = await appointmentLifecycleService.changeStatus(
@@ -21,12 +22,19 @@ export const cancellationService = {
       'Cancelled via cancellation service'
     )
 
+    // Update appointment with reason as well
+    await supabase.from('appointments').update({
+      cancellation_reason: reason,
+      master_cancellation_reason_id: masterReasonId
+    }).eq('id', appointmentId)
+
     // 2. Create Cancellation Record
     await appointmentCancellationRepository.createCancellationRecord(supabase, {
       clinic_id: clinicId,
       appointment_id: appointmentId,
       cancelled_by: userId,
       cancellation_reason: reason,
+      master_cancellation_reason_id: masterReasonId,
       refund_required: false,
       refund_status: null,
       remarks: null

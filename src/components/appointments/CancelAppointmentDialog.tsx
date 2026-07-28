@@ -1,7 +1,9 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { cancelAppointmentAction } from '@/actions/appointments/cancelAppointmentAction'
+import { getMasterDataAction } from '@/actions/master/masterActions'
+import type { MasterCancellationReason } from '@/types/master'
 import { X, AlertCircle } from 'lucide-react'
 
 interface Props {
@@ -14,6 +16,13 @@ export default function CancelAppointmentDialog({ appointmentId, onClose, onSucc
   const [reason, setReason] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [masterReasons, setMasterReasons] = useState<MasterCancellationReason[]>([])
+
+  useEffect(() => {
+    getMasterDataAction<MasterCancellationReason>('cancellation_reasons').then(res => {
+      if (res.success && res.data) setMasterReasons(res.data)
+    })
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -25,7 +34,8 @@ export default function CancelAppointmentDialog({ appointmentId, onClose, onSucc
     setLoading(true)
     setError(null)
     
-    const res = await cancelAppointmentAction(appointmentId, reason)
+    const match = masterReasons.find(m => m.reason === reason)
+    const res = await cancelAppointmentAction(appointmentId, reason, match?.id)
     if (res.success) {
       onSuccess()
     } else {
@@ -54,13 +64,20 @@ export default function CancelAppointmentDialog({ appointmentId, onClose, onSucc
           <form id="cancel-form" onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-1">Reason for Cancellation *</label>
-              <textarea 
+              <input 
+                type="text"
+                list="cancellation-reasons"
                 value={reason}
                 onChange={e => setReason(e.target.value)}
                 placeholder="e.g. Patient requested cancellation"
-                className="w-full px-4 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-red-600 focus:border-transparent outline-none h-24 resize-none"
+                className="w-full px-4 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-red-600 focus:border-transparent outline-none"
                 required
               />
+              <datalist id="cancellation-reasons">
+                {masterReasons.map(r => (
+                  <option key={r.id} value={r.reason} />
+                ))}
+              </datalist>
             </div>
           </form>
         </div>

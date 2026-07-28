@@ -6,7 +6,8 @@ import { revalidatePath } from 'next/cache'
 
 export async function cancelAppointmentAction(
   appointmentId: string,
-  reason: string
+  reason: string,
+  masterReasonId?: string
 ) {
   try {
     const supabase = await createClient()
@@ -26,7 +27,8 @@ export async function cancelAppointmentAction(
       appointmentId,
       profile.clinic_id,
       reason,
-      user.id
+      user.id,
+      masterReasonId
     )
 
     revalidatePath('/appointments')

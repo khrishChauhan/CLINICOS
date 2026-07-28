@@ -35,6 +35,22 @@ const TABS = [
   { id: 'routes_of_administration', label: 'Routes Of Administration', title: 'Route_name' },
   { id: 'frequencies', label: 'Frequencies', title: 'Frequency_name' },
   { id: 'medicines', label: 'Medicines', title: 'Generic_name' },
+  { id: 'allergy_types', label: 'Allergy Types', title: 'Allergy_type' },
+  { id: 'insurance_providers', label: 'Insurance Providers', title: 'Provider_name' },
+  { id: 'payment_modes', label: 'Payment Modes', title: 'Payment_mode' },
+  { id: 'tax_rates', label: 'Tax Rates', title: 'Tax_name' },
+  { id: 'currencies', label: 'Currencies', title: 'Currency_name' },
+  { id: 'document_types', label: 'Document Types', title: 'Document_type' },
+  { id: 'file_types', label: 'File Types', title: 'File_extension' },
+  { id: 'notification_channels', label: 'Notification Channels', title: 'Channel_name' },
+  { id: 'leave_types', label: 'Leave Types', title: 'Leave_type' },
+  { id: 'shift_types', label: 'Shift Types', title: 'Shift_name' },
+  { id: 'vendor_categories', label: 'Vendor Categories', title: 'Category_name' },
+  { id: 'inventory_categories', label: 'Inventory Categories', title: 'Category_name' },
+  { id: 'expense_categories', label: 'Expense Categories', title: 'Category_name' },
+  { id: 'service_catalog', label: 'Service Catalog', title: 'Service_name' },
+  { id: 'referral_sources', label: 'Referral Sources', title: 'Source_name' },
+  { id: 'cancellation_reasons', label: 'Cancellation Reasons', title: 'Reason' },
 ]
 
 export default function MasterDataManagementPage() {
