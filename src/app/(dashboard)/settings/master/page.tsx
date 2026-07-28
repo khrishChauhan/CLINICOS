@@ -25,6 +25,10 @@ const TABS = [
   { id: 'token_statuses', label: 'Token Statuses', title: 'Token_status' },
   { id: 'appointment_statuses', label: 'Appointment Statuses', title: 'Appointment_status' },
   { id: 'visit_statuses', label: 'Visit Statuses', title: 'Visit_status' },
+  { id: 'diagnosis_codes', label: 'Diagnosis Codes', title: 'Diagnosis_name' },
+  { id: 'procedure_codes', label: 'Procedure Codes', title: 'Procedure_name' },
+  { id: 'laboratory_tests', label: 'Laboratory Tests', title: 'Test_name' },
+  { id: 'radiology_tests', label: 'Radiology Tests', title: 'Test_name' },
 ]
 
 export default function MasterDataManagementPage() {

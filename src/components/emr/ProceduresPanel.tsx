@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect, useCallback } from 'react'
 import { getProceduresAction, addProcedureAction, updateProcedureAction, deleteProcedureAction } from '@/actions/emr/procedureActions'
+import { getMasterDataAction } from '@/actions/master/masterActions'
+import type { MasterProcedureCode } from '@/types/master'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Badge } from '@/components/ui/Badge'
@@ -25,12 +27,19 @@ export default function ProceduresPanel({ visitId }: { visitId: string }) {
     status: 'Planned' as ProcedureStatus
   })
 
+  const [masterProcedures, setMasterProcedures] = useState<MasterProcedureCode[]>([])
+
   const loadProcedures = useCallback(async () => {
     const res = await getProceduresAction(visitId)
     if (res.success && res.data) setProcedures(res.data)
   }, [visitId])
 
-  useEffect(() => { loadProcedures() }, [loadProcedures])
+  useEffect(() => { 
+    loadProcedures()
+    getMasterDataAction<MasterProcedureCode>('procedure_codes').then(res => {
+      if (res.success && res.data) setMasterProcedures(res.data)
+    })
+  }, [loadProcedures])
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -40,7 +49,8 @@ export default function ProceduresPanel({ visitId }: { visitId: string }) {
       procedure_code: form.procedure_code || undefined,
       procedure_date: form.procedure_date || undefined,
       remarks: form.remarks || undefined,
-      status: form.status
+      status: form.status,
+      master_procedure_id: masterProcedures.find(m => m.procedure_name === form.procedure_name)?.id
     })
     if (res.success && res.data) {
       setProcedures(prev => [...prev, res.data!])
@@ -105,7 +115,20 @@ export default function ProceduresPanel({ visitId }: { visitId: string }) {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="lg:col-span-2">
             <label className="text-xs font-semibold text-slate-500 uppercase">Procedure Name *</label>
-            <Input required value={form.procedure_name} onChange={e => setForm({...form, procedure_name: e.target.value})} placeholder="e.g. ECG, Dressing, IV Line" className="mt-1" />
+            <Input required list="procedure-list" value={form.procedure_name} onChange={e => {
+              const val = e.target.value
+              const match = masterProcedures.find(m => m.procedure_name === val)
+              setForm(prev => ({
+                ...prev,
+                procedure_name: val,
+                procedure_code: match?.procedure_code || prev.procedure_code
+              }))
+            }} placeholder="e.g. ECG, Dressing, IV Line" className="mt-1" />
+            <datalist id="procedure-list">
+              {masterProcedures.map(m => (
+                <option key={m.id} value={m.procedure_name}>{m.procedure_code ? `[${m.procedure_code}] ` : ''}{m.category}</option>
+              ))}
+            </datalist>
           </div>
           <div>
             <label className="text-xs font-semibold text-slate-500 uppercase">Code</label>

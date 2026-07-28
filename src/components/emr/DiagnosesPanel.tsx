@@ -3,6 +3,8 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { getDiagnosesAction, addDiagnosisAction, updateDiagnosisAction, deleteDiagnosisAction } from '@/actions/emr/diagnosisActions'
 import { resolveDiagnosisTxAction } from '@/actions/emr/diagnosisHistoryActions'
+import { getMasterDataAction } from '@/actions/master/masterActions'
+import type { MasterDiagnosisCode } from '@/types/master'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Badge } from '@/components/ui/Badge'
@@ -32,12 +34,19 @@ export default function DiagnosesPanel({ visitId, patientId }: { visitId: string
     status: 'Active' as DiagnosisStatus
   })
 
+  const [masterDiagnoses, setMasterDiagnoses] = useState<MasterDiagnosisCode[]>([])
+  
   const loadDiagnoses = useCallback(async () => {
     const res = await getDiagnosesAction(visitId)
     if (res.success && res.data) setDiagnoses(res.data)
   }, [visitId])
 
-  useEffect(() => { loadDiagnoses() }, [loadDiagnoses])
+  useEffect(() => { 
+    loadDiagnoses()
+    getMasterDataAction<MasterDiagnosisCode>('diagnosis_codes').then(res => {
+      if (res.success && res.data) setMasterDiagnoses(res.data)
+    })
+  }, [loadDiagnoses])
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -49,7 +58,8 @@ export default function DiagnosesPanel({ visitId, patientId }: { visitId: string
       diagnosis_code: form.diagnosis_code || undefined,
       icd_code: form.icd_code || undefined,
       diagnosis_notes: form.diagnosis_notes || undefined,
-      status: form.status
+      status: form.status,
+      master_diagnosis_id: masterDiagnoses.find(m => m.diagnosis_name === form.diagnosis_name)?.id
     })
     if (res.success && res.data) {
       await loadDiagnoses() // Reload to see demoted primaries
@@ -119,7 +129,21 @@ export default function DiagnosesPanel({ visitId, patientId }: { visitId: string
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <div className="lg:col-span-2">
             <label className="text-xs font-semibold text-slate-500 uppercase">Diagnosis Name *</label>
-            <Input required value={form.diagnosis_name} onChange={e => setForm({...form, diagnosis_name: e.target.value})} placeholder="e.g. Essential Hypertension" className="mt-1" />
+            <Input required list="diagnosis-list" value={form.diagnosis_name} onChange={e => {
+              const val = e.target.value
+              const match = masterDiagnoses.find(m => m.diagnosis_name === val)
+              setForm(prev => ({
+                ...prev,
+                diagnosis_name: val,
+                icd_code: match?.icd_code || prev.icd_code,
+                diagnosis_code: match?.icd_code || prev.diagnosis_code
+              }))
+            }} placeholder="e.g. Essential Hypertension" className="mt-1" />
+            <datalist id="diagnosis-list">
+              {masterDiagnoses.map(m => (
+                <option key={m.id} value={m.diagnosis_name}>{m.icd_code ? `[${m.icd_code}] ` : ''}{m.category}</option>
+              ))}
+            </datalist>
           </div>
           <div>
             <label className="text-xs font-semibold text-slate-500 uppercase">Type</label>

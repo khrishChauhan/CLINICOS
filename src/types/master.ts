@@ -142,3 +142,40 @@ export interface MasterVisitStatus {
   visit_status: string
   status: string
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Phase 3: Medical Reference Masters
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface MasterDiagnosisCode {
+  id: string
+  icd_code?: string
+  diagnosis_name: string
+  category?: string
+  status: string
+}
+
+export interface MasterProcedureCode {
+  id: string
+  procedure_code?: string
+  procedure_name: string
+  category?: string
+  status: string
+}
+
+export interface MasterLaboratoryTest {
+  id: string
+  test_code?: string
+  test_name: string
+  category?: string
+  sample_type?: string
+  status: string
+}
+
+export interface MasterRadiologyTest {
+  id: string
+  test_code?: string
+  test_name: string
+  modality?: string
+  status: string
+}

@@ -31,6 +31,7 @@ export async function addProcedureAction(
     procedure_date?: string
     remarks?: string
     status?: ProcedureStatus
+    master_procedure_id?: string
   }
 ) {
   try {

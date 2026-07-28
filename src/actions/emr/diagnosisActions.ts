@@ -32,6 +32,7 @@ export async function addDiagnosisAction(
     icd_code?: string
     diagnosis_notes?: string
     status?: DiagnosisStatus
+    master_diagnosis_id?: string
   }
 ) {
   try {

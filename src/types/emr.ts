@@ -109,6 +109,7 @@ export interface DiagnosisRow {
   created_by: string | null
   created_at: string
   updated_at: string
+  master_diagnosis_id?: string | null
 }
 
 export type ProcedureStatus = 'Planned' | 'In Progress' | 'Completed' | 'Cancelled'
@@ -125,6 +126,7 @@ export interface ProcedureRow {
   status: ProcedureStatus
   created_at: string
   updated_at: string
+  master_procedure_id?: string | null
 }
 
 export interface PrescriptionRow {
