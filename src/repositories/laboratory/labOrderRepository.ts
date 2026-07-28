@@ -1,79 +1,50 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
-import type { LabOrderRow, LabOrderItemRow, LabStatusLogRow, LabOrderStatus } from '@/types/laboratory'
+import type { LabOrderRow } from '@/types/laboratory'
 
-export async function getLabOrders(supabase: SupabaseClient, clinicId: string): Promise<any[]> {
-  const { data, error } = await supabase
-    .from('lab_orders')
-    .select('*, patients(first_name, last_name), lab_order_items(*, lab_tests(name, unit))')
-    .eq('clinic_id', clinicId)
-    .order('created_at', { ascending: false })
-  if (error) throw new Error(`Failed to fetch lab orders: ${error.message}`)
-  return data
-}
+export const labOrderRepository = {
+  async getLabOrders(supabase: SupabaseClient, clinicId: string) {
+    const { data, error } = await supabase
+      .from('lab_orders')
+      .select('*, patient:patients(id, first_name, last_name), doctor:doctors(id, first_name, last_name)')
+      .eq('clinic_id', clinicId)
+      .order('created_at', { ascending: false })
 
-export async function getLabOrderById(supabase: SupabaseClient, orderId: string): Promise<any> {
-  const { data, error } = await supabase
-    .from('lab_orders')
-    .select(`
-      *,
-      patients(id, first_name, last_name, date_of_birth, gender),
-      lab_order_items(*, lab_tests(id, name, unit, result_type, specimen_type)),
-      lab_samples(*),
-      lab_results(*, lab_result_values(*))
-    `)
-    .eq('id', orderId)
-    .single()
-  if (error) throw new Error(`Failed to fetch lab order: ${error.message}`)
-  return data
-}
+    if (error) throw new Error(error.message)
+    return data
+  },
 
-export async function createLabOrder(
-  supabase: SupabaseClient,
-  clinicId: string,
-  patientId: string,
-  consultationId: string | null,
-  orderedBy: string,
-  testIds: string[],
-  priority: string = 'Routine'
-): Promise<LabOrderRow> {
-  const { data: order, error } = await supabase
-    .from('lab_orders')
-    .insert([{ clinic_id: clinicId, patient_id: patientId, consultation_id: consultationId, ordered_by: orderedBy, priority }])
-    .select()
-    .single()
-  if (error) throw new Error(`Failed to create lab order: ${error.message}`)
+  async getLabOrderById(supabase: SupabaseClient, clinicId: string, orderId: string) {
+    const { data, error } = await supabase
+      .from('lab_orders')
+      .select(`
+        *,
+        patient:patients(id, first_name, last_name),
+        doctor:doctors(id, first_name, last_name),
+        items:lab_order_items(*)
+      `)
+      .eq('clinic_id', clinicId)
+      .eq('id', orderId)
+      .single()
 
-  const items = testIds.map(tid => ({ lab_order_id: order.id, lab_test_id: tid }))
-  const { error: itemsErr } = await supabase.from('lab_order_items').insert(items)
-  if (itemsErr) throw new Error(`Failed to add order items: ${itemsErr.message}`)
+    if (error) throw new Error(error.message)
+    return data
+  },
 
-  return order as LabOrderRow
-}
+  async updateLabOrder(
+    supabase: SupabaseClient,
+    clinicId: string,
+    orderId: string,
+    payload: Partial<Omit<LabOrderRow, 'id' | 'clinic_id' | 'order_number' | 'created_at'>>
+  ) {
+    const { data, error } = await supabase
+      .from('lab_orders')
+      .update({ ...payload, updated_at: new Date().toISOString() })
+      .eq('clinic_id', clinicId)
+      .eq('id', orderId)
+      .select()
+      .single()
 
-export async function transitionOrderStatus(
-  supabase: SupabaseClient,
-  orderId: string,
-  newStatus: LabOrderStatus,
-  changedBy: string,
-  remarks?: string
-): Promise<void> {
-  const { data: existing, error: fetchErr } = await supabase
-    .from('lab_orders')
-    .select('status')
-    .eq('id', orderId)
-    .single()
-  if (fetchErr) throw new Error(`Order not found: ${fetchErr.message}`)
-
-  // Update status
-  const { error: updateErr } = await supabase
-    .from('lab_orders')
-    .update({ status: newStatus, updated_at: new Date().toISOString() })
-    .eq('id', orderId)
-  if (updateErr) throw new Error(`Failed to update status: ${updateErr.message}`)
-
-  // Audit log
-  const { error: logErr } = await supabase
-    .from('lab_status_logs')
-    .insert([{ lab_order_id: orderId, status_from: existing.status, status_to: newStatus, changed_by: changedBy, remarks: remarks ?? null }])
-  if (logErr) throw new Error(`Failed to log status change: ${logErr.message}`)
+    if (error) throw new Error(error.message)
+    return data as LabOrderRow
+  }
 }

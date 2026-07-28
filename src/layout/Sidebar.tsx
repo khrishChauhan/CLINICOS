@@ -32,7 +32,7 @@ const navItems = [
   { name: 'Pharmacy Store', path: '/pharmacy', icon: ShoppingBag },
   { name: 'Consumables', path: '/consumables', icon: Package },
   { name: 'Operation Theatre', path: '/operation-theatre', icon: Heart },
-  { name: 'Pathology Lab', path: '/lab', icon: FlaskConical },
+  { name: 'Pathology Lab', path: '/laboratory', icon: FlaskConical },
   { name: 'Staff Directory', path: '/staff', icon: ClipboardList },
   { name: 'Audits & Reports', path: '/reports', icon: FileChartColumn },
   { name: 'Analytics', path: '/analytics', icon: ChartColumnIncreasing },

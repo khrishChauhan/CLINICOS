@@ -1,52 +1,97 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
-import type { LabOrderStatus } from '@/types/laboratory'
-import { createLabOrder, getLabOrders, getLabOrderById, transitionOrderStatus } from '@/repositories/laboratory/labOrderRepository'
-
-// Valid state transitions
-const VALID_TRANSITIONS: Record<LabOrderStatus, LabOrderStatus[]> = {
-  'Ordered': ['Sample Collected'],
-  'Sample Collected': ['Processing'],
-  'Processing': ['Result Ready'],
-  'Result Ready': ['Verified'],
-  'Verified': []
-}
+import { labOrderRepository } from '@/repositories/laboratory/labOrderRepository'
+import { labOrderItemRepository } from '@/repositories/laboratory/labOrderItemRepository'
+import type { CreateLabOrderPayload, LabOrderRow } from '@/types/laboratory'
 
 export const labOrderService = {
-  async getQueue(supabase: SupabaseClient, clinicId: string) {
-    return await getLabOrders(supabase, clinicId)
+  async getLabOrders(supabase: SupabaseClient, clinicId: string) {
+    return labOrderRepository.getLabOrders(supabase, clinicId)
   },
 
-  async getOrderDetail(supabase: SupabaseClient, orderId: string) {
-    return await getLabOrderById(supabase, orderId)
+  async getLabOrderById(supabase: SupabaseClient, clinicId: string, orderId: string) {
+    return labOrderRepository.getLabOrderById(supabase, clinicId, orderId)
   },
 
-  async createOrder(
+  async createClinicalAndLabOrder(
     supabase: SupabaseClient,
     clinicId: string,
-    patientId: string,
-    consultationId: string | null,
-    orderedBy: string,
-    testIds: string[],
-    priority: string
+    userId: string,
+    payload: CreateLabOrderPayload
   ) {
-    if (!testIds || testIds.length === 0) throw new Error('Must select at least one test')
-    return await createLabOrder(supabase, clinicId, patientId, consultationId, orderedBy, testIds, priority)
+    // We use the RPC defined in Phase 1 to execute in a single transaction
+    const { data, error } = await supabase.rpc('create_clinical_and_lab_order', {
+      p_clinic_id: clinicId,
+      p_patient_id: payload.patient_id,
+      p_visit_id: payload.visit_id,
+      p_doctor_id: payload.doctor_id,
+      p_appointment_id: payload.appointment_id || null,
+      p_priority: payload.priority,
+      p_remarks: payload.remarks || null,
+      p_items: payload.items,
+      p_created_by: userId
+    })
+
+    if (error) throw new Error(error.message)
+    return data
   },
 
-  async advanceStatus(
+  async updateLabOrder(
     supabase: SupabaseClient,
+    clinicId: string,
     orderId: string,
-    targetStatus: LabOrderStatus,
-    userId: string,
+    payload: Partial<Omit<LabOrderRow, 'id' | 'clinic_id' | 'order_number' | 'created_at'>>
+  ) {
+    return labOrderRepository.updateLabOrder(supabase, clinicId, orderId, payload)
+  },
+
+  async cancelLabOrder(
+    supabase: SupabaseClient,
+    clinicId: string,
+    orderId: string,
     remarks?: string
   ) {
-    const order = await getLabOrderById(supabase, orderId)
-    const allowed = VALID_TRANSITIONS[order.status as LabOrderStatus] ?? []
+    const updated = await labOrderRepository.updateLabOrder(supabase, clinicId, orderId, {
+      status: 'Cancelled',
+      remarks
+    })
+    
+    // Also cancel all active items
+    const { error: itemsErr } = await supabase
+      .from('lab_order_items')
+      .update({ status: 'Cancelled' })
+      .eq('lab_order_id', orderId)
+      .neq('status', 'Cancelled')
 
-    if (!allowed.includes(targetStatus)) {
-      throw new Error(`Invalid transition: ${order.status} -> ${targetStatus}. Allowed: [${allowed.join(', ')}]`)
+    if (itemsErr) throw new Error(itemsErr.message)
+
+    return updated
+  },
+
+  async addLabOrderItem(
+    supabase: SupabaseClient,
+    labOrderId: string,
+    testId: string,
+    testName: string,
+    sampleType?: string,
+    remarks?: string
+  ) {
+    // Duplicate check
+    const existing = await labOrderItemRepository.getLabOrderItems(supabase, labOrderId)
+    if (existing.some(i => i.test_id === testId)) {
+      throw new Error(`Test ${testName} is already in this order`)
     }
 
-    await transitionOrderStatus(supabase, orderId, targetStatus, userId, remarks)
+    return labOrderItemRepository.addLabOrderItem(supabase, {
+      lab_order_id: labOrderId,
+      test_id: testId,
+      test_name: testName,
+      sample_type: sampleType,
+      status: 'Ordered',
+      remarks
+    })
+  },
+
+  async removeLabOrderItem(supabase: SupabaseClient, itemId: string) {
+    return labOrderItemRepository.removeLabOrderItem(supabase, itemId)
   }
 }
