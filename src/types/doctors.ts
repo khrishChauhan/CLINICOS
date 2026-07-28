@@ -22,6 +22,8 @@ export interface DoctorRow {
   updated_at: string;
   created_by?: string | null;
   updated_by?: string | null;
+  gender_id?: string | null;
+  blood_group_id?: string | null;
 }
 
 export interface DoctorQualificationRow {

@@ -1,12 +1,14 @@
 'use client'
 
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { useFieldArray, useFormContext } from 'react-hook-form'
 import { Plus, Trash2 } from 'lucide-react'
 import { StepHeader } from '../FormComponents'
 import type { PatientRegistrationInput } from '@/services/patients/validation'
+import { getMasterDataAction } from '@/actions/master/masterActions'
+import type { MasterRelationshipType } from '@/types/master'
 
-function ContactCard({ index, onRemove }: { index: number; onRemove: () => void }) {
+function ContactCard({ index, onRemove, relationships }: { index: number; onRemove: () => void; relationships: MasterRelationshipType[] }) {
   const { register, formState: { errors } } = useFormContext<PatientRegistrationInput>()
   const errs = (errors.emergency_contacts as Record<string, Record<string, { message: string }>> | undefined)
 
@@ -33,8 +35,8 @@ function ContactCard({ index, onRemove }: { index: number; onRemove: () => void 
           <select {...register(`emergency_contacts.${index}.relationship`)}
             className="mt-1 w-full px-3 py-2 text-sm border border-slate-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/30">
             <option value="">Select relationship...</option>
-            {['Spouse', 'Parent', 'Child', 'Sibling', 'Relative', 'Friend', 'Guardian', 'Other'].map(r => (
-              <option key={r} value={r}>{r}</option>
+            {relationships.map(r => (
+              <option key={r.id} value={r.relationship_name}>{r.relationship_name}</option>
             ))}
           </select>
         </div>
@@ -64,13 +66,22 @@ function ContactCard({ index, onRemove }: { index: number; onRemove: () => void 
 export default function Step06_EmergencyContact() {
   const { control } = useFormContext<PatientRegistrationInput>()
   const { fields, append, remove } = useFieldArray({ control, name: 'emergency_contacts' })
+  
+  const [relationships, setRelationships] = useState<MasterRelationshipType[]>([])
+  useEffect(() => {
+    async function load() {
+      const res = await getMasterDataAction<MasterRelationshipType>('relationship_types')
+      if (res.success && res.data) setRelationships(res.data)
+    }
+    load()
+  }, [])
 
   return (
     <div>
       <StepHeader step={6} title="Emergency Contacts" description="Add at least one emergency contact for the patient." />
       <div className="space-y-4">
         {fields.map((field, index) => (
-          <ContactCard key={field.id} index={index} onRemove={() => remove(index)} />
+          <ContactCard key={field.id} index={index} onRemove={() => remove(index)} relationships={relationships} />
         ))}
         <button type="button"
           onClick={() => append({ contact_name: '', mobile_number: '' })}

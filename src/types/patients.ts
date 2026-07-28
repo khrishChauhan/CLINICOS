@@ -35,6 +35,12 @@ export interface PatientRow {
   status: string | null
   registration_date: string | null
   patient_type: string | null
+  gender_id?: string | null
+  blood_group_id?: string | null
+  marital_status_id?: string | null
+  nationality_id?: string | null
+  religion_id?: string | null
+  preferred_language_id?: string | null
 }
 
 /** Input filter shape accepted by the Action and Service */

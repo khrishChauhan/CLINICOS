@@ -1,7 +1,9 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { createDoctorAction } from '@/actions/doctors/doctorActions'
+import { getMasterDataAction } from '@/actions/master/masterActions'
+import type { MasterGender, MasterBloodGroup } from '@/types/master'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import PhotoUpload from './PhotoUpload'
@@ -15,11 +17,26 @@ export default function DoctorProfileForm({ doctorId }: Props) {
   const [formData, setFormData] = useState({
     first_name: '',
     last_name: '',
-    gender: 'Male',
+    gender: '',
+    blood_group: '',
     mobile_number: '',
     email: '',
     experience_years: ''
   })
+  const [genders, setGenders] = useState<MasterGender[]>([])
+  const [bloodGroups, setBloodGroups] = useState<MasterBloodGroup[]>([])
+
+  useEffect(() => {
+    async function load() {
+      const [gRes, bRes] = await Promise.all([
+        getMasterDataAction<MasterGender>('genders'),
+        getMasterDataAction<MasterBloodGroup>('blood_groups')
+      ])
+      if (gRes.success && gRes.data) setGenders(gRes.data)
+      if (bRes.success && bRes.data) setBloodGroups(bRes.data)
+    }
+    load()
+  }, [])
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
 
@@ -82,11 +99,23 @@ export default function DoctorProfileForm({ doctorId }: Props) {
                 className="w-full mt-1 border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
                 value={formData.gender} onChange={e => setFormData({...formData, gender: e.target.value})}
               >
-                <option>Male</option>
-                <option>Female</option>
-                <option>Other</option>
+                <option value="">Select Gender</option>
+                {genders.map(g => <option key={g.id} value={g.gender_name}>{g.gender_name}</option>)}
               </select>
             </div>
+            <div>
+              <label className="text-sm font-semibold text-slate-700">Blood Group</label>
+              <select 
+                className="w-full mt-1 border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                value={formData.blood_group} onChange={e => setFormData({...formData, blood_group: e.target.value})}
+              >
+                <option value="">Select Blood Group</option>
+                {bloodGroups.map(bg => <option key={bg.id} value={bg.blood_group}>{bg.blood_group}</option>)}
+              </select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="text-sm font-semibold text-slate-700">Experience (Years)</label>
               <Input type="number" step="0.5" value={formData.experience_years} onChange={e => setFormData({...formData, experience_years: e.target.value})} />
