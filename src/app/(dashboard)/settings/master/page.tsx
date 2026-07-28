@@ -16,6 +16,15 @@ const TABS = [
   { id: 'blood_groups', label: 'Blood Groups', title: 'Blood_group' },
   { id: 'nationalities', label: 'Nationalities', title: 'Nationality_name' },
   { id: 'relationship_types', label: 'Relationships', title: 'Relationship_name' },
+  { id: 'departments', label: 'Departments', title: 'Department_name' },
+  { id: 'specializations', label: 'Specializations', title: 'Specialization_name' },
+  { id: 'appointment_types', label: 'Appointment Types', title: 'Appointment_type' },
+  { id: 'consultation_types', label: 'Consultation Types', title: 'Consultation_type' },
+  { id: 'visit_types', label: 'Visit Types', title: 'Visit_type' },
+  { id: 'priority_levels', label: 'Priority Levels', title: 'Priority_name' },
+  { id: 'token_statuses', label: 'Token Statuses', title: 'Token_status' },
+  { id: 'appointment_statuses', label: 'Appointment Statuses', title: 'Appointment_status' },
+  { id: 'visit_statuses', label: 'Visit Statuses', title: 'Visit_status' },
 ]
 
 export default function MasterDataManagementPage() {

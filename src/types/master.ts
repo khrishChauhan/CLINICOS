@@ -80,3 +80,65 @@ export interface MasterRelationshipType {
   relationship_name: string
   status: string
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Phase 2: Clinical Reference Masters
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface MasterDepartment {
+  id: string
+  department_code?: string
+  department_name: string
+  status: string
+}
+
+export interface MasterSpecialization {
+  id: string
+  department_id: string
+  specialization_code?: string
+  specialization_name: string
+  status: string
+}
+
+export interface MasterAppointmentType {
+  id: string
+  appointment_type: string
+  status: string
+}
+
+export interface MasterConsultationType {
+  id: string
+  consultation_type: string
+  status: string
+}
+
+export interface MasterVisitType {
+  id: string
+  visit_type: string
+  status: string
+}
+
+export interface MasterPriorityLevel {
+  id: string
+  priority_name: string
+  display_order: number
+  status: string
+}
+
+export interface MasterTokenStatus {
+  id: string
+  token_status: string
+  status: string
+}
+
+export interface MasterAppointmentStatus {
+  id: string
+  appointment_status: string
+  status: string
+}
+
+export interface MasterVisitStatus {
+  id: string
+  visit_status: string
+  status: string
+}

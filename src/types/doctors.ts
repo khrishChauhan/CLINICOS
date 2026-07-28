@@ -24,6 +24,7 @@ export interface DoctorRow {
   updated_by?: string | null;
   gender_id?: string | null;
   blood_group_id?: string | null;
+  consultation_type_id?: string | null;
 }
 
 export interface DoctorQualificationRow {
@@ -67,6 +68,8 @@ export interface DoctorSpecializationRow {
   remarks?: string | null;
   created_at: string;
   updated_at: string;
+  master_department_id?: string | null;
+  specialization_id?: string | null;
 }
 
 export interface DoctorDepartmentRow {
@@ -79,6 +82,7 @@ export interface DoctorDepartmentRow {
   status: string;
   created_at: string;
   updated_at: string;
+  master_department_id?: string | null;
 }
 
 export interface DoctorBlockedSlotRow {
@@ -123,6 +127,7 @@ export interface DoctorConsultationFeeRow {
   created_at: string;
   updated_at: string;
   created_by?: string | null;
+  consultation_type_id?: string | null;
 }
 
 export interface DoctorDigitalSignatureRow {

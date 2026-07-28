@@ -28,6 +28,9 @@ export interface AppointmentSlotRow {
   status: string
   created_at: string
   updated_at: string
+  master_department_id?: string | null
+  consultation_type_id?: string | null
+  visit_type_id?: string | null
 }
 
 export interface DoctorLeaveRow {
@@ -137,6 +140,8 @@ export interface WalkInRegistrationRow {
   created_by: string | null
   created_at: string
   updated_at: string
+  priority_id?: string | null
+  token_status_id?: string | null
 }
 
 export interface QueueDisplayRow {
@@ -161,6 +166,7 @@ export interface AppointmentStatusHistoryRow {
   changed_by: string | null
   remarks: string | null
   changed_at: string
+  status_id?: string | null
 }
 
 export interface AppointmentCancellationRow {
@@ -256,6 +262,8 @@ export interface OnlineAppointmentRow {
   remarks: string | null
   created_at: string
   updated_at: string
+  token_status_id?: string | null
+  appointment_status_id?: string | null
 }
 
 export interface AppointmentDocumentRow {

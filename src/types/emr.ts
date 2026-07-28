@@ -25,6 +25,9 @@ export interface VisitRow {
   created_by: string | null
   created_at: string
   updated_at: string
+  master_department_id?: string | null
+  visit_type_id?: string | null
+  visit_status_id?: string | null
 }
 
 export interface CreateVisitPayload {
@@ -38,6 +41,9 @@ export interface CreateVisitPayload {
   chief_complaint?: string | null
   consultation_start_time?: string | null
   created_by?: string | null
+  master_department_id?: string | null
+  visit_type_id?: string | null
+  visit_status_id?: string | null
 }
 
 export interface SoapNoteRow {

@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect } from 'react'
 import { getDoctorFeesAction, createDoctorFeeAction } from '@/actions/doctors/consultationFeeActions'
+import { getMasterDataAction } from '@/actions/master/masterActions'
+import type { MasterConsultationType } from '@/types/master'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/Table'
@@ -24,7 +26,18 @@ export default function ConsultationFeeManager({ doctorId }: { doctorId: string 
     if (res.success) setFees(res.data)
   }
 
+  const [consultationTypes, setConsultationTypes] = useState<MasterConsultationType[]>([])
   useEffect(() => {
+    async function loadMaster() {
+      const res = await getMasterDataAction<MasterConsultationType>('consultation_types')
+      if (res.success && res.data) {
+        setConsultationTypes(res.data)
+        if (res.data.length > 0) {
+          setNewFee(prev => ({ ...prev, consultation_type: res.data[0].consultation_type }))
+        }
+      }
+    }
+    loadMaster()
     fetchFees()
   }, [doctorId])
 
@@ -55,9 +68,9 @@ export default function ConsultationFeeManager({ doctorId }: { doctorId: string 
             className="w-full mt-1 border border-slate-300 rounded-lg p-2 text-sm outline-none"
             value={newFee.consultation_type} onChange={e => setNewFee({...newFee, consultation_type: e.target.value})}
           >
-            <option>Standard OPD</option>
-            <option>Premium</option>
-            <option>Specialist</option>
+            {consultationTypes.map(c => (
+              <option key={c.id} value={c.consultation_type}>{c.consultation_type}</option>
+            ))}
           </select>
         </div>
         <div>
