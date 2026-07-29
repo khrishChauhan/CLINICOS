@@ -202,3 +202,89 @@ export interface LabQualityControlRow {
   remarks?: string
   created_at: string
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Phase 5 Types
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface ReferenceRangeRow {
+  id: string
+  clinic_id: string
+  test_id: string
+  test_name: string
+  gender: 'Male' | 'Female' | 'Any'
+  age_from: number
+  age_to: number
+  low_value: number
+  high_value: number
+  unit?: string
+  parameter_name?: string
+  is_active: boolean
+  created_at: string
+  updated_at: string
+}
+
+export interface SpecimenTypeRow {
+  id: string
+  clinic_id: string
+  specimen_code: string
+  specimen_name: string
+  storage_requirement?: string
+  status: 'Active' | 'Inactive'
+  created_at: string
+  updated_at: string
+}
+
+export interface LabConsumableRow {
+  id: string
+  clinic_id: string
+  item_code: string
+  item_name: string
+  unit?: string
+  minimum_stock: number
+  current_stock: number
+  status: 'Active' | 'Inactive'
+  created_at: string
+  updated_at: string
+}
+
+export interface LabAttachmentRow {
+  id: string
+  clinic_id: string
+  lab_order_id: string
+  storage_path: string
+  file_name: string
+  document_type: string
+  mime_type?: string
+  file_size?: number
+  uploaded_by: string
+  uploaded_at: string
+}
+
+export interface LabNotificationRow {
+  id: string
+  clinic_id: string
+  lab_order_id?: string
+  notification_queue_id?: string
+  recipient_type: string
+  recipient_id?: string
+  notification_type: string
+  message?: string
+  status: 'Pending' | 'Sent' | 'Failed'
+  sent_at?: string
+  created_at: string
+}
+
+export interface LabAuditRow {
+  id: string
+  clinic_id: string
+  lab_order_id?: string
+  action: string
+  action_by: string
+  table_name?: string
+  record_id?: string
+  previous_value?: any
+  new_value?: any
+  metadata?: any
+  action_time: string
+}

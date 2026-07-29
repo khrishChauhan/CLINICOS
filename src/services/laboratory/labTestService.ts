@@ -1,7 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { labTestRepository } from '@/repositories/laboratory/labTestRepository'
 import { labResultRepository, labResultParameterRepository, detectAbnormalFlag } from '@/repositories/laboratory/labResultRepository'
-import type { CreateLabTestPayload, RecordLabResultPayload, LabTestStatus } from '@/types/laboratory'
+import type { CreateLabTestPayload, RecordLabResultPayload, LabTestStatus, AbnormalFlag } from '@/types/laboratory'
 
 export const labTestService = {
   async getLabTests(supabase: SupabaseClient, clinicId: string) {
@@ -31,7 +31,7 @@ export const labTestService = {
   },
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // Record result + parameters with auto abnormal flagging
+  // Record result + parameters with auto abnormal flagging via reference ranges
   // ─────────────────────────────────────────────────────────────────────────────
   async recordLabResult(
     supabase: SupabaseClient,
@@ -39,8 +39,33 @@ export const labTestService = {
     userId: string,
     payload: RecordLabResultPayload
   ) {
-    // Auto-detect abnormal flag for the overall result
-    const overallFlag = detectAbnormalFlag(payload.result_value, payload.reference_range)
+    const test = await labTestRepository.getLabTestById(supabase, clinicId, payload.lab_test_id)
+    if (!test) throw new Error('Lab test not found')
+    
+    // Calculate patient age
+    const dob = test.lab_order_item?.lab_order?.patient?.date_of_birth
+    const gender = test.lab_order_item?.lab_order?.patient?.gender ?? 'Any'
+    let ageYears = 30 // fallback
+    if (dob) {
+      const birthDate = new Date(dob)
+      const today = new Date()
+      ageYears = today.getFullYear() - birthDate.getFullYear()
+      const m = today.getMonth() - birthDate.getMonth()
+      if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+        ageYears--
+      }
+    }
+
+    const { referenceRangeService } = await import('@/services/laboratory/labPhase5Service')
+    const masterTestId = test.lab_order_item?.test_id
+
+    // Evaluate overall result
+    let overallFlag: AbnormalFlag = 'Normal'
+    if (masterTestId && payload.result_value) {
+      overallFlag = await referenceRangeService.evaluateValue(
+        supabase, clinicId, masterTestId, payload.result_value, ageYears, gender
+      )
+    }
 
     // Create the lab result record
     const result = await labResultRepository.createLabResult(supabase, clinicId, {
@@ -55,13 +80,21 @@ export const labTestService = {
 
     // Create parameters with auto-flagging for each parameter
     if (payload.parameters.length > 0) {
-      const paramsWithFlags = payload.parameters.map(p => ({
-        lab_result_id: result.id,
-        parameter_name: p.parameter_name,
-        parameter_value: p.parameter_value,
-        unit: p.unit,
-        reference_range: p.reference_range,
-        abnormal_flag: detectAbnormalFlag(p.parameter_value, p.reference_range),
+      const paramsWithFlags = await Promise.all(payload.parameters.map(async p => {
+        let flag: AbnormalFlag = 'Normal'
+        if (masterTestId && p.parameter_value) {
+          flag = await referenceRangeService.evaluateValue(
+            supabase, clinicId, masterTestId, p.parameter_value, ageYears, gender, p.parameter_name
+          )
+        }
+        return {
+          lab_result_id: result.id,
+          parameter_name: p.parameter_name,
+          parameter_value: p.parameter_value,
+          unit: p.unit,
+          reference_range: p.reference_range,
+          abnormal_flag: flag,
+        }
       }))
       await labResultParameterRepository.bulkCreateParameters(supabase, paramsWithFlags)
     }

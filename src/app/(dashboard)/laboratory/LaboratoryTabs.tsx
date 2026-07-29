@@ -3,7 +3,7 @@
 import React from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { FileText, TestTube2, FlaskConical, ClipboardList, Cpu, ShieldCheck } from 'lucide-react'
+import { FileText, TestTube2, FlaskConical, ClipboardList, Cpu, ShieldCheck, Settings, History } from 'lucide-react'
 
 export function LaboratoryTabs() {
   const pathname = usePathname()
@@ -15,6 +15,8 @@ export function LaboratoryTabs() {
     { name: 'Reports', path: '/laboratory/reports', icon: ClipboardList },
     { name: 'Instruments', path: '/laboratory/instruments', icon: Cpu },
     { name: 'Quality Control', path: '/laboratory/qc', icon: ShieldCheck },
+    { name: 'Settings', path: '/laboratory/settings', icon: Settings },
+    { name: 'Audit Log', path: '/laboratory/audit', icon: History },
   ]
 
   return (
