@@ -39,3 +39,37 @@ export interface CreateLabOrderPayload {
     remarks?: string
   }[]
 }
+
+export interface LabSampleRow {
+  id: string
+  clinic_id: string
+  lab_order_item_id: string
+  sample_barcode: string
+  sample_type?: string
+  container_type?: string
+  collection_date?: string
+  collected_by?: string
+  status: 'Pending' | 'Collected' | 'In Transit' | 'Processing' | 'Completed' | 'Rejected'
+  created_at: string
+  updated_at: string
+}
+
+export interface SampleCollectionRow {
+  id: string
+  sample_id: string
+  collector_id: string
+  collection_method?: string
+  collection_site?: string
+  collection_time: string
+  remarks?: string
+}
+
+export interface SampleTrackingRow {
+  id: string
+  sample_id: string
+  from_location?: string
+  to_location?: string
+  tracked_by: string
+  tracking_time: string
+  status?: string
+}

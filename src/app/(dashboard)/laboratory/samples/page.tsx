@@ -1,27 +1,20 @@
 import React from 'react'
 import Link from 'next/link'
-import { getLabOrdersAction } from '@/actions/laboratory/labOrderActions'
-import { Plus, Beaker, Search, ChevronRight, FileText } from 'lucide-react'
+import { getSamplesAction } from '@/actions/laboratory/labSampleActions'
+import { Beaker, Search, ChevronRight, TestTube2 } from 'lucide-react'
 import dayjs from 'dayjs'
-import { LaboratoryTabs } from './LaboratoryTabs'
+import { LaboratoryTabs } from '../LaboratoryTabs'
 
-export default async function LaboratoryDashboardPage() {
-  const { data: labOrders, success, error } = await getLabOrdersAction()
+export default async function LaboratorySamplesPage() {
+  const { data: samples, success } = await getSamplesAction()
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Laboratory Dashboard</h1>
-          <p className="text-sm text-slate-500">Manage lab orders and sample collections</p>
+          <h1 className="text-2xl font-bold text-slate-900">Sample Queue</h1>
+          <p className="text-sm text-slate-500">Manage laboratory samples, collection, and tracking</p>
         </div>
-        <Link 
-          href="/laboratory/new"
-          className="inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-700 transition"
-        >
-          <Plus className="w-4 h-4" />
-          New Lab Order
-        </Link>
       </div>
 
       <LaboratoryTabs />
@@ -32,18 +25,18 @@ export default async function LaboratoryDashboardPage() {
             <Search className="w-4 h-4 absolute left-3 top-3 text-slate-400" />
             <input 
               type="text"
-              placeholder="Search by Order ID or Patient..."
+              placeholder="Search by Barcode, Patient or Test..."
               className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-600 outline-none"
             />
           </div>
           <div className="flex items-center gap-2">
             <select className="border border-slate-300 rounded-lg text-sm px-3 py-2 bg-white outline-none">
               <option value="">All Statuses</option>
-              <option value="Ordered">Ordered</option>
+              <option value="Pending">Pending Collection</option>
               <option value="Collected">Collected</option>
+              <option value="In Transit">In Transit</option>
               <option value="Processing">Processing</option>
-              <option value="Resulted">Resulted</option>
-              <option value="Cancelled">Cancelled</option>
+              <option value="Completed">Completed</option>
             </select>
           </div>
         </div>
@@ -52,63 +45,58 @@ export default async function LaboratoryDashboardPage() {
           <table className="w-full text-left text-sm text-slate-600">
             <thead className="bg-slate-50 text-slate-500 border-b border-slate-200">
               <tr>
-                <th className="px-6 py-4 font-semibold">Order Number</th>
-                <th className="px-6 py-4 font-semibold">Date</th>
+                <th className="px-6 py-4 font-semibold">Barcode</th>
+                <th className="px-6 py-4 font-semibold">Test Name</th>
                 <th className="px-6 py-4 font-semibold">Patient</th>
-                <th className="px-6 py-4 font-semibold">Priority</th>
+                <th className="px-6 py-4 font-semibold">Order No.</th>
                 <th className="px-6 py-4 font-semibold">Status</th>
                 <th className="px-6 py-4 font-semibold text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {(!success || !labOrders?.length) ? (
+              {(!success || !samples?.length) ? (
                 <tr>
                   <td colSpan={6} className="px-6 py-12 text-center text-slate-500">
-                    <Beaker className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-                    <p className="text-base font-medium text-slate-900">No lab orders found</p>
-                    <p className="text-sm">Create a new lab order to get started.</p>
+                    <TestTube2 className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+                    <p className="text-base font-medium text-slate-900">No samples found</p>
+                    <p className="text-sm">Create a lab order to generate samples.</p>
                   </td>
                 </tr>
               ) : (
-                labOrders.map((order: any) => (
-                  <tr key={order.id} className="hover:bg-slate-50/50 transition">
+                samples.map((sample: any) => (
+                  <tr key={sample.id} className="hover:bg-slate-50/50 transition">
                     <td className="px-6 py-4 font-medium text-slate-900">
                       <div className="flex items-center gap-2">
-                        <FileText className="w-4 h-4 text-blue-500" />
-                        {order.order_number}
+                        <Beaker className="w-4 h-4 text-purple-500" />
+                        {sample.sample_barcode || 'Pending Gen'}
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      {dayjs(order.order_date).format('MMM D, YYYY h:mm A')}
+                    <td className="px-6 py-4 font-medium text-slate-700">
+                      {sample.lab_order_item?.test_name}
                     </td>
-                    <td className="px-6 py-4 font-medium text-slate-900">
-                      {order.patient?.first_name} {order.patient?.last_name}
+                    <td className="px-6 py-4">
+                      {sample.lab_order_item?.lab_order?.patient?.first_name} {sample.lab_order_item?.lab_order?.patient?.last_name}
+                    </td>
+                    <td className="px-6 py-4 text-xs text-slate-500 font-mono">
+                      {sample.lab_order_item?.lab_order?.order_number}
                     </td>
                     <td className="px-6 py-4">
                       <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold ${
-                        order.priority === 'Stat' ? 'bg-red-100 text-red-700' :
-                        order.priority === 'Urgent' ? 'bg-orange-100 text-orange-700' :
-                        'bg-slate-100 text-slate-700'
-                      }`}>
-                        {order.priority}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold ${
-                        order.status === 'Ordered' ? 'bg-blue-100 text-blue-700' :
-                        order.status === 'Resulted' ? 'bg-green-100 text-green-700' :
-                        order.status === 'Cancelled' ? 'bg-red-100 text-red-700' :
+                        sample.status === 'Pending' ? 'bg-orange-100 text-orange-700' :
+                        sample.status === 'Collected' ? 'bg-blue-100 text-blue-700' :
+                        sample.status === 'Completed' ? 'bg-green-100 text-green-700' :
+                        sample.status === 'Rejected' ? 'bg-red-100 text-red-700' :
                         'bg-purple-100 text-purple-700'
                       }`}>
-                        {order.status}
+                        {sample.status}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-right">
                       <Link 
-                        href={`/laboratory/${order.id}`}
+                        href={`/laboratory/samples/${sample.id}`}
                         className="inline-flex items-center text-sm font-semibold text-blue-600 hover:text-blue-800"
                       >
-                        View Details
+                        Manage
                         <ChevronRight className="w-4 h-4 ml-1" />
                       </Link>
                     </td>
