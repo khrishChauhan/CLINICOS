@@ -140,3 +140,65 @@ export interface RecordLabResultPayload {
     reference_range?: string
   }[]
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Phase 4 Types
+// ─────────────────────────────────────────────────────────────────────────────
+
+export type ReportStatus = 'Draft' | 'Approved' | 'Rejected' | 'Cancelled'
+export type InstrumentStatus = 'Active' | 'Inactive' | 'Under Maintenance' | 'Decommissioned'
+
+export interface LabReportRow {
+  id: string
+  clinic_id: string
+  lab_order_id: string
+  report_number: string
+  generated_by: string
+  approved_by?: string
+  generated_at: string
+  approved_at?: string
+  report_status: ReportStatus
+  storage_path?: string
+  remarks?: string
+  created_at: string
+  updated_at: string
+}
+
+export interface LabTechnicianRow {
+  id: string
+  clinic_id: string
+  user_id: string
+  qualification?: string
+  registration_number?: string
+  status: 'Active' | 'Inactive'
+  created_at: string
+  updated_at: string
+}
+
+export interface LabInstrumentRow {
+  id: string
+  clinic_id: string
+  instrument_code: string
+  instrument_name: string
+  manufacturer?: string
+  model?: string
+  serial_number?: string
+  status: InstrumentStatus
+  commissioned_date?: string
+  last_calibrated_at?: string
+  created_at: string
+  updated_at: string
+}
+
+export interface LabQualityControlRow {
+  id: string
+  clinic_id: string
+  instrument_id: string
+  qc_date: string
+  qc_type: string
+  performed_by: string
+  result: string
+  status: string
+  remarks?: string
+  created_at: string
+}

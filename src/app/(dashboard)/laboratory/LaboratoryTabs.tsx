@@ -3,7 +3,7 @@
 import React from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { FileText, TestTube2, FlaskConical } from 'lucide-react'
+import { FileText, TestTube2, FlaskConical, ClipboardList, Cpu, ShieldCheck } from 'lucide-react'
 
 export function LaboratoryTabs() {
   const pathname = usePathname()
@@ -12,6 +12,9 @@ export function LaboratoryTabs() {
     { name: 'Lab Orders', path: '/laboratory', icon: FileText },
     { name: 'Sample Queue', path: '/laboratory/samples', icon: TestTube2 },
     { name: 'Work Queue', path: '/laboratory/tests', icon: FlaskConical },
+    { name: 'Reports', path: '/laboratory/reports', icon: ClipboardList },
+    { name: 'Instruments', path: '/laboratory/instruments', icon: Cpu },
+    { name: 'Quality Control', path: '/laboratory/qc', icon: ShieldCheck },
   ]
 
   return (
