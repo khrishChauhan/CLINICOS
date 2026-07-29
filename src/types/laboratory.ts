@@ -73,3 +73,70 @@ export interface SampleTrackingRow {
   tracking_time: string
   status?: string
 }
+
+export type AbnormalFlag = 'Normal' | 'High' | 'Low' | 'Critical' | 'Abnormal'
+export type LabTestStatus = 'Ordered' | 'In Progress' | 'Completed' | 'Verified' | 'Cancelled'
+export type LabResultStatus = 'Pending' | 'Entered' | 'Verified' | 'Corrected'
+
+export interface LabTestRow {
+  id: string
+  clinic_id: string
+  lab_order_item_id: string
+  test_code?: string
+  test_name: string
+  department?: string
+  instrument?: string
+  status: LabTestStatus
+  started_at?: string
+  completed_at?: string
+  created_at: string
+  updated_at: string
+}
+
+export interface LabResultRow {
+  id: string
+  clinic_id: string
+  lab_test_id: string
+  result_value?: string
+  unit?: string
+  reference_range?: string
+  abnormal_flag: AbnormalFlag
+  verified_by?: string
+  verified_at?: string
+  status: LabResultStatus
+  remarks?: string
+  created_at: string
+  updated_at: string
+}
+
+export interface LabResultParameterRow {
+  id: string
+  lab_result_id: string
+  parameter_name: string
+  parameter_value?: string
+  unit?: string
+  reference_range?: string
+  abnormal_flag: AbnormalFlag
+}
+
+export interface CreateLabTestPayload {
+  lab_order_item_id: string
+  test_name: string
+  test_code?: string
+  department?: string
+  instrument?: string
+}
+
+export interface RecordLabResultPayload {
+  lab_test_id: string
+  result_value?: string
+  unit?: string
+  reference_range?: string
+  remarks?: string
+  parameters: {
+    parameter_name: string
+    parameter_value?: string
+    unit?: string
+    reference_range?: string
+  }[]
+}
