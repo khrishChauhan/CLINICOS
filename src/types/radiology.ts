@@ -294,3 +294,52 @@ export interface RadiationDoseRow {
   }
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Phase 5: Attachments, Notifications & Audit
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface RadiologyAttachmentRow {
+  id: string
+  clinic_id: string
+  radiology_order_id: string
+  attachment_id: string
+  document_type?: string
+  remarks?: string
+  uploaded_at: string
+  created_at: string
+  updated_at: string
+  deleted_at?: string
+  attachment?: any // Join with public.file_attachments
+}
+
+export interface RadiologyNotificationRow {
+  id: string
+  clinic_id: string
+  radiology_order_id: string
+  recipient_type: string
+  notification_type: string
+  status: string
+  sent_at?: string
+  created_at: string
+  updated_at: string
+  deleted_at?: string
+}
+
+export interface RadiologyAuditRow {
+  id: string
+  clinic_id: string
+  radiology_order_id: string
+  action: string
+  action_by: string
+  previous_value?: any
+  new_value?: any
+  action_time: string
+  created_at: string
+  updated_at: string
+  deleted_at?: string
+  user?: {
+    first_name: string
+    last_name: string
+  }
+}
+

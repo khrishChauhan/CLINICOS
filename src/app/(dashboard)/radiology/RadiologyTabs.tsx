@@ -1,7 +1,7 @@
 import React from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Activity, CalendarDays, FilePlus, Monitor, Users, ShieldCheck, Image as ImageIcon, FileText, Syringe } from 'lucide-react'
+import { Activity, CalendarDays, FilePlus, Monitor, Users, ShieldCheck, Image as ImageIcon, FileText, Syringe, Paperclip, Bell, Shield } from 'lucide-react'
 
 export function RadiologyTabs() {
   const pathname = usePathname()
@@ -13,6 +13,9 @@ export function RadiologyTabs() {
     { name: 'Imaging Studies', path: '/radiology/studies', icon: ImageIcon },
     { name: 'Reporting', path: '/radiology/reports', icon: FileText },
     { name: 'Dose & Contrast', path: '/radiology/clinical', icon: Syringe },
+    { name: 'Attachments', path: '/radiology/attachments', icon: Paperclip },
+    { name: 'Notifications', path: '/radiology/notifications', icon: Bell },
+    { name: 'Audit Log', path: '/radiology/audit', icon: Shield },
     { name: 'Equipment', path: '/radiology/equipment', icon: Monitor },
     { name: 'Technicians', path: '/radiology/technicians', icon: Users },
     { name: 'QC & Maintenance', path: '/radiology/qc', icon: ShieldCheck },

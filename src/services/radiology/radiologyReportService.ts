@@ -1,6 +1,8 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { radiologyReportRepository } from '@/repositories/radiology/radiologyReportRepository'
 import { radiologistFindingRepository } from '@/repositories/radiology/radiologistFindingRepository'
+import { radiologyAuditService } from './radiologyAuditService'
+import { radiologyNotificationService } from './radiologyNotificationService'
 import type { RadiologyReportRow, RadiologistFindingRow } from '@/types/radiology'
 
 export const radiologyReportService = {
@@ -86,6 +88,29 @@ export const radiologyReportService = {
       digitalSignatureId,
       isCritical,
       patientId,
+      doctorId
+    )
+
+    // 5. Audit Logging (Phase 5)
+    await radiologyAuditService.logEvent(
+      supabase,
+      clinicId,
+      report.imaging_study_id, // We use study_id in place of order_id for this context if needed, or query it
+      'Report Approved',
+      doctorId,
+      { status: 'Draft' },
+      { status: 'Approved', critical: isCritical }
+    )
+
+    // 6. Notify Doctor (Phase 5)
+    await radiologyNotificationService.dispatchNotification(
+      supabase,
+      clinicId,
+      report.imaging_study_id, // Reference id
+      'Doctor',
+      isCritical ? 'Critical Findings' : 'Report Ready',
+      doctorId,
+      `Radiology Report ${report.report_number} has been finalized.`,
       doctorId
     )
 
