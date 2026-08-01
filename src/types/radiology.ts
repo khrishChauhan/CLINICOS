@@ -163,6 +163,10 @@ export interface ImagingStudyRow {
   created_at: string
   updated_at: string
   deleted_at?: string
+  patient?: any // joined field
+  order?: any // joined field
+  series?: any[] // joined field
+  pacs?: any // joined field
 }
 
 export interface ImagingSeriesRow {
@@ -206,5 +210,87 @@ export interface PACSIntegrationRow {
   error_log?: string
   created_at: string
   updated_at: string
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Phase 4: Radiologist Reporting Workflow
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface RadiologyReportRow {
+  id: string
+  clinic_id: string
+  imaging_study_id: string
+  radiologist_id: string
+  report_number: string
+  version_number: number
+  status: 'Draft' | 'Verified' | 'Approved'
+  verified_date?: string
+  approved_date?: string
+  digital_signature_id?: string
+  pdf_storage_path?: string
+  created_at: string
+  updated_at: string
+  deleted_at?: string
+  study?: ImagingStudyRow
+  radiologist?: {
+    first_name: string
+    last_name: string
+  }
+}
+
+export interface RadiologistFindingRow {
+  id: string
+  clinic_id: string
+  radiology_report_id: string
+  clinical_history?: string
+  technique?: string
+  findings?: string
+  impression?: string
+  recommendations?: string
+  is_critical_finding: boolean
+  follow_up_recommendation?: string
+  created_at: string
+  updated_at: string
+  deleted_at?: string
+}
+
+export interface ContrastAdministrationRow {
+  id: string
+  clinic_id: string
+  imaging_study_id: string
+  contrast_agent: string
+  dose: string
+  route: string
+  administered_by: string
+  administration_time: string
+  reaction?: string
+  remarks?: string
+  created_at: string
+  updated_at: string
+  deleted_at?: string
+  administrator?: {
+    first_name: string
+    last_name: string
+  }
+}
+
+export interface RadiationDoseRow {
+  id: string
+  clinic_id: string
+  imaging_study_id: string
+  equipment_id: string
+  dose_value: number
+  dose_unit: string
+  exposure_time?: number
+  operator_id: string
+  reference_level?: string
+  created_at: string
+  updated_at: string
+  deleted_at?: string
+  equipment?: RadiologyEquipmentRow
+  operator?: {
+    first_name: string
+    last_name: string
+  }
 }
 
