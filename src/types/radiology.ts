@@ -142,3 +142,69 @@ export interface RadiologyQualityControlRow {
   }
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Phase 3: Imaging Workflow & PACS
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface ImagingStudyRow {
+  id: string
+  clinic_id: string
+  patient_id: string
+  radiology_order_item_id: string
+  study_uid: string
+  accession_number: string
+  modality: string
+  study_description?: string
+  performed_date: string
+  technician_id?: string
+  equipment_id?: string
+  study_status: string
+  remarks?: string
+  created_at: string
+  updated_at: string
+  deleted_at?: string
+}
+
+export interface ImagingSeriesRow {
+  id: string
+  clinic_id: string
+  imaging_study_id: string
+  series_uid: string
+  series_number: number
+  modality?: string
+  body_part?: string
+  description?: string
+  created_at: string
+  updated_at: string
+  deleted_at?: string
+}
+
+export interface ImagingImageRow {
+  id: string
+  clinic_id: string
+  imaging_series_id: string
+  image_uid: string
+  image_number: number
+  storage_path: string
+  thumbnail_path?: string
+  image_format?: string
+  image_size?: number
+  uploaded_at: string
+  created_at: string
+  deleted_at?: string
+}
+
+export interface PACSIntegrationRow {
+  id: string
+  clinic_id: string
+  imaging_study_id: string
+  pacs_server: string
+  dicom_uid: string
+  transfer_status: string
+  transfer_date?: string
+  retry_count: number
+  error_log?: string
+  created_at: string
+  updated_at: string
+}
+
