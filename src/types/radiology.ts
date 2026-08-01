@@ -2,6 +2,9 @@ export type RadiologyOrderStatus = 'Ordered' | 'Scheduled' | 'Completed' | 'Canc
 export type RadiologyOrderItemStatus = 'Ordered' | 'Scheduled' | 'Completed' | 'Cancelled'
 export type RadiologyScheduleStatus = 'Scheduled' | 'Completed' | 'Cancelled' | 'No Show'
 export type RadiologyPriority = 'Routine' | 'Urgent' | 'Stat'
+export type RadiologyEquipmentStatus = 'Active' | 'Maintenance' | 'Calibration' | 'Out of Service' | 'Retired'
+export type RadiologyQCStatus = 'Completed' | 'Pending'
+export type RadiologyQCResult = 'Pass' | 'Fail' | 'Warning'
 
 export interface RadiologyOrderRow {
   id: string
@@ -76,3 +79,66 @@ export interface ScheduleRadiologyPayload {
   technician_id?: string
   estimated_duration?: number
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Phase 2: Operations Foundation
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface RadiologyEquipmentRow {
+  id: string
+  clinic_id: string
+  equipment_code: string
+  equipment_name: string
+  modality: string
+  manufacturer?: string
+  model?: string
+  serial_number?: string
+  installation_date?: string
+  warranty_expiry?: string
+  amc_expiry?: string
+  calibration_due?: string
+  maintenance_due?: string
+  status: RadiologyEquipmentStatus
+  created_at: string
+  updated_at: string
+  deleted_at?: string
+}
+
+export interface RadiologyTechnicianRow {
+  id: string
+  clinic_id: string
+  employee_id: string
+  qualification?: string
+  registration_number?: string
+  specialization?: string
+  assigned_equipment?: any
+  shift?: string
+  status: string
+  created_at: string
+  updated_at: string
+  deleted_at?: string
+  employee?: {
+    first_name: string
+    last_name: string
+    email: string
+  }
+}
+
+export interface RadiologyQualityControlRow {
+  id: string
+  clinic_id: string
+  equipment_id: string
+  qc_date: string
+  qc_type: string
+  performed_by: string
+  result: RadiologyQCResult
+  remarks?: string
+  status: RadiologyQCStatus
+  created_at: string
+  equipment?: RadiologyEquipmentRow
+  technician?: {
+    first_name: string
+    last_name: string
+  }
+}
+
