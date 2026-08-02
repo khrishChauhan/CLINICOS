@@ -4,7 +4,7 @@ import type { DoctorDigitalSignatureRow } from '@/types/doctors'
 export const doctorDigitalSignatureRepository = {
   async getSignaturesByDoctor(supabase: SupabaseClient, clinicId: string, doctorId: string): Promise<DoctorDigitalSignatureRow[]> {
     const { data, error } = await supabase
-      .from('doctor_digital_signature')
+      .schema('doctor').from('doctor_digital_signature')
       .select('*')
       .eq('clinic_id', clinicId)
       .eq('doctor_id', doctorId)
@@ -16,7 +16,7 @@ export const doctorDigitalSignatureRepository = {
 
   async createSignature(supabase: SupabaseClient, payload: Partial<DoctorDigitalSignatureRow>): Promise<DoctorDigitalSignatureRow> {
     const { data, error } = await supabase
-      .from('doctor_digital_signature')
+      .schema('doctor').from('doctor_digital_signature')
       .insert([payload])
       .select()
       .single()
@@ -27,7 +27,7 @@ export const doctorDigitalSignatureRepository = {
 
   async deleteSignature(supabase: SupabaseClient, id: string): Promise<void> {
     const { error } = await supabase
-      .from('doctor_digital_signature')
+      .schema('doctor').from('doctor_digital_signature')
       .delete()
       .eq('id', id)
 

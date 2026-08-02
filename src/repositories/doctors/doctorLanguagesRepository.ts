@@ -4,7 +4,7 @@ import type { DoctorLanguageRow } from '@/types/doctors'
 export const doctorLanguagesRepository = {
   async getLanguagesByDoctor(supabase: SupabaseClient, clinicId: string, doctorId: string): Promise<DoctorLanguageRow[]> {
     const { data, error } = await supabase
-      .from('doctor_languages')
+      .schema('doctor').from('doctor_languages')
       .select('*')
       .eq('clinic_id', clinicId)
       .eq('doctor_id', doctorId)
@@ -15,7 +15,7 @@ export const doctorLanguagesRepository = {
 
   async addLanguage(supabase: SupabaseClient, payload: Partial<DoctorLanguageRow>): Promise<DoctorLanguageRow> {
     const { data, error } = await supabase
-      .from('doctor_languages')
+      .schema('doctor').from('doctor_languages')
       .insert([payload])
       .select()
       .single()
@@ -26,7 +26,7 @@ export const doctorLanguagesRepository = {
 
   async removeLanguage(supabase: SupabaseClient, id: string): Promise<void> {
     const { error } = await supabase
-      .from('doctor_languages')
+      .schema('doctor').from('doctor_languages')
       .delete()
       .eq('id', id)
 

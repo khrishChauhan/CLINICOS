@@ -4,7 +4,7 @@ import type { DoctorRow } from '@/types/doctors'
 export const doctorRepository = {
   async getDoctors(supabase: SupabaseClient, clinicId: string): Promise<DoctorRow[]> {
     const { data, error } = await supabase
-      .from('doctors')
+      .schema('doctor').from('doctors')
       .select('*')
       .eq('clinic_id', clinicId)
       .order('first_name', { ascending: true })
@@ -15,7 +15,7 @@ export const doctorRepository = {
 
   async getDoctorById(supabase: SupabaseClient, clinicId: string, doctorId: string): Promise<DoctorRow | null> {
     const { data, error } = await supabase
-      .from('doctors')
+      .schema('doctor').from('doctors')
       .select('*')
       .eq('clinic_id', clinicId)
       .eq('id', doctorId)
@@ -30,7 +30,7 @@ export const doctorRepository = {
 
   async createDoctor(supabase: SupabaseClient, payload: Partial<DoctorRow>): Promise<DoctorRow> {
     const { data, error } = await supabase
-      .from('doctors')
+      .schema('doctor').from('doctors')
       .insert([payload])
       .select()
       .single()
@@ -41,7 +41,7 @@ export const doctorRepository = {
 
   async updateDoctor(supabase: SupabaseClient, doctorId: string, payload: Partial<DoctorRow>): Promise<DoctorRow> {
     const { data, error } = await supabase
-      .from('doctors')
+      .schema('doctor').from('doctors')
       .update({ ...payload, updated_at: new Date().toISOString() })
       .eq('id', doctorId)
       .select()

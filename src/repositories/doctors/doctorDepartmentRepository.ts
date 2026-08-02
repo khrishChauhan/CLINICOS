@@ -4,7 +4,7 @@ import type { DoctorDepartmentRow } from '@/types/doctors'
 export const doctorDepartmentRepository = {
   async getDepartmentsByDoctor(supabase: SupabaseClient, clinicId: string, doctorId: string): Promise<DoctorDepartmentRow[]> {
     const { data, error } = await supabase
-      .from('doctor_departments')
+      .schema('doctor').from('doctor_departments')
       .select(`
         *,
         department:public.departments(department_name)
@@ -18,7 +18,7 @@ export const doctorDepartmentRepository = {
 
   async createDepartment(supabase: SupabaseClient, payload: Partial<DoctorDepartmentRow>): Promise<DoctorDepartmentRow> {
     const { data, error } = await supabase
-      .from('doctor_departments')
+      .schema('doctor').from('doctor_departments')
       .insert([payload])
       .select()
       .single()
@@ -29,7 +29,7 @@ export const doctorDepartmentRepository = {
 
   async deleteDepartment(supabase: SupabaseClient, id: string): Promise<void> {
     const { error } = await supabase
-      .from('doctor_departments')
+      .schema('doctor').from('doctor_departments')
       .delete()
       .eq('id', id)
 

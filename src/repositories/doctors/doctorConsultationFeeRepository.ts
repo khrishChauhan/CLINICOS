@@ -4,7 +4,7 @@ import type { DoctorConsultationFeeRow } from '@/types/doctors'
 export const doctorConsultationFeeRepository = {
   async getFeesByDoctor(supabase: SupabaseClient, clinicId: string, doctorId: string): Promise<DoctorConsultationFeeRow[]> {
     const { data, error } = await supabase
-      .from('doctor_consultation_fees')
+      .schema('doctor').from('doctor_consultation_fees')
       .select('*')
       .eq('clinic_id', clinicId)
       .eq('doctor_id', doctorId)
@@ -16,7 +16,7 @@ export const doctorConsultationFeeRepository = {
 
   async createFee(supabase: SupabaseClient, payload: Partial<DoctorConsultationFeeRow>): Promise<DoctorConsultationFeeRow> {
     const { data, error } = await supabase
-      .from('doctor_consultation_fees')
+      .schema('doctor').from('doctor_consultation_fees')
       .insert([payload])
       .select()
       .single()
@@ -27,7 +27,7 @@ export const doctorConsultationFeeRepository = {
 
   async updateFeeStatus(supabase: SupabaseClient, id: string, status: string): Promise<void> {
     const { error } = await supabase
-      .from('doctor_consultation_fees')
+      .schema('doctor').from('doctor_consultation_fees')
       .update({ status, updated_at: new Date().toISOString() })
       .eq('id', id)
 

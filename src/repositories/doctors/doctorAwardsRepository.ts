@@ -4,7 +4,7 @@ import type { DoctorAwardRow } from '@/types/doctors'
 export const doctorAwardsRepository = {
   async getAwardsByDoctor(supabase: SupabaseClient, clinicId: string, doctorId: string): Promise<DoctorAwardRow[]> {
     const { data, error } = await supabase
-      .from('doctor_awards')
+      .schema('doctor').from('doctor_awards')
       .select('*')
       .eq('clinic_id', clinicId)
       .eq('doctor_id', doctorId)
@@ -16,7 +16,7 @@ export const doctorAwardsRepository = {
 
   async createAward(supabase: SupabaseClient, payload: Partial<DoctorAwardRow>): Promise<DoctorAwardRow> {
     const { data, error } = await supabase
-      .from('doctor_awards')
+      .schema('doctor').from('doctor_awards')
       .insert([payload])
       .select()
       .single()
@@ -27,7 +27,7 @@ export const doctorAwardsRepository = {
 
   async deleteAward(supabase: SupabaseClient, id: string): Promise<void> {
     const { error } = await supabase
-      .from('doctor_awards')
+      .schema('doctor').from('doctor_awards')
       .delete()
       .eq('id', id)
 

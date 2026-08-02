@@ -4,7 +4,7 @@ import type { DoctorNoteRow } from '@/types/doctors'
 export const doctorNotesRepository = {
   async getNotesByDoctor(supabase: SupabaseClient, clinicId: string, doctorId: string): Promise<DoctorNoteRow[]> {
     const { data, error } = await supabase
-      .from('doctor_notes')
+      .schema('doctor').from('doctor_notes')
       .select('*')
       .eq('clinic_id', clinicId)
       .eq('doctor_id', doctorId)
@@ -16,7 +16,7 @@ export const doctorNotesRepository = {
 
   async createNote(supabase: SupabaseClient, payload: Partial<DoctorNoteRow>): Promise<DoctorNoteRow> {
     const { data, error } = await supabase
-      .from('doctor_notes')
+      .schema('doctor').from('doctor_notes')
       .insert([payload])
       .select()
       .single()
@@ -27,7 +27,7 @@ export const doctorNotesRepository = {
 
   async deleteNote(supabase: SupabaseClient, id: string): Promise<void> {
     const { error } = await supabase
-      .from('doctor_notes')
+      .schema('doctor').from('doctor_notes')
       .delete()
       .eq('id', id)
 

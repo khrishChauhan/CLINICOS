@@ -4,7 +4,7 @@ import type { DoctorRegistrationRow } from '@/types/doctors'
 export const doctorRegistrationRepository = {
   async getRegistrationsByDoctor(supabase: SupabaseClient, clinicId: string, doctorId: string): Promise<DoctorRegistrationRow[]> {
     const { data, error } = await supabase
-      .from('doctor_registrations')
+      .schema('doctor').from('doctor_registrations')
       .select('*')
       .eq('clinic_id', clinicId)
       .eq('doctor_id', doctorId)
@@ -15,7 +15,7 @@ export const doctorRegistrationRepository = {
 
   async createRegistration(supabase: SupabaseClient, payload: Partial<DoctorRegistrationRow>): Promise<DoctorRegistrationRow> {
     const { data, error } = await supabase
-      .from('doctor_registrations')
+      .schema('doctor').from('doctor_registrations')
       .insert([payload])
       .select()
       .single()
@@ -26,7 +26,7 @@ export const doctorRegistrationRepository = {
 
   async deleteRegistration(supabase: SupabaseClient, id: string): Promise<void> {
     const { error } = await supabase
-      .from('doctor_registrations')
+      .schema('doctor').from('doctor_registrations')
       .delete()
       .eq('id', id)
 

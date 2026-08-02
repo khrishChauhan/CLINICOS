@@ -4,7 +4,7 @@ import type { DoctorLeaveRow } from '@/types/doctors'
 export const doctorLeaveRepository = {
   async getLeavesByDoctor(supabase: SupabaseClient, clinicId: string, doctorId: string): Promise<DoctorLeaveRow[]> {
     const { data, error } = await supabase
-      .from('doctor_leaves')
+      .schema('doctor').from('doctor_leaves')
       .select('*')
       .eq('clinic_id', clinicId)
       .eq('doctor_id', doctorId)
@@ -16,7 +16,7 @@ export const doctorLeaveRepository = {
 
   async getApprovedLeavesByDateRange(supabase: SupabaseClient, clinicId: string, doctorId: string, dateStr: string): Promise<DoctorLeaveRow[]> {
     const { data, error } = await supabase
-      .from('doctor_leaves')
+      .schema('doctor').from('doctor_leaves')
       .select('*')
       .eq('clinic_id', clinicId)
       .eq('doctor_id', doctorId)
@@ -30,7 +30,7 @@ export const doctorLeaveRepository = {
 
   async createLeave(supabase: SupabaseClient, payload: Partial<DoctorLeaveRow>): Promise<DoctorLeaveRow> {
     const { data, error } = await supabase
-      .from('doctor_leaves')
+      .schema('doctor').from('doctor_leaves')
       .insert([payload])
       .select()
       .single()
@@ -41,7 +41,7 @@ export const doctorLeaveRepository = {
 
   async updateLeaveStatus(supabase: SupabaseClient, id: string, status: string, approverId: string): Promise<DoctorLeaveRow> {
     const { data, error } = await supabase
-      .from('doctor_leaves')
+      .schema('doctor').from('doctor_leaves')
       .update({ approval_status: status, approved_by: approverId, updated_at: new Date().toISOString() })
       .eq('id', id)
       .select()
@@ -53,7 +53,7 @@ export const doctorLeaveRepository = {
 
   async deleteLeave(supabase: SupabaseClient, id: string): Promise<void> {
     const { error } = await supabase
-      .from('doctor_leaves')
+      .schema('doctor').from('doctor_leaves')
       .delete()
       .eq('id', id)
 
