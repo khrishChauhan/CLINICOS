@@ -4,7 +4,6 @@ import type { DoctorQualificationRow } from '@/types/doctors'
 export const doctorQualificationRepository = {
   async getQualificationsByDoctor(supabase: SupabaseClient, clinicId: string, doctorId: string): Promise<DoctorQualificationRow[]> {
     const { data, error } = await supabase
-      .schema('doctor')
       .from('doctor_qualifications')
       .select('*')
       .eq('clinic_id', clinicId)
@@ -17,7 +16,6 @@ export const doctorQualificationRepository = {
 
   async createQualification(supabase: SupabaseClient, payload: Partial<DoctorQualificationRow>): Promise<DoctorQualificationRow> {
     const { data, error } = await supabase
-      .schema('doctor')
       .from('doctor_qualifications')
       .insert([payload])
       .select()
@@ -29,7 +27,6 @@ export const doctorQualificationRepository = {
 
   async deleteQualification(supabase: SupabaseClient, id: string): Promise<void> {
     const { error } = await supabase
-      .schema('doctor')
       .from('doctor_qualifications')
       .delete()
       .eq('id', id)

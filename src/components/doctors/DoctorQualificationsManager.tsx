@@ -10,6 +10,7 @@ export default function DoctorQualificationsManager({ doctorId }: { doctorId: st
   const [qualifications, setQualifications] = useState<any[]>([])
   const [newQual, setNewQual] = useState({ qualification: '', university: '', passing_year: '' })
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     getDoctorQualificationsAction(doctorId).then(res => {
@@ -20,6 +21,7 @@ export default function DoctorQualificationsManager({ doctorId }: { doctorId: st
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
+    setError(null)
     const payload = {
       doctor_id: doctorId,
       qualification: newQual.qualification,
@@ -30,12 +32,15 @@ export default function DoctorQualificationsManager({ doctorId }: { doctorId: st
     if (res.success) {
       setQualifications([res.data, ...qualifications])
       setNewQual({ qualification: '', university: '', passing_year: '' })
+    } else {
+      setError(res.error || 'Failed to add qualification')
     }
     setLoading(false)
   }
 
   return (
     <div className="space-y-6">
+      {error && <div className="p-3 bg-red-50 text-red-600 text-sm rounded-lg">{error}</div>}
       <form onSubmit={handleAdd} className="flex gap-4 items-end bg-slate-50 p-4 rounded-xl">
         <div className="flex-1">
           <label className="text-xs font-semibold text-slate-500 uppercase">Degree/Qualification *</label>
