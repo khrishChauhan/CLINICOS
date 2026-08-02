@@ -1,6 +1,8 @@
 'use client'
 
-import React, { useState, useTransition, useCallback } from 'react'
+import React, { useState, useTransition, useCallback, useRef } from 'react'
+import Link from 'next/link'
+import { useRouter, useSearchParams, usePathname } from 'next/navigation'
 import { Plus, Search, Filter, Eye, Users, AlertTriangle, RefreshCw } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
@@ -80,61 +82,69 @@ interface PatientsClientProps {
 }
 
 export default function PatientsClient({ initialData, initialFilters }: PatientsClientProps) {
+  const router = useRouter()
+  const pathname = usePathname()
+  const searchParamsHook = useSearchParams()
   const [isPending, startTransition] = useTransition()
 
-  const [search, setSearch]       = useState(initialFilters.search ?? '')
-  const [gender, setGender]       = useState(initialFilters.gender ?? '')
+  const [search, setSearch]         = useState(initialFilters.search ?? '')
+  const [gender, setGender]         = useState(initialFilters.gender ?? '')
   const [bloodGroup, setBloodGroup] = useState(initialFilters.bloodGroup ?? '')
-  const [status, setStatus]       = useState(initialFilters.status ?? 'Active')
-  const [page, setPage]           = useState(initialFilters.page ?? 1)
-  const [result, setResult]       = useState<PatientListResult>(initialData)
+  const [status, setStatus]         = useState(initialFilters.status ?? 'Active')
+  const [page, setPage]             = useState(initialFilters.page ?? 1)
+  const [result, setResult]         = useState<PatientListResult>(initialData)
 
-  // Debounce ref for search
-  const searchTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null)
+  const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  const fetch = useCallback((filters: PatientFilters) => {
+  // Sync filters to URL and re-fetch
+  const applyFiltersAndSyncUrl = useCallback((overrides: Partial<PatientFilters> & { page?: number }) => {
+    const newSearch      = overrides.search      !== undefined ? overrides.search      : search
+    const newGender      = overrides.gender      !== undefined ? overrides.gender      : gender
+    const newBloodGroup  = overrides.bloodGroup  !== undefined ? overrides.bloodGroup  : bloodGroup
+    const newStatus      = overrides.status      !== undefined ? overrides.status      : status
+    const newPage        = overrides.page ?? 1
+
+    // Reflect in local state
+    if (overrides.gender      !== undefined) setGender(overrides.gender)
+    if (overrides.bloodGroup  !== undefined) setBloodGroup(overrides.bloodGroup)
+    if (overrides.status      !== undefined) setStatus(overrides.status)
+    if (overrides.page        !== undefined) setPage(overrides.page)
+
+    // Push to URL (so back/forward and refresh work)
+    const params = new URLSearchParams(searchParamsHook.toString())
+    if (newSearch)      params.set('search', newSearch)     ; else params.delete('search')
+    if (newGender)      params.set('gender', newGender)     ; else params.delete('gender')
+    if (newBloodGroup)  params.set('bloodGroup', newBloodGroup) ; else params.delete('bloodGroup')
+    params.set('status', newStatus || '')
+    params.set('page', String(newPage))
+    router.push(`${pathname}?${params.toString()}`, { scroll: false })
+
+    const filters: PatientFilters = { search: newSearch, gender: newGender, bloodGroup: newBloodGroup, status: newStatus, page: newPage, pageSize: 15 }
     startTransition(async () => {
       const res = await listPatients(filters)
       setResult(res)
     })
-  }, [])
-
-  const applyFilters = useCallback((overrides: Partial<PatientFilters> & { page?: number }) => {
-    const newFilters: PatientFilters = {
-      search: overrides.search !== undefined ? overrides.search : search,
-      gender: overrides.gender !== undefined ? overrides.gender : gender,
-      bloodGroup: overrides.bloodGroup !== undefined ? overrides.bloodGroup : bloodGroup,
-      status: overrides.status !== undefined ? overrides.status : status,
-      page: overrides.page ?? 1,
-      pageSize: 15,
-    }
-    if (overrides.gender !== undefined) setGender(overrides.gender)
-    if (overrides.bloodGroup !== undefined) setBloodGroup(overrides.bloodGroup)
-    if (overrides.status !== undefined) setStatus(overrides.status)
-    if (overrides.page !== undefined) setPage(overrides.page)
-    fetch(newFilters)
-  }, [search, gender, bloodGroup, status, fetch])
+  }, [search, gender, bloodGroup, status, pathname, router, searchParamsHook])
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value
     setSearch(val)
-    setPage(1)
     if (searchTimer.current) clearTimeout(searchTimer.current)
     searchTimer.current = setTimeout(() => {
-      fetch({ search: val, gender, bloodGroup, status, page: 1, pageSize: 15 })
-    }, 350)
+      applyFiltersAndSyncUrl({ search: val, page: 1 })
+    }, 300) // 300ms debounce as required
   }
 
   const handleReset = () => {
-    setSearch('')
-    setGender('')
-    setBloodGroup('')
-    setStatus('Active')
-    setPage(1)
-    fetch({ status: 'Active', page: 1, pageSize: 15 })
+    setSearch(''); setGender(''); setBloodGroup(''); setStatus('Active'); setPage(1)
+    router.push(pathname, { scroll: false })
+    startTransition(async () => {
+      const res = await listPatients({ status: 'Active', page: 1, pageSize: 15 })
+      setResult(res)
+    })
   }
 
-  // Render states — narrow the discriminated union explicitly
+  // Render states
   const isForbidden = !result.ok && (result as { ok: false; error: string }).error === 'FORBIDDEN'
   if (isForbidden) {
     return (
@@ -163,9 +173,12 @@ export default function PatientsClient({ initialData, initialFilters }: Patients
                   : `Manage details, vitals, timelines and EHR records — ${totalCount} patient${totalCount !== 1 ? 's' : ''} total`}
               </p>
             </div>
-            <Button className="bg-blue-600/90 hover:bg-blue-600 text-white">
-              <Plus className="w-4 h-4" /> Add Patient Record
-            </Button>
+            {/* ✅ Fixed: "Add Patient" button now links to register page */}
+            <Link href="/patients/register">
+              <Button className="bg-blue-600/90 hover:bg-blue-600 text-white flex items-center gap-2">
+                <Plus className="w-4 h-4" /> Add Patient Record
+              </Button>
+            </Link>
           </div>
 
           {/* Filters Bar */}
@@ -176,16 +189,18 @@ export default function PatientsClient({ initialData, initialFilters }: Patients
                 placeholder="Search by UHID, Name, Phone…"
                 value={search}
                 onChange={handleSearchChange}
+                aria-label="Search patients by UHID, name or phone"
               />
             </div>
             <div className="flex gap-3 w-full md:w-auto flex-wrap">
               {/* Gender Filter */}
               <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 px-2.5 py-1.5 rounded-lg text-xs">
                 <Filter className="w-3.5 h-3.5 text-slate-400" />
-                <span className="text-slate-500">Gender:</span>
+                <label htmlFor="gender-filter" className="text-slate-500">Gender:</label>
                 <select
+                  id="gender-filter"
                   value={gender}
-                  onChange={e => applyFilters({ gender: e.target.value })}
+                  onChange={e => applyFiltersAndSyncUrl({ gender: e.target.value, page: 1 })}
                   className="bg-transparent font-bold text-slate-700 focus:outline-none"
                 >
                   <option value="">All Genders</option>
@@ -196,10 +211,11 @@ export default function PatientsClient({ initialData, initialFilters }: Patients
               </div>
               {/* Blood Group Filter */}
               <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 px-2.5 py-1.5 rounded-lg text-xs">
-                <span className="text-slate-500">Blood Group:</span>
+                <label htmlFor="blood-filter" className="text-slate-500">Blood Group:</label>
                 <select
+                  id="blood-filter"
                   value={bloodGroup}
-                  onChange={e => applyFilters({ bloodGroup: e.target.value })}
+                  onChange={e => applyFiltersAndSyncUrl({ bloodGroup: e.target.value, page: 1 })}
                   className="bg-transparent font-bold text-slate-700 focus:outline-none"
                 >
                   <option value="">All Groups</option>
@@ -210,10 +226,11 @@ export default function PatientsClient({ initialData, initialFilters }: Patients
               </div>
               {/* Status Filter */}
               <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 px-2.5 py-1.5 rounded-lg text-xs">
-                <span className="text-slate-500">Status:</span>
+                <label htmlFor="status-filter" className="text-slate-500">Status:</label>
                 <select
+                  id="status-filter"
                   value={status}
-                  onChange={e => applyFilters({ status: e.target.value })}
+                  onChange={e => applyFiltersAndSyncUrl({ status: e.target.value, page: 1 })}
                   className="bg-transparent font-bold text-slate-700 focus:outline-none"
                 >
                   <option value="Active">Active</option>
@@ -255,13 +272,17 @@ export default function PatientsClient({ initialData, initialFilters }: Patients
                       <TableRow key={patient.id} className="hover:bg-white/40 border-none">
                         <TableCell className="py-3.5 px-4">
                           <div className="flex items-center gap-3">
-                            <div className="w-9 h-9 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-xs border border-blue-100 shrink-0">
+                            <div className="w-9 h-9 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-xs border border-blue-100 shrink-0" aria-hidden="true">
                               {patient.initials}
                             </div>
                             <div>
-                              <button className="font-bold text-slate-800 hover:text-blue-600 text-left transition text-sm">
+                              {/* ✅ Fixed: Clicking name navigates to patient profile */}
+                              <Link
+                                href={`/patients/${patient.id}`}
+                                className="font-bold text-slate-800 hover:text-blue-600 text-left transition text-sm"
+                              >
                                 {patient.fullName}
-                              </button>
+                              </Link>
                               <div className="text-[10px] font-mono text-slate-400 mt-0.5">{patient.uhid}</div>
                             </div>
                           </div>
@@ -280,9 +301,14 @@ export default function PatientsClient({ initialData, initialFilters }: Patients
                           <StatusBadge status={patient.status} />
                         </TableCell>
                         <TableCell className="py-3.5 px-4 text-center">
-                          <button className="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 hover:text-blue-700 bg-blue-50 px-2.5 py-1 rounded transition hover:shadow-sm">
+                          {/* ✅ Fixed: View EHR links to patient profile */}
+                          <Link
+                            href={`/patients/${patient.id}`}
+                            className="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 hover:text-blue-700 bg-blue-50 px-2.5 py-1 rounded transition hover:shadow-sm"
+                            aria-label={`View EHR for ${patient.fullName}`}
+                          >
                             <Eye className="w-3.5 h-3.5" /> View EHR
-                          </button>
+                          </Link>
                         </TableCell>
                       </TableRow>
                     ))
@@ -299,7 +325,8 @@ export default function PatientsClient({ initialData, initialFilters }: Patients
                   <div className="flex gap-1.5">
                     <button
                       disabled={page <= 1 || isPending}
-                      onClick={() => applyFilters({ page: page - 1 })}
+                      onClick={() => applyFiltersAndSyncUrl({ page: page - 1 })}
+                      aria-label="Previous page"
                       className="px-3 py-1.5 border border-slate-200 rounded font-semibold transition
                         disabled:text-slate-300 disabled:bg-slate-50 disabled:cursor-not-allowed
                         enabled:text-slate-600 enabled:bg-white enabled:hover:bg-slate-50"
@@ -311,8 +338,10 @@ export default function PatientsClient({ initialData, initialFilters }: Patients
                       return (
                         <button
                           key={p}
-                          onClick={() => applyFilters({ page: p })}
+                          onClick={() => applyFiltersAndSyncUrl({ page: p })}
                           disabled={isPending}
+                          aria-label={`Go to page ${p}`}
+                          aria-current={p === page ? 'page' : undefined}
                           className={`w-8 h-8 rounded border font-semibold text-center transition text-xs ${
                             p === page
                               ? 'bg-blue-600 border-blue-600 text-white'
@@ -325,7 +354,8 @@ export default function PatientsClient({ initialData, initialFilters }: Patients
                     })}
                     <button
                       disabled={page >= totalPages || isPending}
-                      onClick={() => applyFilters({ page: page + 1 })}
+                      onClick={() => applyFiltersAndSyncUrl({ page: page + 1 })}
+                      aria-label="Next page"
                       className="px-3 py-1.5 border border-slate-200 rounded font-semibold transition
                         disabled:text-slate-300 disabled:bg-slate-50 disabled:cursor-not-allowed
                         enabled:text-slate-600 enabled:bg-white enabled:hover:bg-slate-50"

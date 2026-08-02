@@ -121,3 +121,46 @@ export async function assignDoctorDepartmentAction(payload: any) {
     return { success: false, error: error.message }
   }
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Get Single Doctor by ID
+// ─────────────────────────────────────────────────────────────────────────────
+
+export async function getDoctorByIdAction(doctorId: string) {
+  try {
+    const { supabase, clinicId } = await getAuthContext()
+    const data = await doctorProfileService.getDoctorProfile(supabase, clinicId, doctorId)
+    if (!data) return { success: false, error: 'Doctor not found' }
+    return { success: true, data }
+  } catch (error: any) {
+    return { success: false, error: error.message }
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Update Doctor Profile
+// ─────────────────────────────────────────────────────────────────────────────
+
+export async function updateDoctorAction(doctorId: string, payload: any) {
+  try {
+    const { supabase, user } = await getAuthContext()
+    const data = await doctorProfileService.updateDoctorProfile(supabase, doctorId, payload, user.id)
+    return { success: true, data }
+  } catch (error: any) {
+    return { success: false, error: error.message }
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Update Doctor Status
+// ─────────────────────────────────────────────────────────────────────────────
+
+export async function updateDoctorStatusAction(doctorId: string, status: 'Active' | 'On Leave' | 'Inactive') {
+  try {
+    const { supabase, user } = await getAuthContext()
+    const data = await doctorProfileService.updateDoctorProfile(supabase, doctorId, { status }, user.id)
+    return { success: true, data }
+  } catch (error: any) {
+    return { success: false, error: error.message }
+  }
+}

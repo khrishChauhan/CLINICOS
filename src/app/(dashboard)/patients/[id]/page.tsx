@@ -1,7 +1,6 @@
 import React from 'react'
-import { notFound } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
-import { patientService } from '@/services/patients/patientService'
+import { notFound, redirect } from 'next/navigation'
+import { getPatientByIdAction } from '@/actions/patients/patientActions'
 import PatientProfileClient from './PatientProfileClient'
 
 export const metadata = {
@@ -9,19 +8,19 @@ export const metadata = {
 }
 
 interface PageProps {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }
 
 export default async function PatientProfilePage({ params }: PageProps) {
-  const supabase = await createClient()
-  const patient = await patientService.getPatientById(supabase, params.id)
-  
-  if (!patient) {
+  const { id } = await params
+  const result = await getPatientByIdAction(id)
+
+  if (!result.ok) {
+    const err = result as { ok: false; error: string }
+    if (err.error === 'UNAUTHENTICATED') redirect('/login')
+    if (err.error === 'FORBIDDEN') redirect('/patients')
     notFound()
   }
 
-  // Need to get session context to check permissions if we wanted
-  // But client component can also check permissions via context if needed
-
-  return <PatientProfileClient patient={patient} />
+  return <PatientProfileClient patient={result.patient} />
 }
