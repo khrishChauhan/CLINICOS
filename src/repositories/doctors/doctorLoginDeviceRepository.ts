@@ -4,7 +4,6 @@ import type { DoctorLoginDeviceRow } from '@/types/doctors'
 export const doctorLoginDeviceRepository = {
   async getDevicesByDoctor(supabase: SupabaseClient, clinicId: string, doctorId: string): Promise<DoctorLoginDeviceRow[]> {
     const { data, error } = await supabase
-      .schema('doctor')
       .from('doctor_login_devices')
       .select('*')
       .eq('clinic_id', clinicId)
@@ -20,7 +19,6 @@ export const doctorLoginDeviceRepository = {
     // but here we might just insert a new record for tracking if no device matching logic exists.
     // For simplicity, we just insert.
     const { data, error } = await supabase
-      .schema('doctor')
       .from('doctor_login_devices')
       .insert([payload])
       .select()
@@ -32,7 +30,6 @@ export const doctorLoginDeviceRepository = {
 
   async revokeDevice(supabase: SupabaseClient, id: string): Promise<void> {
     const { error } = await supabase
-      .schema('doctor')
       .from('doctor_login_devices')
       .update({ trusted_device: false })
       .eq('id', id)

@@ -4,7 +4,6 @@ import type { DoctorBlockedSlotRow } from '@/types/doctors'
 export const doctorBlockedSlotRepository = {
   async getBlockedSlotsByDoctor(supabase: SupabaseClient, clinicId: string, doctorId: string): Promise<DoctorBlockedSlotRow[]> {
     const { data, error } = await supabase
-      .schema('doctor')
       .from('doctor_blocked_slots')
       .select('*')
       .eq('clinic_id', clinicId)
@@ -17,7 +16,6 @@ export const doctorBlockedSlotRepository = {
 
   async getBlockedSlotsByDate(supabase: SupabaseClient, clinicId: string, doctorId: string, dateStr: string): Promise<DoctorBlockedSlotRow[]> {
     const { data, error } = await supabase
-      .schema('doctor')
       .from('doctor_blocked_slots')
       .select('*')
       .eq('clinic_id', clinicId)
@@ -30,7 +28,6 @@ export const doctorBlockedSlotRepository = {
 
   async createBlockedSlot(supabase: SupabaseClient, payload: Partial<DoctorBlockedSlotRow>): Promise<DoctorBlockedSlotRow> {
     const { data, error } = await supabase
-      .schema('doctor')
       .from('doctor_blocked_slots')
       .insert([payload])
       .select()
@@ -42,7 +39,6 @@ export const doctorBlockedSlotRepository = {
 
   async deleteBlockedSlot(supabase: SupabaseClient, id: string): Promise<void> {
     const { error } = await supabase
-      .schema('doctor')
       .from('doctor_blocked_slots')
       .delete()
       .eq('id', id)

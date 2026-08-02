@@ -4,7 +4,6 @@ import type { DoctorPerformanceRow } from '@/types/doctors'
 export const doctorPerformanceRepository = {
   async getPerformanceHistory(supabase: SupabaseClient, clinicId: string, doctorId: string): Promise<DoctorPerformanceRow[]> {
     const { data, error } = await supabase
-      .schema('doctor')
       .from('doctor_performance')
       .select('*')
       .eq('clinic_id', clinicId)
@@ -17,7 +16,6 @@ export const doctorPerformanceRepository = {
 
   async upsertPerformance(supabase: SupabaseClient, payload: Partial<DoctorPerformanceRow>): Promise<DoctorPerformanceRow> {
     const { data, error } = await supabase
-      .schema('doctor')
       .from('doctor_performance')
       .upsert(payload, { onConflict: 'doctor_id,report_month' })
       .select()

@@ -4,7 +4,6 @@ import type { DoctorAuditRow } from '@/types/doctors'
 export const doctorAuditRepository = {
   async getAuditTimeline(supabase: SupabaseClient, clinicId: string, doctorId: string): Promise<DoctorAuditRow[]> {
     const { data, error } = await supabase
-      .schema('doctor')
       .from('doctor_audit')
       .select('*')
       .eq('clinic_id', clinicId)
@@ -17,7 +16,6 @@ export const doctorAuditRepository = {
 
   async logAction(supabase: SupabaseClient, payload: Partial<DoctorAuditRow>): Promise<DoctorAuditRow> {
     const { data, error } = await supabase
-      .schema('doctor')
       .from('doctor_audit')
       .insert([payload])
       .select()

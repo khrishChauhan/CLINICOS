@@ -4,7 +4,6 @@ import type { DoctorCommunicationPreferenceRow } from '@/types/doctors'
 export const doctorCommunicationPreferenceRepository = {
   async getPreferencesByDoctor(supabase: SupabaseClient, clinicId: string, doctorId: string): Promise<DoctorCommunicationPreferenceRow | null> {
     const { data, error } = await supabase
-      .schema('doctor')
       .from('doctor_communication_preferences')
       .select('*')
       .eq('clinic_id', clinicId)
@@ -17,7 +16,6 @@ export const doctorCommunicationPreferenceRepository = {
 
   async upsertPreferences(supabase: SupabaseClient, payload: Partial<DoctorCommunicationPreferenceRow>): Promise<DoctorCommunicationPreferenceRow> {
     const { data, error } = await supabase
-      .schema('doctor')
       .from('doctor_communication_preferences')
       .upsert(payload, { onConflict: 'doctor_id' })
       .select()

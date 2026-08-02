@@ -15,7 +15,6 @@ export const prescriptionService = {
     if (!prescription) {
       // Try to fetch doctor's digital signature from the doctor module
       const { data: sigData } = await supabase
-        .schema('doctor')
         .from('doctor_digital_signature')
         .select('signature_path')
         .eq('doctor_id', doctorId)
