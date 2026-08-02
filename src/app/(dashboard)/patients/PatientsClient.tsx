@@ -269,7 +269,11 @@ export default function PatientsClient({ initialData, initialFilters }: Patients
                     </TableRow>
                   ) : (
                     patients.map((patient) => (
-                      <TableRow key={patient.id} className="hover:bg-white/40 border-none">
+                      <TableRow 
+                        key={patient.id} 
+                        className="hover:bg-blue-50/50 border-none cursor-pointer transition-colors"
+                        onClick={() => router.push(`/patients/${patient.id}`)}
+                      >
                         <TableCell className="py-3.5 px-4">
                           <div className="flex items-center gap-3">
                             <div className="w-9 h-9 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-xs border border-blue-100 shrink-0" aria-hidden="true">
