@@ -64,7 +64,21 @@ export async function registerPatient(
   }
 
   const data = parsed.data
-  const clinicId: string = ctx?.clinic_id
+  let clinicId: string | null = ctx?.clinic_id ?? null
+
+  // Fallback: If get_session_context fails or doesn't return clinic_id, fetch it directly
+  if (!clinicId) {
+    const { data: userData } = await adminClient
+      .from('users')
+      .select('clinic_id')
+      .eq('id', user.id)
+      .single()
+    clinicId = userData?.clinic_id ?? null
+  }
+
+  if (!clinicId) {
+    return { ok: false, error: 'DB_ERROR', message: 'User is not associated with any clinic.' }
+  }
 
   // ── 4. Generate UHID ──────────────────────────────────────────────────────
   // Format: PAT-YYYYMMDD-XXXX (e.g. PAT-20260803-0042)
