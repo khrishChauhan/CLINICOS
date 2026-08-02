@@ -15,6 +15,9 @@ export async function login(formData: FormData) {
   const { error } = await supabase.auth.signInWithPassword(data)
 
   if (error) {
+    if (error.message.includes('fetch failed')) {
+      return { error: 'Unable to connect to authentication server. Please check your internet connection or restart your dev server.' }
+    }
     return { error: error.message }
   }
 

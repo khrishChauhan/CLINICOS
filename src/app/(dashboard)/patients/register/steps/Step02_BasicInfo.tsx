@@ -42,8 +42,11 @@ export default function Step02_BasicInfo() {
         <FormField label="Middle Name" name="middle_name" placeholder="Middle name (optional)" />
         <FormField label="Last Name" name="last_name" placeholder="Last name" />
         <FormSelect label="Gender" name="gender" placeholder="Select gender...">
-          {genders.map(g => (
-            <option key={g.id} value={g.gender_name}>{g.gender_name}</option>
+          {(genders.length > 0
+            ? genders.map(g => ({ id: g.id, label: g.gender_name || (g as any).name || (g as any).label }))
+            : [{ id: 'm', label: 'Male' }, { id: 'f', label: 'Female' }, { id: 'o', label: 'Other' }]
+          ).map(g => (
+            <option key={g.id} value={g.label}>{g.label}</option>
           ))}
         </FormSelect>
         <FormField label="Date of Birth" name="date_of_birth" type="date" />
@@ -54,13 +57,19 @@ export default function Step02_BasicInfo() {
           ))}
         </FormSelect>
         <FormSelect label="Blood Group" name="blood_group" placeholder="Select blood group...">
-          {bloodGroups.map(bg => (
-            <option key={bg.id} value={bg.blood_group}>{bg.blood_group}</option>
+          {(bloodGroups.length > 0
+            ? bloodGroups.map(bg => ({ id: bg.id, label: bg.blood_group || (bg as any).name || (bg as any).label }))
+            : ['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'].map(b => ({ id: b, label: b }))
+          ).map(bg => (
+            <option key={bg.id} value={bg.label}>{bg.label}</option>
           ))}
         </FormSelect>
         <FormSelect label="Marital Status" name="marital_status" placeholder="Select status...">
-          {maritalStatuses.map(s => (
-            <option key={s.id} value={s.status_name}>{s.status_name}</option>
+          {(maritalStatuses.length > 0
+            ? maritalStatuses.map(s => ({ id: s.id, label: s.status_name || (s as any).name || (s as any).label }))
+            : ['Single', 'Married', 'Divorced', 'Widowed'].map(s => ({ id: s, label: s }))
+          ).map(s => (
+            <option key={s.id} value={s.label}>{s.label}</option>
           ))}
         </FormSelect>
       </div>

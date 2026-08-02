@@ -38,14 +38,20 @@ export default function Step04_Demographics() {
         <FormField label="Passport Number" name="passport_number" placeholder="Optional" />
         <FormField label="Occupation" name="occupation" placeholder="e.g. Teacher, Farmer, Business" />
         <FormSelect label="Nationality" name="nationality">
-          {nationalities.map(n => (
-            <option key={n.id} value={n.nationality_name}>{n.nationality_name}</option>
+          {(nationalities.length > 0
+            ? nationalities.map(n => ({ id: n.id, label: n.nationality_name || (n as any).name || (n as any).label }))
+            : [{ id: 'in', label: 'Indian' }, { id: 'ot', label: 'Other' }]
+          ).map(n => (
+            <option key={n.id} value={n.label}>{n.label}</option>
           ))}
         </FormSelect>
         <FormSelect label="Religion" name="religion" placeholder="Select religion (optional)...">
           <option value="">-- None --</option>
-          {religions.map(r => (
-            <option key={r.id} value={r.religion_name}>{r.religion_name}</option>
+          {(religions.length > 0
+            ? religions.map(r => ({ id: r.id, label: r.religion_name || (r as any).name || (r as any).label }))
+            : ['Hinduism', 'Islam', 'Christianity', 'Sikhism', 'Buddhism', 'Jainism', 'Other'].map(r => ({ id: r, label: r }))
+          ).map(r => (
+            <option key={r.id} value={r.label}>{r.label}</option>
           ))}
         </FormSelect>
       </div>
