@@ -20,12 +20,13 @@ async function getAuthContext() {
   // If get_session_context fails due to RLS recursion on users, manually fetch context via adminClient
   if (!ctx || !ctx.clinic_id) {
     const adminClient = createAdminClient()
-    const { data: userData } = await adminClient.from('users').select('clinic_id, role, role:roles(name, permissions)').eq('id', user.id).single()
+    const { data: userData } = await adminClient.from('users').select('clinic_id, roles(name, permissions)').eq('id', user.id).single()
     if (userData) {
+      const roleData = userData.roles as any
       ctx = {
         clinic_id: userData.clinic_id,
-        role_name: userData.role?.name || 'Doctor', // Default fallback
-        permissions: userData.role?.permissions || []
+        role_name: roleData?.name || 'Doctor', // Default fallback
+        permissions: roleData?.permissions || []
       }
     }
   }
