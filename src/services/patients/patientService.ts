@@ -63,7 +63,8 @@ function toListItem(row: PatientRow): PatientListItem {
  */
 async function list(
   supabase: SupabaseClient,
-  filters: PatientFilters
+  filters: PatientFilters,
+  clinicId: string
 ): Promise<PaginatedResult<PatientListItem>> {
   const normalizedFilters: PatientFilters = {
     ...filters,
@@ -72,7 +73,7 @@ async function list(
     status: filters.status ?? 'Active',
   }
 
-  const rawResult = await findPatients(supabase, normalizedFilters)
+  const rawResult = await findPatients(supabase, normalizedFilters, clinicId)
 
   return {
     ...rawResult,
@@ -82,9 +83,10 @@ async function list(
 
 async function getPatientById(
   supabase: SupabaseClient,
-  id: string
+  id: string,
+  clinicId: string
 ): Promise<PatientListItem | null> {
-  const row = await repoGetPatientById(supabase, id)
+  const row = await repoGetPatientById(supabase, id, clinicId)
   if (!row) return null
   return toListItem(row)
 }

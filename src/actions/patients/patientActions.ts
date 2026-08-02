@@ -1,6 +1,6 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { patientService } from '@/services/patients/patientService'
 import type { PatientListItem } from '@/types/patients'
@@ -15,12 +15,26 @@ async function getAuthContext() {
   const { data: { user }, error: authError } = await supabase.auth.getUser()
   if (authError || !user) return { ok: false as const, error: 'UNAUTHENTICATED' as const, supabase, user: null, ctx: null }
 
-  const { data: ctx } = await supabase.rpc('get_session_context')
+  let { data: ctx } = await supabase.rpc('get_session_context')
+  
+  // If get_session_context fails due to RLS recursion on users, manually fetch context via adminClient
+  if (!ctx || !ctx.clinic_id) {
+    const adminClient = createAdminClient()
+    const { data: userData } = await adminClient.from('users').select('clinic_id, role, role:roles(name, permissions)').eq('id', user.id).single()
+    if (userData) {
+      ctx = {
+        clinic_id: userData.clinic_id,
+        role_name: userData.role?.name || 'Doctor', // Default fallback
+        permissions: userData.role?.permissions || []
+      }
+    }
+  }
+
   return { ok: true as const, supabase, user, ctx }
 }
 
 function hasPermission(ctx: any, ...perms: string[]): boolean {
-  if (!ctx) return true
+  if (!ctx) return false // Fix security hole: default deny if no context
   const role = ctx.role_name ?? ''
   if (role === 'Super Admin' || role === 'Clinic Admin' || role.toLowerCase().includes('admin') || role.toLowerCase().includes('doctor') || role.toLowerCase().includes('reception')) return true
   const permissions: string[] = ctx.permissions ?? []
@@ -42,7 +56,8 @@ export async function getPatientByIdAction(id: string): Promise<GetPatientResult
   if (!hasPermission(auth.ctx, 'patients.read')) return { ok: false, error: 'FORBIDDEN' }
 
   try {
-    const patient = await patientService.getPatientById(auth.supabase, id)
+    const adminClient = createAdminClient()
+    const patient = await patientService.getPatientById(adminClient, id, auth.ctx.clinic_id)
     if (!patient) return { ok: false, error: 'NOT_FOUND' }
     return { ok: true, patient }
   } catch (err) {
@@ -123,10 +138,12 @@ export async function updatePatientStatusAction(id: string, status: 'Active' | '
   if (!auth.ok) return { ok: false, error: 'UNAUTHENTICATED' }
   if (!hasPermission(auth.ctx, 'patients.edit', 'patients.update')) return { ok: false, error: 'FORBIDDEN' }
 
-  const { error } = await auth.supabase
+  const adminClient = createAdminClient()
+  const { error } = await adminClient
     .from('patients')
     .update({ status, updated_at: new Date().toISOString() })
     .eq('id', id)
+    .eq('clinic_id', auth.ctx.clinic_id)
     .eq('is_deleted', false)
 
   if (error) return { ok: false, error: 'DB_ERROR', message: error.message }
@@ -150,10 +167,12 @@ export async function deletePatientAction(id: string): Promise<DeletePatientResu
   // Only Super Admin or those with patients.delete permission
   if (!hasPermission(auth.ctx, 'patients.delete')) return { ok: false, error: 'FORBIDDEN' }
 
-  const { error } = await auth.supabase
+  const adminClient = createAdminClient()
+  const { error } = await adminClient
     .from('patients')
     .update({ is_deleted: true, deleted_at: new Date().toISOString() })
     .eq('id', id)
+    .eq('clinic_id', auth.ctx.clinic_id)
 
   if (error) return { ok: false, error: 'DB_ERROR', message: error.message }
 

@@ -25,7 +25,8 @@ const PATIENT_LIST_COLUMNS = [
  */
 export async function findPatients(
   supabase: SupabaseClient,
-  filters: PatientFilters
+  filters: PatientFilters,
+  clinicId: string
 ): Promise<PaginatedResult<PatientRow>> {
   const page = Math.max(1, filters.page ?? 1)
   const pageSize = Math.min(50, Math.max(1, filters.pageSize ?? 15))
@@ -35,6 +36,7 @@ export async function findPatients(
   let query = supabase
     .from('patients')
     .select(PATIENT_LIST_COLUMNS, { count: 'exact' })
+    .eq('clinic_id', clinicId)
     .eq('is_deleted', false)
 
   // Search: OR across uhid, first_name, last_name, mobile_number
@@ -72,16 +74,18 @@ export async function findPatients(
 
 /**
  * Fetch a single patient by ID.
- * RLS automatically enforces clinic isolation.
+ * Manually enforce clinic isolation by explicitly checking clinicId.
  */
 export async function getPatientById(
   supabase: SupabaseClient,
-  id: string
+  id: string,
+  clinicId: string
 ): Promise<PatientRow | null> {
   const { data, error } = await supabase
     .from('patients')
     .select(PATIENT_LIST_COLUMNS)
     .eq('id', id)
+    .eq('clinic_id', clinicId)
     .eq('is_deleted', false)
     .single()
 
