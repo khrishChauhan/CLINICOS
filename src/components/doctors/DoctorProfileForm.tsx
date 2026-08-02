@@ -92,7 +92,6 @@ export default function DoctorProfileForm({ doctorId }: Props) {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="text-sm font-semibold text-slate-700">Gender</label>
               <select 
@@ -100,7 +99,12 @@ export default function DoctorProfileForm({ doctorId }: Props) {
                 value={formData.gender} onChange={e => setFormData({...formData, gender: e.target.value})}
               >
                 <option value="">Select Gender</option>
-                {genders.map(g => <option key={g.id} value={g.gender_name}>{g.gender_name}</option>)}
+                {(genders.length > 0
+                  ? genders.map(g => ({ id: g.id, label: g.gender_name || (g as any).name || (g as any).label }))
+                  : [{ id: 'm', label: 'Male' }, { id: 'f', label: 'Female' }, { id: 'o', label: 'Other' }]
+                ).map(g => (
+                  <option key={g.id} value={g.label}>{g.label}</option>
+                ))}
               </select>
             </div>
             <div>
@@ -110,10 +114,14 @@ export default function DoctorProfileForm({ doctorId }: Props) {
                 value={formData.blood_group} onChange={e => setFormData({...formData, blood_group: e.target.value})}
               >
                 <option value="">Select Blood Group</option>
-                {bloodGroups.map(bg => <option key={bg.id} value={bg.blood_group}>{bg.blood_group}</option>)}
+                {(bloodGroups.length > 0
+                  ? bloodGroups.map(bg => ({ id: bg.id, label: bg.blood_group || (bg as any).name || (bg as any).label }))
+                  : ['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'].map(b => ({ id: b, label: b }))
+                ).map(bg => (
+                  <option key={bg.id} value={bg.label}>{bg.label}</option>
+                ))}
               </select>
             </div>
-          </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
