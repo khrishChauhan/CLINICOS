@@ -5,14 +5,14 @@ import Link from 'next/link'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import {
   Search, UserPlus, AlertTriangle, Users, RefreshCw, Filter,
-  Stethoscope, CheckCircle, XCircle, Clock
+  Stethoscope, CheckCircle, XCircle, Clock, Trash2
 } from 'lucide-react'
 import { Card, CardContent, CardHeader } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/Table'
 import { Badge } from '@/components/ui/Badge'
-import { getDoctorsAction, updateDoctorStatusAction } from '@/actions/doctors/doctorActions'
+import { getDoctorsAction, updateDoctorStatusAction, deleteDoctorAction } from '@/actions/doctors/doctorActions'
 import type { DoctorRow } from '@/types/doctors'
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -69,14 +69,14 @@ function EmptyState({ hasSearch }: { hasSearch: boolean }) {
   )
 }
 
-function ErrorState({ onRetry }: { onRetry: () => void }) {
+function ErrorState({ onRetry, errorMessage }: { onRetry: () => void, errorMessage?: string }) {
   return (
     <div className="flex flex-col items-center justify-center py-20 text-center">
       <div className="w-16 h-16 bg-red-50 border border-red-100 rounded-2xl flex items-center justify-center mb-4">
         <AlertTriangle className="w-8 h-8 text-red-400" />
       </div>
       <h3 className="font-bold text-slate-700 text-base">Failed to load doctors</h3>
-      <p className="text-slate-400 text-sm mt-1">There was an error fetching the doctor list.</p>
+      <p className="text-slate-400 text-sm mt-1">{errorMessage || 'There was an error fetching the doctor list.'}</p>
       <button
         onClick={onRetry}
         className="mt-4 flex items-center gap-1.5 text-sm font-bold text-blue-600 hover:text-blue-700 transition"
@@ -96,13 +96,15 @@ interface DoctorsClientProps {
   initialSearch: string
   initialStatus: string
   hasError: boolean
+  errorMessage?: string
 }
 
 export default function DoctorsClient({
   initialDoctors,
   initialSearch,
   initialStatus,
-  hasError: initialError
+  hasError: initialError,
+  errorMessage
 }: DoctorsClientProps) {
   const router = useRouter()
   const pathname = usePathname()
@@ -143,12 +145,24 @@ export default function DoctorsClient({
 
   const handleRetry = () => applyAndSync({})
 
+  const handleDeleteDoctor = async (doctorId: string, doctorName: string) => {
+    if (!window.confirm(`Are you sure you want to delete Dr. ${doctorName}? This action cannot be undone.`)) return
+    startTransition(async () => {
+      const res = await deleteDoctorAction(doctorId)
+      if (res.success) {
+        setDoctors(prev => prev.filter(d => d.id !== doctorId))
+      } else {
+        alert(res.error || 'Failed to delete doctor profile')
+      }
+    })
+  }
+
   // Client-side filter on already-fetched data (fast, no round-trip for search)
   const filteredDoctors = doctors.filter(doc => {
     const fullName = `${doc.first_name} ${doc.last_name}`.toLowerCase()
     const matchesSearch = !search ||
       fullName.includes(search.toLowerCase()) ||
-      doc.doctor_code.toLowerCase().includes(search.toLowerCase()) ||
+      (doc.doctor_code && doc.doctor_code.toLowerCase().includes(search.toLowerCase())) ||
       (doc.email && doc.email.toLowerCase().includes(search.toLowerCase())) ||
       (doc.mobile_number && doc.mobile_number.includes(search))
     const matchesStatus = !statusFilter || doc.status === statusFilter
@@ -208,7 +222,7 @@ export default function DoctorsClient({
       {isPending ? (
         <DoctorTableSkeleton />
       ) : hasError ? (
-        <Card className="overflow-hidden"><ErrorState onRetry={handleRetry} /></Card>
+        <Card className="overflow-hidden"><ErrorState onRetry={handleRetry} errorMessage={errorMessage} /></Card>
       ) : (
         <Card className="overflow-hidden">
           <CardContent className="p-0">
@@ -252,11 +266,23 @@ export default function DoctorsClient({
                         <DoctorStatusBadge status={doc.status} />
                       </TableCell>
                       <TableCell className="py-3.5 px-4 text-right">
-                        <Link href={`/doctors/${doc.id}/profile`}>
-                          <Button variant="outline" size="sm" aria-label={`Manage profile for Dr. ${doc.first_name} ${doc.last_name}`}>
-                            Manage Profile
+                        <div className="flex items-center justify-end gap-2">
+                          <Link href={`/doctors/${doc.id}/profile`}>
+                            <Button variant="outline" size="sm" aria-label={`Manage profile for Dr. ${doc.first_name} ${doc.last_name}`}>
+                              Manage Profile
+                            </Button>
+                          </Link>
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700 p-2"
+                            onClick={() => handleDeleteDoctor(doc.id, `${doc.first_name} ${doc.last_name}`)}
+                            title={`Delete Dr. ${doc.first_name} ${doc.last_name}`}
+                            aria-label={`Delete Dr. ${doc.first_name} ${doc.last_name}`}
+                          >
+                            <Trash2 className="w-4 h-4" />
                           </Button>
-                        </Link>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}

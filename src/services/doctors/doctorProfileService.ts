@@ -38,5 +38,9 @@ export const doctorProfileService = {
       ...payload,
       updated_by: updaterUserId
     })
+  },
+
+  async deleteDoctor(supabase: SupabaseClient, clinicId: string, doctorId: string) {
+    return await doctorRepository.deleteDoctor(supabase, clinicId, doctorId)
   }
 }

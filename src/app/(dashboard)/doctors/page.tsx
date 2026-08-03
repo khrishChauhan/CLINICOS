@@ -25,6 +25,9 @@ export default async function DoctorsPage({
 }) {
   const params = await searchParams
   const result = await getDoctorsAction()
+  if (!result.success) {
+    console.error('getDoctorsAction failed:', result.error)
+  }
   const doctors: DoctorRow[] = result.success ? result.data : []
 
   return (
@@ -33,6 +36,7 @@ export default async function DoctorsPage({
       initialSearch={params.search || ''}
       initialStatus={params.status || ''}
       hasError={!result.success}
+      errorMessage={result.error}
     />
   )
 }

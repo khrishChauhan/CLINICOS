@@ -1,22 +1,40 @@
 import React from 'react'
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient, createClient } from '@/lib/supabase/server'
 import { getQueueForToday } from '@/repositories/appointments/appointmentRepository'
 import QueueDashboardClient from './QueueDashboardClient'
+import { getDoctorsForClinicAction } from '@/actions/appointments/getDoctorsForClinicAction'
 
 export const metadata = {
-  title: 'Live Queue — Durga ClinicOS',
+  title: 'Live Queue — Clinicos',
 }
 
+export const dynamic = 'force-dynamic'
+
 export default async function QueuePage() {
-  const supabase = await createClient()
-  const { data: session } = await supabase.rpc('get_session_context')
-  
-  const clinicId = session?.clinic_id
-  
-  if (!clinicId) return <div>Unauthorized</div>
+  try {
+    const supabase = await createClient()
+    const adminClient = createAdminClient()
 
-  // For the receptionist, we fetch the whole queue. If Doctor, we could filter by doctorId.
-  const queue = await getQueueForToday(supabase, clinicId)
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (authError || !user) return <div className="flex items-center justify-center h-full text-slate-500">Please log in to view the queue.</div>
 
-  return <QueueDashboardClient initialQueue={queue} />
+    const { data: profile } = await adminClient.from('users').select('clinic_id').eq('id', user.id).single()
+    const clinicId = profile?.clinic_id
+    if (!clinicId) return <div className="flex items-center justify-center h-full text-slate-500">Clinic context not found.</div>
+
+    const [queue, doctorsResult] = await Promise.all([
+      getQueueForToday(adminClient, clinicId),
+      getDoctorsForClinicAction()
+    ])
+
+    return (
+      <QueueDashboardClient
+        initialQueue={queue}
+        doctors={doctorsResult.data || []}
+      />
+    )
+  } catch (err: any) {
+    console.error('QueuePage error:', err)
+    return <div className="flex items-center justify-center h-full text-red-500">Failed to load queue: {err.message}</div>
+  }
 }

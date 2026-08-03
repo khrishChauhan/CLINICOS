@@ -1,7 +1,8 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, use } from 'react'
 import DoctorProfileForm from '@/components/doctors/DoctorProfileForm'
+import DoctorProfileOverview from '@/components/doctors/DoctorProfileOverview'
 import DoctorQualificationsManager from '@/components/doctors/DoctorQualificationsManager'
 import DoctorRegistrationsManager from '@/components/doctors/DoctorRegistrationsManager'
 import BlockedSlotManager from '@/components/doctors/BlockedSlotManager'
@@ -17,8 +18,9 @@ import CommunicationPreferencesManager from '@/components/doctors/CommunicationP
 import LoginDevicesManager from '@/components/doctors/LoginDevicesManager'
 import AuditTimeline from '@/components/doctors/AuditTimeline'
 
-export default function DoctorProfilePage({ params }: { params: { id: string } }) {
-  const doctorId = params.id
+export default function DoctorProfilePage({ params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = use(params)
+  const doctorId = resolvedParams.id
   const isNew = doctorId === 'new'
   const [activeTab, setActiveTab] = useState<'profile' | 'qualifications' | 'registrations' | 'blocks' | 'leaves' | 'fees' | 'signature' | 'documents' | 'performance' | 'notes' | 'awards' | 'languages' | 'communication' | 'devices' | 'audit'>('profile')
 
@@ -127,7 +129,9 @@ export default function DoctorProfilePage({ params }: { params: { id: string } }
       </div>
 
       <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-        {activeTab === 'profile' && <DoctorProfileForm doctorId={isNew ? null : doctorId} />}
+        {activeTab === 'profile' && (
+          isNew ? <DoctorProfileForm doctorId={null} /> : <DoctorProfileOverview doctorId={doctorId} />
+        )}
         {activeTab === 'qualifications' && !isNew && <DoctorQualificationsManager doctorId={doctorId} />}
         {activeTab === 'registrations' && !isNew && <DoctorRegistrationsManager doctorId={doctorId} />}
         {activeTab === 'fees' && !isNew && <ConsultationFeeManager doctorId={doctorId} />}
