@@ -12,12 +12,7 @@ async function getAuthContext() {
   
   let clinicId = profile?.clinic_id;
   if (!clinicId) {
-    const { data: clinics } = await adminClient.from('clinics').select('id').limit(1)
-    if (clinics && clinics.length > 0) {
-      clinicId = clinics[0].id
-    } else {
-      throw new Error('Clinic context missing')
-    }
+    throw new Error('User is not associated with any clinic.')
   }
   
   return { supabase, adminClient, user, clinicId }

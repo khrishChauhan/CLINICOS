@@ -7,14 +7,26 @@ import { Button } from '@/components/ui/Button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/Card';
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/Table';
 import { Badge } from '@/components/ui/Badge';
-import { mockDoctors, mockAppointments } from '@/data/mockData';
+import { getAppointmentsAction, getAppointmentStatsAction } from '@/actions/appointments/getAppointmentsAction';
+import { getDoctorsForClinicAction } from '@/actions/appointments/getDoctorsForClinicAction';
 
-export default function Dashboard() {
+export default async function Dashboard() {
   const currentDate = new Date().toLocaleDateString('en-US', {
     month: 'long',
     day: 'numeric',
     year: 'numeric'
   });
+  const today = new Date().toISOString().split('T')[0];
+
+  // Fetch real data — all may fail gracefully if user has no clinic (new setup)
+  const [aptRes, statsRes, doctorsRes] = await Promise.all([
+    getAppointmentsAction(today).catch(() => ({ success: false, data: [] })),
+    getAppointmentStatsAction(today).catch(() => ({ success: false, stats: { total: 0, scheduled: 0, checkedIn: 0, inConsultation: 0, completed: 0, cancelled: 0 } })),
+    getDoctorsForClinicAction().catch(() => ({ success: false, data: [] })),
+  ]);
+  const liveAppointments: any[] = (aptRes as any).data ?? [];
+  const liveStats: any = (statsRes as any).stats ?? {};
+  const liveDoctors: any[] = (doctorsRes as any).data ?? [];
 
   return (
     <main className="flex-1 p-6 max-w-7xl w-full mx-auto space-y-6 z-10 relative">
@@ -43,7 +55,7 @@ export default function Dashboard() {
               <div className="flex justify-between items-start">
                 <div>
                   <p className="text-slate-400 text-xs font-semibold uppercase tracking-wider">Today's Appointments</p>
-                  <h3 className="text-3xl font-bold text-slate-800 mt-1">25</h3>
+                  <h3 className="text-3xl font-bold text-slate-800 mt-1">{liveStats.total ?? 0}</h3>
                 </div>
                 <div className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg text-blue-600">
                   <Calendar className="w-5 h-5" />
@@ -226,23 +238,26 @@ export default function Dashboard() {
                 </button>
               </div>
               <div className="space-y-3.5">
-                {mockDoctors.map(doc => (
+                {liveDoctors.slice(0, 6).map(doc => (
                   <div key={doc.id} className="flex items-center justify-between p-2.5 rounded-xl hover:bg-white/60 transition border border-transparent hover:border-slate-200/40">
                     <div className="flex items-center gap-3">
                       <div className="w-9 h-9 rounded-full bg-blue-500/10 text-blue-600 flex items-center justify-center font-bold text-xs uppercase border border-blue-500/20">
-                        {doc.name.split(' ').map(n => n[0]).join('').replace('D', '').substring(0, 2)}
+                        {`${doc.first_name?.[0] ?? ''}${doc.last_name?.[0] ?? ''}`}
                       </div>
                       <div>
-                        <h4 className="text-sm font-semibold text-slate-700 leading-tight">{doc.name}</h4>
-                        <p className="text-xs text-slate-400 mt-0.5">{doc.specialty}</p>
+                        <h4 className="text-sm font-semibold text-slate-700 leading-tight">Dr. {doc.first_name} {doc.last_name}</h4>
+                        <p className="text-xs text-slate-400 mt-0.5">{doc.doctor_code || 'General'}</p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <span className="text-sm font-bold text-slate-800">{doc.patientsToday}</span>
+                      <span className="text-sm font-bold text-slate-800">—</span>
                       <p className="text-[10px] text-slate-400">tokens</p>
                     </div>
                   </div>
                 ))}
+                {liveDoctors.length === 0 && (
+                  <p className="text-xs text-slate-400 text-center py-4">No doctors registered yet.</p>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -272,29 +287,34 @@ export default function Dashboard() {
                   </TableRow>
                 </TableHeader>
                 <TableBody className="divide-y divide-slate-100/40">
-                  {mockAppointments.map((apt, idx) => (
+                  {liveAppointments.slice(0, 5).map((apt: any, idx: number) => (
                     <TableRow key={apt.id} className="hover:bg-white/40 border-none">
                       <TableCell className="py-3 px-3 font-mono font-bold text-slate-500">
-                        #{String(idx + 1).padStart(2, '0')}
+                        {apt.appointment_number || `#${String(idx + 1).padStart(2, '0')}`}
                       </TableCell>
                       <TableCell className="py-3 px-3">
-                        <div className="font-semibold text-slate-800">{apt.patient}</div>
-                        <div className="text-[10px] text-slate-400">{apt.id.replace('APT', 'PAT')}</div>
+                        <div className="font-semibold text-slate-800">{apt.patient?.first_name} {apt.patient?.last_name}</div>
+                        <div className="text-[10px] text-slate-400">{apt.patient?.uhid}</div>
                       </TableCell>
-                      <TableCell className="py-3 px-3 text-slate-600 font-medium">{apt.doctor}</TableCell>
-                      <TableCell className="py-3 px-3 text-slate-500">{apt.time}</TableCell>
+                      <TableCell className="py-3 px-3 text-slate-600 font-medium">—</TableCell>
+                      <TableCell className="py-3 px-3 text-slate-500">{apt.appointment_start_time?.substring(0, 5) || '—'}</TableCell>
                       <TableCell className="py-3 px-3">
                         <span className="px-2 py-0.5 bg-white/60 border border-slate-200/50 rounded text-xs text-slate-600 font-medium">
-                          {apt.type}
+                          {apt.visit_type || apt.consultation_type || 'OPD'}
                         </span>
                       </TableCell>
                       <TableCell className="py-3 px-3 text-right">
-                        <Badge variant={apt.status === 'Completed' ? 'success' : apt.status === 'In Progress' ? 'info' : 'warning'}>
+                        <Badge variant={apt.status === 'Completed' ? 'success' : apt.status === 'In Consultation' ? 'info' : 'warning'}>
                           {apt.status}
                         </Badge>
                       </TableCell>
                     </TableRow>
                   ))}
+                  {liveAppointments.length === 0 && (
+                    <TableRow>
+                      <TableCell colSpan={6} className="py-8 text-center text-slate-400 text-sm">No appointments scheduled for today.</TableCell>
+                    </TableRow>
+                  )}
                 </TableBody>
               </Table>
             </CardContent>

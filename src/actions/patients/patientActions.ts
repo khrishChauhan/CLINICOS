@@ -117,6 +117,7 @@ export async function updatePatientAction(id: string, formData: UpdatePatientInp
       updated_at: new Date().toISOString(),
     })
     .eq('id', id)
+    .eq('clinic_id', auth.ctx.clinic_id) // BUG-09 FIX: scope to clinic to prevent cross-clinic data leakage
     .eq('is_deleted', false)
 
   if (error) return { ok: false, error: 'DB_ERROR', message: error.message }

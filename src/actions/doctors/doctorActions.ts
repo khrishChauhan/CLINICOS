@@ -11,32 +11,20 @@ import { doctorDepartmentRepository } from '@/repositories/doctors/doctorDepartm
 async function getAuthContext() {
   const supabase = await createClient()
   const adminClient = createAdminClient()
-  
-  let userId = 'system'
+
+  const { data: { user }, error: authError } = await supabase.auth.getUser()
+  if (authError || !user) throw new Error('Unauthorized')
+
+  const userId = user.id
   let clinicId: string | null = null
 
-  try {
-    const { data: { user } } = await supabase.auth.getUser()
-    if (user) {
-      userId = user.id
-      const { data: profile } = await adminClient.from('users').select('clinic_id').eq('id', user.id).single()
-      if (profile?.clinic_id) {
-        clinicId = profile.clinic_id
-      }
-    }
-  } catch (err) {
-    // Auth cookie missing or invalid, fallback to admin client
+  const { data: profile } = await adminClient.from('users').select('clinic_id').eq('id', user.id).single()
+  if (profile?.clinic_id) {
+    clinicId = profile.clinic_id
   }
 
   if (!clinicId) {
-    const { data: clinics } = await adminClient.from('clinics').select('id').limit(1)
-    if (clinics && clinics.length > 0) {
-      clinicId = clinics[0].id
-    }
-  }
-
-  if (!clinicId) {
-    clinicId = '00000000-0000-0000-0000-000000000000'
+    throw new Error('User is not associated with any clinic. Please contact support.')
   }
 
   return { supabase, adminClient, user: { id: userId }, userId, clinicId }
@@ -77,7 +65,7 @@ export async function addDoctorQualificationAction(payload: any) {
   try {
     const { adminClient, clinicId } = await getAuthContext()
     const data = await doctorQualificationRepository.createQualification(adminClient, { ...payload, clinic_id: clinicId })
-    revalidatePath(`/doctors/${payload.doctor_id}/profile`)
+    revalidatePath(`/doctors/${payload.doctor_id}`)
     return { success: true, data }
   } catch (error: any) {
     return { success: false, error: error.message }
@@ -99,7 +87,7 @@ export async function addDoctorRegistrationAction(payload: any) {
   try {
     const { adminClient, clinicId } = await getAuthContext()
     const data = await doctorRegistrationRepository.createRegistration(adminClient, { ...payload, clinic_id: clinicId })
-    revalidatePath(`/doctors/${payload.doctor_id}/profile`)
+    revalidatePath(`/doctors/${payload.doctor_id}`)
     return { success: true, data }
   } catch (error: any) {
     return { success: false, error: error.message }
@@ -121,7 +109,7 @@ export async function addDoctorSpecializationAction(payload: any) {
   try {
     const { adminClient, clinicId } = await getAuthContext()
     const data = await doctorSpecializationRepository.createSpecialization(adminClient, { ...payload, clinic_id: clinicId })
-    revalidatePath(`/doctors/${payload.doctor_id}/profile`)
+    revalidatePath(`/doctors/${payload.doctor_id}`)
     return { success: true, data }
   } catch (error: any) {
     return { success: false, error: error.message }
@@ -143,7 +131,7 @@ export async function assignDoctorDepartmentAction(payload: any) {
   try {
     const { adminClient, clinicId } = await getAuthContext()
     const data = await doctorDepartmentRepository.createDepartment(adminClient, { ...payload, clinic_id: clinicId })
-    revalidatePath(`/doctors/${payload.doctor_id}/profile`)
+    revalidatePath(`/doctors/${payload.doctor_id}`)
     return { success: true, data }
   } catch (error: any) {
     return { success: false, error: error.message }

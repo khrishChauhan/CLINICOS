@@ -34,7 +34,7 @@ export default function DoctorDashboardClient({ initialQueue, doctorId }: Props)
   }
 
   // Doctor only cares about Checked In, Waiting, and In Consultation
-  const waiting = queue.filter(q => q.status === 'Checked In' || q.status === 'Waiting')
+  const waiting = queue.filter(q => q.status === 'Checked In')
   const inConsult = queue.filter(q => q.status === 'In Consultation')
   const completed = queue.filter(q => q.status === 'Completed')
 

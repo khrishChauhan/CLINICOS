@@ -66,13 +66,12 @@ export async function callNextPatientAction(doctorId: string) {
   }
 }
 
-export async function startConsultationAction(appointmentId: string) {
+export async function startConsultationFromQueueAction(appointmentId: string) {
   try {
     const supabase = await createClient()
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     
     if (authError || !user) throw new Error('Unauthorized')
-
     const adminClient = createAdminClient()
     const result = await queueService.startConsultation(adminClient, appointmentId, user.id)
     revalidatePath('/doctor')

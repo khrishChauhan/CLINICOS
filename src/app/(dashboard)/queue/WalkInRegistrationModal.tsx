@@ -170,7 +170,7 @@ export default function WalkInRegistrationModal({ onClose, onSuccess, doctors }:
               >
                 <option value="">Any available doctor</option>
                 {doctors.map(doc => (
-                  <option key={doc.id} value={doc.user_id ?? doc.id}>
+                  <option key={doc.id} value={doc.user_id}>
                     Dr. {doc.first_name} {doc.last_name}
                   </option>
                 ))}

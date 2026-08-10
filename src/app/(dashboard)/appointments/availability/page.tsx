@@ -1,14 +1,25 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { CalendarDays, Clock, Plus, Trash2, Edit2 } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
-import { mockDoctors } from '@/data/mockData'
+import { getDoctorsForClinicAction } from '@/actions/appointments/getDoctorsForClinicAction'
+import type { DoctorForDropdown } from '@/actions/appointments/getDoctorsForClinicAction'
 
 export default function AvailabilityManager() {
-  const [selectedDoctor, setSelectedDoctor] = useState(mockDoctors[0]?.id || '')
+  const [doctors, setDoctors] = useState<DoctorForDropdown[]>([])
+  const [selectedDoctor, setSelectedDoctor] = useState('')
+
+  useEffect(() => {
+    getDoctorsForClinicAction().then(res => {
+      if (res.success && res.data.length > 0) {
+        setDoctors(res.data)
+        setSelectedDoctor(res.data[0].user_id)
+      }
+    }).catch(() => {})
+  }, [])
 
   return (
     <main className="flex-1 p-6 max-w-7xl w-full mx-auto space-y-6 z-10 relative">
@@ -23,9 +34,12 @@ export default function AvailabilityManager() {
             onChange={(e) => setSelectedDoctor(e.target.value)}
             className="text-sm font-bold border border-slate-200 rounded-xl px-4 py-2 bg-white text-slate-700 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
           >
-            {mockDoctors.map(doc => (
-              <option key={doc.id} value={doc.id}>{doc.name}</option>
+            {doctors.map(doc => (
+              <option key={doc.id} value={doc.user_id}>
+                Dr. {doc.first_name} {doc.last_name}
+              </option>
             ))}
+            {doctors.length === 0 && <option value="">Loading doctors...</option>}
           </select>
           <Button>Save Changes</Button>
         </div>

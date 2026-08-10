@@ -71,7 +71,7 @@ export default function QueueDashboardClient({ initialQueue, doctors }: Props) {
 
   // Grouping
   const scheduled = queue.filter(q => q.status === 'Scheduled')
-  const waiting = queue.filter(q => q.status === 'Checked In' || q.status === 'Waiting').sort((a, b) =>
+  const waiting = queue.filter(q => q.status === 'Checked In').sort((a, b) =>
     (a.appointment_number || '').localeCompare(b.appointment_number || ''))
   const inConsult = queue.filter(q => q.status === 'In Consultation')
   const completed = queue.filter(q => q.status === 'Completed')
