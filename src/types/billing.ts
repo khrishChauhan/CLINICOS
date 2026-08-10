@@ -22,7 +22,7 @@ export interface BillingInvoiceRow {
   id: string
   clinic_id: string
   patient_id: string
-  consultation_id: string | null
+  visit_id: string | null
   invoice_number: string
   status: 'Draft' | 'Issued' | 'Partially Paid' | 'Paid' | 'Cancelled' | 'Refunded'
   subtotal: number

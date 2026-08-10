@@ -63,13 +63,13 @@ export default function InvoiceBuilderClient({ invoice, items, catalog }: Props)
   }
 
   return (
-    <div className="p-8 max-w-5xl mx-auto space-y-6">
+    <div className="p-8 max-w-5xl mx-auto space-y-6 print:p-0 print:m-0 print:space-y-4">
       <div className="flex justify-between items-center bg-white p-6 rounded-lg border shadow-sm">
         <div>
           <h1 className="text-2xl font-bold">Invoice {invoice.invoice_number || 'DRAFT'}</h1>
           <p className="text-gray-500">Status: <span className="font-semibold text-blue-600">{invoice.status}</span></p>
         </div>
-        <div className="space-x-4">
+        <div className="space-x-4 print:hidden">
           {isDraft && (
             <button onClick={handleIssue} className="bg-blue-600 text-white px-6 py-2 rounded font-medium hover:bg-blue-700">
               Issue Invoice
@@ -78,6 +78,11 @@ export default function InvoiceBuilderClient({ invoice, items, catalog }: Props)
           {canPay && (
             <button onClick={() => setShowPayment(true)} className="bg-emerald-600 text-white px-6 py-2 rounded font-medium hover:bg-emerald-700">
               Collect Payment
+            </button>
+          )}
+          {!isDraft && (
+            <button onClick={() => window.print()} className="bg-slate-800 text-white px-6 py-2 rounded font-medium hover:bg-slate-900">
+              Print Receipt
             </button>
           )}
         </div>

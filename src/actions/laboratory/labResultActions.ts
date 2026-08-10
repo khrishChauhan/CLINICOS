@@ -1,6 +1,6 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { labTestService } from '@/services/laboratory/labTestService'
 import { revalidatePath } from 'next/cache'
 import type { CreateLabTestPayload, RecordLabResultPayload } from '@/types/laboratory'
@@ -9,7 +9,8 @@ async function getAuthContext() {
   const supabase = await createClient()
   const { data: { user }, error } = await supabase.auth.getUser()
   if (error || !user) throw new Error('Unauthorized')
-  const { data: profile } = await supabase.from('users').select('clinic_id').eq('id', user.id).single()
+  const adminClient = createAdminClient()
+  const { data: profile } = await adminClient.from('users').select('clinic_id').eq('id', user.id).single()
   if (!profile?.clinic_id) throw new Error('Clinic not found')
   return { supabase, user, clinicId: profile.clinic_id }
 }

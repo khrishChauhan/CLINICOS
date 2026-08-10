@@ -27,6 +27,7 @@ async function getAuthContext() {
 
 export interface DoctorForDropdown {
   id: string
+  user_id: string
   first_name: string
   last_name: string
   doctor_code: string
@@ -41,7 +42,7 @@ export async function getDoctorsForClinicAction() {
     const { data, error } = await adminClient
       .schema('doctor')
       .from('doctors')
-      .select('id, first_name, last_name, doctor_code, status, experience_years')
+      .select('id, user_id, first_name, last_name, doctor_code, status, experience_years')
       .eq('clinic_id', clinicId)
       .eq('status', 'Active')
       .order('first_name', { ascending: true })

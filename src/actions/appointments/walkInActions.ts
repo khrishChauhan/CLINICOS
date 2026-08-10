@@ -1,6 +1,6 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { walkInService } from '@/services/appointments/walkInService'
 import { revalidatePath } from 'next/cache'
 
@@ -12,21 +12,25 @@ export async function registerWalkInAction(
 ) {
   try {
     const supabase = await createClient()
+    const adminClient = createAdminClient()
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     
     if (authError || !user) throw new Error('Unauthorized')
 
-    const { data: profile } = await supabase
+    const { data: profile } = await adminClient
       .from('users')
       .select('clinic_id')
       .eq('id', user.id)
       .single()
 
-    if (!profile?.clinic_id) throw new Error('Clinic ID not found')
+    let clinicId = profile?.clinic_id;
+    if (!clinicId) {
+      throw new Error('Clinic ID not found for this user.')
+    }
 
     const result = await walkInService.registerWalkInAndJoinQueue(
-      supabase,
-      profile.clinic_id,
+      adminClient,
+      clinicId,
       patientId,
       doctorId,
       priority,

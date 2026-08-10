@@ -4,7 +4,7 @@ import type { DiagnosisHistoryRow } from '@/types/emr'
 export const diagnosisHistoryRepository = {
   async getByPatient(supabase: SupabaseClient, patientId: string): Promise<DiagnosisHistoryRow[]> {
     const { data, error } = await supabase
-      .schema('emr')
+      
       .from('diagnosis_history')
       .select('*')
       .eq('patient_id', patientId)

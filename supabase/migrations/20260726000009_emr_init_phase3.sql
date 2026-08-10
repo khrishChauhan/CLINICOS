@@ -5,10 +5,10 @@
 -- ─────────────────────────────────────────────────────────────────────────────
 -- Clinical Notes
 -- ─────────────────────────────────────────────────────────────────────────────
-CREATE TABLE IF NOT EXISTS emr.clinical_notes (
+CREATE TABLE IF NOT EXISTS public.clinical_notes (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     clinic_id UUID NOT NULL REFERENCES public.clinics(id) ON DELETE CASCADE,
-    visit_id UUID NOT NULL REFERENCES emr.visits(id) ON DELETE CASCADE,
+    visit_id UUID NOT NULL REFERENCES public.visits(id) ON DELETE CASCADE,
     
     note_type VARCHAR(100) NOT NULL, -- Progress, Consultation, Nursing, Observation
     note TEXT NOT NULL,
@@ -21,15 +21,15 @@ CREATE TABLE IF NOT EXISTS emr.clinical_notes (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-CREATE INDEX IF NOT EXISTS idx_clinical_notes_visit ON emr.clinical_notes(visit_id);
+CREATE INDEX IF NOT EXISTS idx_clinical_notes_visit ON public.clinical_notes(visit_id);
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- Follow Up Plans
 -- ─────────────────────────────────────────────────────────────────────────────
-CREATE TABLE IF NOT EXISTS emr.follow_up_plans (
+CREATE TABLE IF NOT EXISTS public.follow_up_plans (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     clinic_id UUID NOT NULL REFERENCES public.clinics(id) ON DELETE CASCADE,
-    visit_id UUID NOT NULL REFERENCES emr.visits(id) ON DELETE CASCADE,
+    visit_id UUID NOT NULL REFERENCES public.visits(id) ON DELETE CASCADE,
     
     followup_date DATE NOT NULL,
     followup_reason TEXT,
@@ -42,15 +42,15 @@ CREATE TABLE IF NOT EXISTS emr.follow_up_plans (
     CONSTRAINT follow_up_plans_visit_unique UNIQUE (visit_id)
 );
 
-CREATE INDEX IF NOT EXISTS idx_follow_up_plans_visit ON emr.follow_up_plans(visit_id);
+CREATE INDEX IF NOT EXISTS idx_follow_up_plans_visit ON public.follow_up_plans(visit_id);
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- Clinical Attachments
 -- ─────────────────────────────────────────────────────────────────────────────
-CREATE TABLE IF NOT EXISTS emr.clinical_attachments (
+CREATE TABLE IF NOT EXISTS public.clinical_attachments (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     clinic_id UUID NOT NULL REFERENCES public.clinics(id) ON DELETE CASCADE,
-    visit_id UUID NOT NULL REFERENCES emr.visits(id) ON DELETE CASCADE,
+    visit_id UUID NOT NULL REFERENCES public.visits(id) ON DELETE CASCADE,
     
     attachment_path TEXT NOT NULL, -- Supabase Storage path
     attachment_type VARCHAR(100) NOT NULL, -- Medical Image, Lab Report, etc.
@@ -63,20 +63,20 @@ CREATE TABLE IF NOT EXISTS emr.clinical_attachments (
     uploaded_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-CREATE INDEX IF NOT EXISTS idx_clinical_attachments_visit ON emr.clinical_attachments(visit_id);
+CREATE INDEX IF NOT EXISTS idx_clinical_attachments_visit ON public.clinical_attachments(visit_id);
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- RLS Policies
 -- ─────────────────────────────────────────────────────────────────────────────
-ALTER TABLE emr.clinical_notes ENABLE ROW LEVEL SECURITY;
-ALTER TABLE emr.follow_up_plans ENABLE ROW LEVEL SECURITY;
-ALTER TABLE emr.clinical_attachments ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.clinical_notes ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.follow_up_plans ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.clinical_attachments ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY emr_clinical_notes_policy ON emr.clinical_notes
+CREATE POLICY emr_clinical_notes_policy ON public.clinical_notes
     FOR ALL USING (clinic_id = (SELECT clinic_id FROM public.users WHERE id = auth.uid()));
 
-CREATE POLICY emr_follow_up_plans_policy ON emr.follow_up_plans
+CREATE POLICY emr_follow_up_plans_policy ON public.follow_up_plans
     FOR ALL USING (clinic_id = (SELECT clinic_id FROM public.users WHERE id = auth.uid()));
 
-CREATE POLICY emr_clinical_attachments_policy ON emr.clinical_attachments
+CREATE POLICY emr_clinical_attachments_policy ON public.clinical_attachments
     FOR ALL USING (clinic_id = (SELECT clinic_id FROM public.users WHERE id = auth.uid()));

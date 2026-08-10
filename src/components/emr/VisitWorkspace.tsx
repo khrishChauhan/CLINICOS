@@ -18,6 +18,7 @@ import ReferralsPanel from './ReferralsPanel'
 import TreatmentPlansPanel from './TreatmentPlansPanel'
 import ClinicalOrdersPanel from './ClinicalOrdersPanel'
 import EMRAuditPanel from './EMRAuditPanel'
+import PatientContextHeader from './PatientContextHeader'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import type { VisitRow } from '@/types/emr'
@@ -101,6 +102,7 @@ export default function VisitWorkspace({ visitId, onComplete }: VisitWorkspacePr
   return (
     <div className="flex flex-col h-full min-h-[600px]">
       <ClinicalAlertsBanner patientId={visit.patient_id} />
+      <PatientContextHeader patientId={visit.patient_id} />
 
       {/* Visit Header */}
       <div className="flex items-center justify-between gap-4 pb-4 border-b border-slate-200 mb-4 flex-wrap">
@@ -146,7 +148,7 @@ export default function VisitWorkspace({ visitId, onComplete }: VisitWorkspacePr
         {activeTab === 'diagnoses' && <DiagnosesPanel visitId={visitId} patientId={visit.patient_id} />}
         {activeTab === 'procedures' && <ProceduresPanel visitId={visitId} />}
         {activeTab === 'prescription' && <PrescriptionBuilder visitId={visitId} doctorId={visit.doctor_id} />}
-        {activeTab === 'orders' && <ClinicalOrdersPanel visitId={visitId} />}
+        {activeTab === 'orders' && <ClinicalOrdersPanel visitId={visitId} patientId={visit.patient_id} doctorId={visit.doctor_id} />}
         {activeTab === 'clinical_notes' && <ClinicalNotesPanel visitId={visitId} />}
         {activeTab === 'alerts' && <ClinicalAlertsPanel patientId={visit.patient_id} visitId={visitId} />}
         {activeTab === 'treatment_plans' && <TreatmentPlansPanel patientId={visit.patient_id} visitId={visitId} />}

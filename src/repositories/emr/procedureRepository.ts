@@ -4,7 +4,7 @@ import type { ProcedureRow } from '@/types/emr'
 export const procedureRepository = {
   async getByVisit(supabase: SupabaseClient, visitId: string): Promise<ProcedureRow[]> {
     const { data, error } = await supabase
-      .schema('emr')
+      
       .from('procedures')
       .select('*')
       .eq('visit_id', visitId)
@@ -15,7 +15,7 @@ export const procedureRepository = {
 
   async create(supabase: SupabaseClient, payload: Partial<ProcedureRow>): Promise<ProcedureRow> {
     const { data, error } = await supabase
-      .schema('emr')
+      
       .from('procedures')
       .insert([payload])
       .select()
@@ -26,7 +26,7 @@ export const procedureRepository = {
 
   async update(supabase: SupabaseClient, id: string, updates: Partial<ProcedureRow>): Promise<ProcedureRow> {
     const { data, error } = await supabase
-      .schema('emr')
+      
       .from('procedures')
       .update({ ...updates, updated_at: new Date().toISOString() })
       .eq('id', id)
@@ -38,7 +38,7 @@ export const procedureRepository = {
 
   async delete(supabase: SupabaseClient, id: string): Promise<void> {
     const { error } = await supabase
-      .schema('emr')
+      
       .from('procedures')
       .delete()
       .eq('id', id)

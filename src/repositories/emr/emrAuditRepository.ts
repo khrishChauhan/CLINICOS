@@ -4,7 +4,7 @@ import type { EMRAuditRow } from '@/types/emr'
 export const emrAuditRepository = {
   async getByPatient(supabase: SupabaseClient, patientId: string): Promise<EMRAuditRow[]> {
     const { data, error } = await supabase
-      .schema('emr')
+      
       .from('emr_audit')
       .select('*')
       .eq('patient_id', patientId)
@@ -15,7 +15,7 @@ export const emrAuditRepository = {
 
   async insert(supabase: SupabaseClient, payload: Partial<EMRAuditRow>): Promise<EMRAuditRow> {
     const { data, error } = await supabase
-      .schema('emr')
+      
       .from('emr_audit')
       .insert([payload])
       .select()

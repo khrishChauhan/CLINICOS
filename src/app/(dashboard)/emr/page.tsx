@@ -1,36 +1,57 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { getTodaysVisitsAction, startConsultationAction } from '@/actions/emr/visitActions'
-import VisitWorkspace from '@/components/emr/VisitWorkspace'
+import { getAppointmentsAction, getAppointmentStatsAction } from '@/actions/appointments/getAppointmentsAction'
+import { startConsultationAction } from '@/actions/emr/visitActions'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
-import type { VisitRow } from '@/types/emr'
+import { useRouter } from 'next/navigation'
+import type { AppointmentRow } from '@/types/appointments'
 
-export default function EMRDashboard() {
-  const [visits, setVisits] = useState<VisitRow[]>([])
-  const [activeVisit, setActiveVisit] = useState<VisitRow | null>(null)
+export default function DoctorActiveQueue() {
+  const router = useRouter()
+  const [appointments, setAppointments] = useState<AppointmentRow[]>([])
+  const [stats, setStats] = useState<any>({})
   const [loading, setLoading] = useState(true)
+  const [starting, setStarting] = useState<string | null>(null)
 
-  const loadVisits = async () => {
+  const loadQueue = async () => {
     setLoading(true)
-    const res = await getTodaysVisitsAction()
-    if (res.success && res.data) setVisits(res.data)
+    const today = new Date().toISOString().split('T')[0]
+    
+    // We assume getAppointmentsAction without doctorId fetches all, 
+    // but the backend uses the authenticated user context if doctor is required, 
+    // or we fetch all and filter by current user if necessary. 
+    // Wait, the action `getAppointmentsAction` takes (date, doctorId). 
+    // We can just fetch all for the clinic, then filter by the current logged-in doctor?
+    // Actually, getAppointmentsAction handles fetching. Let's fetch all and the doctor can see their queue.
+    const res = await getAppointmentsAction(today)
+    if (res.success && res.data) {
+      // Filter only Checked In, Waiting, or In Consultation
+      const active = res.data.filter((a: any) => 
+        ['Checked In', 'Waiting', 'In Consultation'].includes(a.status)
+      )
+      setAppointments(active)
+    }
+    
+    const statsRes = await getAppointmentStatsAction(today)
+    if (statsRes.success) setStats(statsRes.stats)
+    
     setLoading(false)
   }
 
-  useEffect(() => { loadVisits() }, [])
+  useEffect(() => { loadQueue() }, [])
 
-  const handleVisitComplete = (visit: VisitRow) => {
-    setVisits(prev => prev.map(v => v.id === visit.id ? visit : v))
-    setActiveVisit(visit)
-  }
-
-  const statusVariant = (s: string) => {
-    if (s === 'Completed') return 'success'
-    if (s === 'Cancelled') return 'danger'
-    return 'info'
+  const handleStartConsultation = async (appt: AppointmentRow) => {
+    setStarting(appt.id)
+    const res = await startConsultationAction(appt.id, appt.patient_id, appt.doctor_id)
+    if (res.success && res.data) {
+      router.push(`/emr/${res.data.id}`)
+    } else {
+      alert('Failed to start consultation: ' + res.error)
+      setStarting(null)
+    }
   }
 
   return (
@@ -38,69 +59,86 @@ export default function EMRDashboard() {
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-800">EMR — Consultation Desk</h1>
+          <h1 className="text-2xl font-bold text-slate-800">Doctor's Active Queue</h1>
           <p className="text-sm text-slate-500 mt-0.5">
-            Today's active visits &amp; clinical records
+            Patients waiting for consultation today
           </p>
         </div>
-        <Button onClick={loadVisits} variant="outline" size="sm">⟳ Refresh</Button>
+        <div className="flex items-center gap-4">
+          <div className="flex gap-4 text-sm">
+            <div className="bg-white px-4 py-2 rounded-lg border shadow-sm flex flex-col items-center">
+              <span className="text-slate-500 text-xs font-semibold uppercase">Waiting</span>
+              <span className="text-lg font-bold text-blue-600">{stats.checkedIn || 0}</span>
+            </div>
+            <div className="bg-white px-4 py-2 rounded-lg border shadow-sm flex flex-col items-center">
+              <span className="text-slate-500 text-xs font-semibold uppercase">In Progress</span>
+              <span className="text-lg font-bold text-orange-500">{stats.inConsultation || 0}</span>
+            </div>
+            <div className="bg-white px-4 py-2 rounded-lg border shadow-sm flex flex-col items-center">
+              <span className="text-slate-500 text-xs font-semibold uppercase">Completed</span>
+              <span className="text-lg font-bold text-emerald-600">{stats.completed || 0}</span>
+            </div>
+          </div>
+          <Button onClick={loadQueue} variant="outline" size="sm">⟳ Refresh</Button>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Visit List */}
-        <div className="space-y-3">
-          <h2 className="font-semibold text-slate-700 text-sm uppercase tracking-wide">Today's Visits</h2>
-          {loading && (
-            <div className="text-slate-400 text-sm animate-pulse text-center py-8">Loading visits...</div>
-          )}
-          {!loading && visits.length === 0 && (
-            <div className="text-center py-10 text-slate-400 text-sm bg-slate-50 rounded-xl border border-dashed border-slate-200">
-              No visits recorded today.<br />
-              <span className="text-xs">Visits are created when a consultation starts from an appointment.</span>
-            </div>
-          )}
-          {visits.map(v => (
-            <div
-              key={v.id}
-              onClick={() => setActiveVisit(v)}
-              className={`p-4 rounded-xl border cursor-pointer transition-all ${
-                activeVisit?.id === v.id
-                  ? 'border-blue-500 bg-blue-50 shadow-sm'
-                  : 'border-slate-200 bg-white hover:border-slate-300 hover:shadow-sm'
-              }`}
-            >
-              <div className="flex items-center justify-between mb-1">
-                <span className="font-mono font-bold text-blue-700 text-sm">{v.visit_number}</span>
-                <Badge variant={statusVariant(v.consultation_status)}>{v.consultation_status}</Badge>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {loading && (
+          <div className="col-span-full text-slate-400 text-sm animate-pulse text-center py-8">Loading queue...</div>
+        )}
+        {!loading && appointments.length === 0 && (
+          <div className="col-span-full text-center py-16 text-slate-400 text-sm bg-slate-50 rounded-xl border border-dashed border-slate-200">
+            <div className="text-4xl mb-3">☕</div>
+            No patients currently waiting.<br />
+            <span className="text-xs">Enjoy your break!</span>
+          </div>
+        )}
+        {appointments.map((appt: any) => (
+          <Card key={appt.id} className="p-5 flex flex-col border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+            <div className="flex justify-between items-start mb-4">
+              <div>
+                <h3 className="font-bold text-slate-800 text-lg">
+                  {appt.patient?.first_name} {appt.patient?.last_name}
+                </h3>
+                <div className="text-sm text-slate-500 font-mono mt-1">UHID: {appt.patient?.uhid}</div>
               </div>
-              <div className="text-xs text-slate-500">{v.visit_date} · {v.visit_type}</div>
-              {v.chief_complaint && (
-                <div className="text-xs text-slate-700 mt-1 font-medium truncate">{v.chief_complaint}</div>
-              )}
+              <Badge variant={appt.status === 'In Consultation' ? 'warning' : 'info'}>
+                {appt.status}
+              </Badge>
             </div>
-          ))}
-        </div>
 
-        {/* Workspace */}
-        <div className="lg:col-span-2">
-          {activeVisit ? (
-            <Card className="p-5">
-              <VisitWorkspace visitId={activeVisit.id} onComplete={handleVisitComplete} />
-            </Card>
-          ) : (
-            <Card className="p-10 flex flex-col items-center justify-center text-center min-h-[400px]">
-              <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mb-4">
-                <svg className="w-8 h-8 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
+            <div className="space-y-2 mb-6">
+              <div className="flex justify-between text-sm">
+                <span className="text-slate-500">Token</span>
+                <span className="font-semibold">{appt.token_number || 'N/A'}</span>
               </div>
-              <h3 className="font-semibold text-slate-700 mb-1">Select a Visit</h3>
-              <p className="text-sm text-slate-400 max-w-xs">
-                Select a visit from the list to open the consultation workspace with SOAP notes, vitals, and chief complaints.
-              </p>
-            </Card>
-          )}
-        </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-slate-500">Type</span>
+                <span className="font-medium">{appt.appointment_type}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-slate-500">Doctor</span>
+                <span className="font-medium text-slate-700">{appt.doctor?.last_name ? `Dr. ${appt.doctor.last_name}` : 'Unassigned'}</span>
+              </div>
+            </div>
+
+            <div className="mt-auto">
+              <Button 
+                className="w-full"
+                variant={appt.status === 'In Consultation' ? 'outline' : 'primary'}
+                disabled={starting === appt.id}
+                onClick={() => handleStartConsultation(appt)}
+              >
+                {starting === appt.id 
+                  ? 'Loading...' 
+                  : appt.status === 'In Consultation' 
+                    ? 'Resume Consultation' 
+                    : 'Start Consultation'}
+              </Button>
+            </div>
+          </Card>
+        ))}
       </div>
     </main>
   )

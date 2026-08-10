@@ -94,6 +94,7 @@ export default function ChiefComplaintsPanel({ visitId }: { visitId: string }) {
             <label className="text-xs font-semibold text-slate-500 uppercase">Chief Complaint *</label>
             <Input
               required
+              autoFocus
               value={form.complaint}
               onChange={e => setForm({ ...form, complaint: e.target.value })}
               placeholder="e.g. Severe headache, Chest pain..."

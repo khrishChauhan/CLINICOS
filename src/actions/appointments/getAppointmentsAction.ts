@@ -9,8 +9,18 @@ async function getAuthContext() {
   const { data: { user }, error } = await supabase.auth.getUser()
   if (error || !user) throw new Error('Unauthorized')
   const { data: profile } = await adminClient.from('users').select('clinic_id').eq('id', user.id).single()
-  if (!profile?.clinic_id) throw new Error('Clinic context missing')
-  return { supabase, adminClient, user, clinicId: profile.clinic_id }
+  
+  let clinicId = profile?.clinic_id;
+  if (!clinicId) {
+    const { data: clinics } = await adminClient.from('clinics').select('id').limit(1)
+    if (clinics && clinics.length > 0) {
+      clinicId = clinics[0].id
+    } else {
+      throw new Error('Clinic context missing')
+    }
+  }
+  
+  return { supabase, adminClient, user, clinicId }
 }
 
 export async function getAppointmentsAction(date?: string, doctorId?: string) {
@@ -22,8 +32,7 @@ export async function getAppointmentsAction(date?: string, doctorId?: string) {
       .from('appointments')
       .select(`
         *,
-        patient:patients(id, first_name, last_name, uhid, mobile_number),
-        doctor:users!appointments_doctor_id_fkey(id, first_name, last_name)
+        patient:patients(id, first_name, last_name, uhid, mobile_number)
       `)
       .eq('clinic_id', clinicId)
       .eq('appointment_date', targetDate)

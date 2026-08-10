@@ -78,8 +78,8 @@ export default function PrescriptionBuilder({ visitId, doctorId, patientName, do
     setSaving(false)
   }
 
-  const handleAddMedicine = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleAddMedicine = async (e?: React.FormEvent | React.KeyboardEvent) => {
+    if (e) e.preventDefault()
     if (!prescription || !medForm.medicine_name.trim()) return
     const res = await addPrescriptionItemAction(prescription.id, {
       medicine_name: medForm.medicine_name,
@@ -104,6 +104,13 @@ export default function PrescriptionBuilder({ visitId, doctorId, patientName, do
   const handleDeleteItem = async (itemId: string) => {
     const res = await deletePrescriptionItemAction(itemId)
     if (res.success) setItems(prev => prev.filter(i => i.id !== itemId))
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault()
+      handleAddMedicine(e)
+    }
   }
 
   return (
@@ -168,7 +175,7 @@ export default function PrescriptionBuilder({ visitId, doctorId, patientName, do
               {addingMed && (
                 <tr className="border-b border-blue-100 bg-blue-50/30">
                   <td className="p-2">
-                    <Input required list="medicine-list" value={medForm.medicine_name} onChange={e => setMedForm({...medForm, medicine_name: e.target.value})} placeholder="Medicine name *" />
+                    <Input required list="medicine-list" value={medForm.medicine_name} onChange={e => setMedForm({...medForm, medicine_name: e.target.value})} onKeyDown={handleKeyDown} placeholder="Medicine name *" />
                     <datalist id="medicine-list">
                       {masterMedicines.map(m => (
                         <option key={m.id} value={m.generic_name}>{m.brand_name ? `(${m.brand_name})` : ''}</option>
@@ -176,17 +183,17 @@ export default function PrescriptionBuilder({ visitId, doctorId, patientName, do
                     </datalist>
                   </td>
                   <td className="p-2">
-                    <Input value={medForm.dosage} onChange={e => setMedForm({...medForm, dosage: e.target.value})} placeholder="e.g. 500mg" />
+                    <Input value={medForm.dosage} onChange={e => setMedForm({...medForm, dosage: e.target.value})} onKeyDown={handleKeyDown} placeholder="e.g. 500mg" />
                   </td>
                   <td className="p-2">
-                    <Input list="freq-list" value={medForm.frequency} onChange={e => setMedForm({...medForm, frequency: e.target.value})} placeholder="e.g. 1-0-1 or OD" />
+                    <Input list="freq-list" value={medForm.frequency} onChange={e => setMedForm({...medForm, frequency: e.target.value})} onKeyDown={handleKeyDown} placeholder="e.g. 1-0-1 or OD" />
                     <datalist id="freq-list">
                       {masterFrequencies.map(f => (
                         <option key={f.id} value={f.frequency_name}>{f.instructions}</option>
                       ))}
                     </datalist>
                   </td>
-                  <td className="p-2"><Input value={medForm.duration} onChange={e => setMedForm({...medForm, duration: e.target.value})} placeholder="e.g. 5 Days" /></td>
+                  <td className="p-2"><Input value={medForm.duration} onChange={e => setMedForm({...medForm, duration: e.target.value})} onKeyDown={handleKeyDown} placeholder="e.g. 5 Days" /></td>
                   <td className="p-2">
                     <select className="w-full border border-slate-300 rounded-lg p-2 text-xs outline-none mb-1" value={medForm.route} onChange={e => setMedForm({...medForm, route: e.target.value})}>
                       {masterRoutes.length > 0 ? masterRoutes.map(r => (

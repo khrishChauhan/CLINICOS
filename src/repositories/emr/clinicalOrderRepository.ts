@@ -4,7 +4,7 @@ import type { ClinicalOrderRow } from '@/types/emr'
 export const clinicalOrderRepository = {
   async getByVisit(supabase: SupabaseClient, visitId: string): Promise<ClinicalOrderRow[]> {
     const { data, error } = await supabase
-      .schema('emr')
+      
       .from('clinical_orders')
       .select('*')
       .eq('visit_id', visitId)
@@ -15,7 +15,7 @@ export const clinicalOrderRepository = {
 
   async create(supabase: SupabaseClient, payload: Partial<ClinicalOrderRow>): Promise<ClinicalOrderRow> {
     const { data, error } = await supabase
-      .schema('emr')
+      
       .from('clinical_orders')
       .insert([payload])
       .select()

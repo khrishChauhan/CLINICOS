@@ -18,16 +18,16 @@ export const clinicalTimelineService = {
       { data: orders },
       { data: plans }
     ] = await Promise.all([
-      supabase.schema('emr').from('visits').select('*').eq('id', visitId).maybeSingle(),
-      supabase.schema('emr').from('diagnoses').select('*').eq('visit_id', visitId),
-      supabase.schema('emr').from('procedures').select('*').eq('visit_id', visitId),
-      supabase.schema('emr').from('prescriptions').select('*').eq('visit_id', visitId),
-      supabase.schema('emr').from('clinical_notes').select('*').eq('visit_id', visitId),
-      supabase.schema('emr').from('follow_up_plans').select('*').eq('visit_id', visitId),
-      supabase.schema('emr').from('clinical_attachments').select('*').eq('visit_id', visitId),
-      supabase.schema('emr').from('referrals').select('*').eq('visit_id', visitId),
-      supabase.schema('emr').from('clinical_orders').select('*').eq('visit_id', visitId),
-      supabase.schema('emr').from('treatment_plans').select('*').eq('visit_id', visitId)
+      supabase.from('visits').select('*').eq('id', visitId).maybeSingle(),
+      supabase.from('diagnoses').select('*').eq('visit_id', visitId),
+      supabase.from('procedures').select('*').eq('visit_id', visitId),
+      supabase.from('prescriptions').select('*').eq('visit_id', visitId),
+      supabase.from('clinical_notes').select('*').eq('visit_id', visitId),
+      supabase.from('follow_up_plans').select('*').eq('visit_id', visitId),
+      supabase.from('clinical_attachments').select('*').eq('visit_id', visitId),
+      supabase.from('referrals').select('*').eq('visit_id', visitId),
+      supabase.from('clinical_orders').select('*').eq('visit_id', visitId),
+      supabase.from('treatment_plans').select('*').eq('visit_id', visitId)
     ])
 
     // Map each to TimelineEvent

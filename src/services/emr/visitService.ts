@@ -1,6 +1,8 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { visitRepository } from '@/repositories/emr/visitRepository'
 import type { VisitRow, CreateVisitPayload } from '@/types/emr'
+import { queueService } from '@/services/appointments/queueService'
+import { invoiceService } from '@/services/billing/invoiceService'
 
 export const visitService = {
   /**
@@ -34,6 +36,13 @@ export const visitService = {
       created_by: userId
     })
 
+    // 3. Connect to Queue System
+    try {
+      await queueService.startConsultation(supabase, appointmentId, userId)
+    } catch (e) {
+      console.error('Failed to update queue status for startConsultation', e)
+    }
+
     return visit
   },
 
@@ -58,6 +67,27 @@ export const visitService = {
         .update({ status: 'Completed', consultation_completed_at: new Date().toISOString() })
         .eq('id', visit.appointment_id)
       if (error) console.error('Failed to sync appointment status:', error.message)
+
+      try {
+        await queueService.completeConsultation(supabase, visit.appointment_id, visit.created_by || '')
+      } catch (e) {
+        console.error('Failed to sync queue/appointment status:', e)
+      }
+    }
+
+    // Auto-Billing Hook: Generate Draft Invoice from this completed visit
+    if (visit.clinic_id && visit.patient_id) {
+       try {
+         await invoiceService.createDraftInvoiceFromVisit(
+           supabase, 
+           visit.clinic_id, 
+           visit.patient_id, 
+           visitId, 
+           'system' // Replace with actual userId if passed down
+         )
+       } catch (err) {
+         console.error('Failed to create draft invoice on visit complete', err)
+       }
     }
 
     return visit

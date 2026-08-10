@@ -4,19 +4,81 @@ import { getServices } from '@/repositories/billing/catalogRepository'
 
 export const invoiceService = {
   
-  async createDraftInvoiceFromConsultation(
+  async createDraftInvoiceFromVisit(
     supabase: SupabaseClient,
     clinicId: string,
     patientId: string,
-    consultationId: string,
+    visitId: string,
     userId: string
   ) {
-    // This is the Auto-Billing hook called by the EMR
-    // Create Draft
-    const invoice = await createDraftInvoice(supabase, clinicId, patientId, consultationId, userId)
+    const invoice = await createDraftInvoice(supabase, clinicId, patientId, visitId, userId)
     
-    // Optionally: fetch a default "Consultation Fee" service from catalog and add it automatically.
-    // For now, we'll just create the blank draft invoice.
+    // Auto-Billing Hook: Fetch "Consultation Fee" from catalog
+    const { data: services } = await supabase
+      .from('billing_services')
+      .select('*')
+      .eq('clinic_id', clinicId)
+      .ilike('name', '%Consultation%')
+      .limit(1)
+
+    if (services && services.length > 0) {
+      const service = services[0]
+      const unitPrice = service.base_price
+      const taxAmount = (unitPrice * service.tax_rate) / 100
+      const totalAmount = unitPrice + taxAmount
+
+      await addInvoiceItem(supabase, {
+        invoice_id: invoice.id,
+        service_id: service.id,
+        item_name: service.name,
+        quantity: 1,
+        unit_price: unitPrice,
+        tax_rate: service.tax_rate,
+        tax_amount: taxAmount,
+        discount_amount: 0,
+        total_amount: totalAmount
+      })
+      await this.recalculateInvoiceTotals(supabase, invoice.id)
+    }
+
+    // Auto-Billing Hook: Fetch Lab Orders for this consultation
+    const { data: labOrders } = await supabase
+      .from('lab_orders')
+      .select(`
+        id,
+        items:lab_order_items(
+          lab_test:lab_tests(name, price)
+        )
+      `)
+      .eq('visit_id', visitId)
+
+    if (labOrders) {
+      for (const order of labOrders) {
+        if (order.items) {
+          for (const item of order.items) {
+            const test = Array.isArray(item.lab_test) ? item.lab_test[0] : item.lab_test
+            if (test) {
+              const unitPrice = test.price || 0
+              if (unitPrice > 0) {
+                await addInvoiceItem(supabase, {
+                  invoice_id: invoice.id,
+                  service_id: null,
+                  item_name: `Lab: ${test.name}`,
+                  quantity: 1,
+                  unit_price: unitPrice,
+                  tax_rate: 0,
+                  tax_amount: 0,
+                  discount_amount: 0,
+                  total_amount: unitPrice
+                })
+              }
+            }
+          }
+        }
+      }
+      await this.recalculateInvoiceTotals(supabase, invoice.id)
+    }
+
     return invoice
   },
 
@@ -97,6 +159,54 @@ export const invoiceService = {
       status: 'Issued',
       issued_at: new Date().toISOString()
     })
-  }
+  },
 
+  async pushPharmacyToInvoice(
+    supabase: SupabaseClient,
+    clinicId: string,
+    patientId: string,
+    visitId: string | null,
+    userId: string,
+    items: { medicine_name: string; quantity: number; unit_price: number; total_price: number }[]
+  ) {
+    let targetInvoiceId = null
+
+    if (visitId) {
+      // Find existing open (Draft) invoice for this visit
+      const { data: existingInvoices } = await supabase
+        .from('billing_invoices')
+        .select('id')
+        .eq('visit_id', visitId)
+        .eq('status', 'Draft')
+        .order('created_at', { ascending: false })
+        .limit(1)
+
+      if (existingInvoices && existingInvoices.length > 0) {
+        targetInvoiceId = existingInvoices[0].id
+      }
+    }
+
+    if (!targetInvoiceId) {
+      // Create new draft invoice if none exists (e.g. OTC Sale or completed consultation with issued invoice)
+      const invoice = await createDraftInvoice(supabase, clinicId, patientId, visitId, userId)
+      targetInvoiceId = invoice.id
+    }
+
+    for (const item of items) {
+      // Medicines might not have a fixed tax rate in this MVP, defaulting to 0 tax
+      await addInvoiceItem(supabase, {
+        invoice_id: targetInvoiceId,
+        service_id: null,
+        item_name: `Rx: ${item.medicine_name}`,
+        quantity: item.quantity,
+        unit_price: item.unit_price,
+        tax_rate: 0,
+        tax_amount: 0,
+        discount_amount: 0,
+        total_amount: item.total_price
+      })
+    }
+
+    await this.recalculateInvoiceTotals(supabase, targetInvoiceId)
+  }
 }

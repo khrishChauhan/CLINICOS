@@ -5,20 +5,51 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/Table';
 import { Badge } from '@/components/ui/Badge';
+import { createClient } from '@/lib/supabase/server';
+import Link from 'next/link';
 
-export default function Ledger() {
-  const mockInvoices = [
-    { id: 'INV-0043', date: '2026-06-24', patient: 'Vijay Pandey', doctor: 'Dr. Sanjay Nair', amount: '₹1,626', method: 'Card', status: 'Paid' },
-    { id: 'INV-0046', date: '2026-06-24', patient: 'Kiran Dwivedi', doctor: 'Dr. Vikram Shah', amount: '₹1,593', method: 'Cash', status: 'Paid' },
-    { id: 'INV-0108', date: '2026-06-24', patient: 'Anjali Verma', doctor: 'Dr. Neha Patel', amount: '₹2,280', method: 'Cash', status: 'Paid' },
-    { id: 'INV-0138', date: '2026-06-24', patient: 'Rahul Desai', doctor: 'Dr. Amit Shah', amount: '₹2,006', method: 'Cash', status: 'Paid' },
-    { id: 'INV-0005', date: '2026-06-23', patient: 'Divya Dubey', doctor: 'Dr. Vikram Shah', amount: '₹2,155', method: 'Cash', status: 'Paid' },
-    { id: 'INV-0007', date: '2026-06-23', patient: 'Ekta Rao', doctor: 'Dr. Vikram Shah', amount: '₹689', method: 'UPI', status: 'Paid' },
-    { id: 'INV-0012', date: '2026-06-23', patient: 'Ananya Mukherjee', doctor: 'Dr. Komal Saxena', amount: '₹2,596', method: 'Cash', status: 'Paid' },
-    { id: 'INV-0017', date: '2026-06-23', patient: 'Ekta Rao', doctor: 'Dr. Sunita Sharma', amount: '₹354', method: 'Cash', status: 'Pending' },
-    { id: 'INV-0050', date: '2026-06-23', patient: 'Deepika Verma', doctor: 'Dr. Rajeev Mehta', amount: '₹1,180', method: 'Cash', status: 'Paid' },
-    { id: 'INV-0059', date: '2026-06-23', patient: 'Suresh Srivastava', doctor: 'Dr. Sunita Sharma', amount: '₹2,950', method: 'UPI', status: 'Paid' },
-  ];
+export default async function Ledger() {
+  const supabase = await createClient();
+
+  const { data: { user } } = await supabase.auth.getUser();
+  const { data: userProfile } = await supabase.from('users').select('clinic_id').eq('id', user?.id).single();
+  const clinicId = userProfile?.clinic_id;
+
+  // Fetch today's payments for stats
+  const today = new Date().toISOString().split('T')[0];
+  const { data: payments } = await supabase
+    .from('billing_payments')
+    .select('amount, payment_method')
+    .eq('clinic_id', clinicId)
+    .gte('payment_date', today)
+    .eq('status', 'Success');
+  
+  let grossCollection = 0;
+  let cashCollection = 0;
+  let cardCollection = 0;
+  let upiCollection = 0;
+
+  payments?.forEach(p => {
+    const amt = Number(p.amount);
+    grossCollection += amt;
+    if (p.payment_method === 'Cash') cashCollection += amt;
+    else if (p.payment_method === 'Card') cardCollection += amt;
+    else if (p.payment_method === 'UPI') upiCollection += amt;
+  });
+
+  // Fetch Invoices
+  const { data: invoicesData } = await supabase
+    .from('billing_invoices')
+    .select(`
+      id, invoice_number, created_at, grand_total, status,
+      patients ( first_name, last_name ),
+      users ( username )
+    `)
+    .eq('clinic_id', clinicId)
+    .order('created_at', { ascending: false })
+    .limit(50);
+
+  const invoices = invoicesData || [];
 
   return (
     <main className="flex-1 p-6 max-w-7xl w-full mx-auto space-y-6 z-10 relative">
@@ -27,10 +58,10 @@ export default function Ledger() {
           <div className="flex justify-between items-center border-b border-slate-50 pb-3">
             <div>
               <h3 className="font-bold text-slate-800 text-sm">Durga Clinic Cashier Counter</h3>
-              <p className="text-[11px] text-slate-400">Real-time daily accounts collection summary for June 24, 2026</p>
+              <p className="text-[11px] text-slate-400">Real-time daily accounts collection summary for {new Date().toLocaleDateString()}</p>
             </div>
             <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100">
-              ₹7,505 Gross Collection
+              ₹{grossCollection.toFixed(2)} Gross Collection
             </span>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
@@ -39,7 +70,7 @@ export default function Ledger() {
                 <Smartphone className="w-5 h-5 text-blue-500" />
                 <div>
                   <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider block">UPI Payments</span>
-                  <span className="font-bold text-slate-700">₹0</span>
+                  <span className="font-bold text-slate-700">₹{upiCollection.toFixed(2)}</span>
                 </div>
               </div>
               <span className="text-[10px] bg-white border px-1.5 py-0.2 rounded font-semibold text-slate-400">BHIM / GPay</span>
@@ -49,7 +80,7 @@ export default function Ledger() {
                 <Wallet className="w-5 h-5 text-emerald-500" />
                 <div>
                   <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider block">Cash Collection</span>
-                  <span className="font-bold text-slate-700">₹5,879</span>
+                  <span className="font-bold text-slate-700">₹{cashCollection.toFixed(2)}</span>
                 </div>
               </div>
               <span className="text-[10px] bg-white border px-1.5 py-0.2 rounded font-semibold text-slate-400">Cash Counter</span>
@@ -59,7 +90,7 @@ export default function Ledger() {
                 <CreditCard className="w-5 h-5 text-purple-500" />
                 <div>
                   <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider block">Card Swipe</span>
-                  <span className="font-bold text-slate-700">₹1,626</span>
+                  <span className="font-bold text-slate-700">₹{cardCollection.toFixed(2)}</span>
                 </div>
               </div>
               <span className="text-[10px] bg-white border px-1.5 py-0.2 rounded font-semibold text-slate-400">POS terminal</span>
@@ -73,9 +104,6 @@ export default function Ledger() {
               <h1 className="text-xl font-bold text-slate-800">Durga Clinic Billing Ledger</h1>
               <p className="text-slate-500 text-xs mt-0.5">Collect charges, generate clinical receipts and oversee bookkeeping ledgers for bills</p>
             </div>
-            <Button>
-              <Plus className="w-4 h-4" /> Create Bill Entry
-            </Button>
           </div>
 
           <Card className="p-4 flex flex-col md:flex-row gap-4 items-center">
@@ -95,17 +123,8 @@ export default function Ledger() {
                   <option value="Pending">Pending</option>
                 </select>
               </div>
-              <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 px-2.5 py-1.5 rounded-lg text-xs">
-                <span className="text-slate-500 font-semibold">Channel:</span>
-                <select className="bg-transparent font-bold text-slate-700 focus:outline-none text-xs">
-                  <option value="All">All Methods</option>
-                  <option value="UPI">UPI</option>
-                  <option value="Cash">Cash</option>
-                  <option value="Card">Card</option>
-                </select>
-              </div>
             </div>
-            <div className="text-xs text-slate-400 md:ml-auto">Found {mockInvoices.length} invoices</div>
+            <div className="text-xs text-slate-400 md:ml-auto">Found {invoices.length} invoices</div>
           </Card>
 
           <Card className="overflow-hidden">
@@ -115,25 +134,40 @@ export default function Ledger() {
                   <TableHead className="py-3 px-4 bg-transparent">Invoice ID</TableHead>
                   <TableHead className="py-3 px-4 bg-transparent">Date</TableHead>
                   <TableHead className="py-3 px-4 bg-transparent">Patient Name</TableHead>
-                  <TableHead className="py-3 px-4 bg-transparent">Attending Doctor</TableHead>
+                  <TableHead className="py-3 px-4 bg-transparent">Created By</TableHead>
                   <TableHead className="py-3 px-4 bg-transparent">Total Amount</TableHead>
-                  <TableHead className="py-3 px-4 bg-transparent">Method</TableHead>
                   <TableHead className="py-3 px-4 text-center bg-transparent">Status</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {mockInvoices.map((inv) => (
+                {invoices.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={6} className="py-8 text-center text-slate-400">
+                      No invoices found for today.
+                    </TableCell>
+                  </TableRow>
+                )}
+                {invoices.map((inv: any) => (
                   <TableRow key={inv.id}>
                     <TableCell className="py-3.5 px-4 font-mono font-bold">
-                      <button className="text-blue-600 hover:underline hover:text-blue-700 font-bold">{inv.id}</button>
+                      <Link href={`/billing/invoice/${inv.id}`} className="text-blue-600 hover:underline hover:text-blue-700 font-bold">
+                        {inv.invoice_number || 'DRAFT'}
+                      </Link>
                     </TableCell>
-                    <TableCell className="py-3.5 px-4 text-slate-500">{inv.date}</TableCell>
-                    <TableCell className="py-3.5 px-4 font-bold text-slate-800">{inv.patient}</TableCell>
-                    <TableCell className="py-3.5 px-4 text-slate-600 font-medium">{inv.doctor}</TableCell>
-                    <TableCell className="py-3.5 px-4 font-bold text-slate-850">{inv.amount}</TableCell>
-                    <TableCell className="py-3.5 px-4 font-semibold text-slate-500">{inv.method}</TableCell>
+                    <TableCell className="py-3.5 px-4 text-slate-500">
+                      {new Date(inv.created_at).toLocaleDateString()}
+                    </TableCell>
+                    <TableCell className="py-3.5 px-4 font-bold text-slate-800">
+                      {inv.patients?.first_name} {inv.patients?.last_name}
+                    </TableCell>
+                    <TableCell className="py-3.5 px-4 text-slate-600 font-medium">
+                      {inv.users?.username || 'System'}
+                    </TableCell>
+                    <TableCell className="py-3.5 px-4 font-bold text-slate-850">
+                      ₹{Number(inv.grand_total).toFixed(2)}
+                    </TableCell>
                     <TableCell className="py-3.5 px-4 text-center">
-                      <Badge variant={inv.status === 'Paid' ? 'success' : 'warning'}>
+                      <Badge variant={inv.status === 'Paid' ? 'success' : inv.status === 'Draft' ? 'default' : 'warning'}>
                         {inv.status}
                       </Badge>
                     </TableCell>

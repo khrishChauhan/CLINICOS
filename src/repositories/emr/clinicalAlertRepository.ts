@@ -4,7 +4,7 @@ import type { ClinicalAlertRow } from '@/types/emr'
 export const clinicalAlertRepository = {
   async getByPatient(supabase: SupabaseClient, patientId: string): Promise<ClinicalAlertRow[]> {
     const { data, error } = await supabase
-      .schema('emr')
+      
       .from('clinical_alerts')
       .select('*')
       .eq('patient_id', patientId)
@@ -15,7 +15,7 @@ export const clinicalAlertRepository = {
 
   async getActiveByPatient(supabase: SupabaseClient, patientId: string): Promise<ClinicalAlertRow[]> {
     const { data, error } = await supabase
-      .schema('emr')
+      
       .from('clinical_alerts')
       .select('*')
       .eq('patient_id', patientId)
@@ -27,7 +27,7 @@ export const clinicalAlertRepository = {
 
   async create(supabase: SupabaseClient, payload: Partial<ClinicalAlertRow>): Promise<ClinicalAlertRow> {
     const { data, error } = await supabase
-      .schema('emr')
+      
       .from('clinical_alerts')
       .insert([payload])
       .select()
@@ -38,7 +38,7 @@ export const clinicalAlertRepository = {
 
   async resolve(supabase: SupabaseClient, id: string): Promise<ClinicalAlertRow> {
     const { data, error } = await supabase
-      .schema('emr')
+      
       .from('clinical_alerts')
       .update({ resolved: true, updated_at: new Date().toISOString() })
       .eq('id', id)

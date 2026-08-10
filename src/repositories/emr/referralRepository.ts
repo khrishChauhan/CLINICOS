@@ -4,7 +4,7 @@ import type { ReferralRow } from '@/types/emr'
 export const referralRepository = {
   async getByVisit(supabase: SupabaseClient, visitId: string): Promise<ReferralRow[]> {
     const { data, error } = await supabase
-      .schema('emr')
+      
       .from('referrals')
       .select('*')
       .eq('visit_id', visitId)
@@ -15,7 +15,7 @@ export const referralRepository = {
 
   async create(supabase: SupabaseClient, payload: Partial<ReferralRow>): Promise<ReferralRow> {
     const { data, error } = await supabase
-      .schema('emr')
+      
       .from('referrals')
       .insert([payload])
       .select()

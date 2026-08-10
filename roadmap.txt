@@ -1,0 +1,69 @@
+Click Aarambh ClinicOS - System Architecture & Development Roadmap
+Objective
+Defines module architecture, development order, dependencies and MVP roadmap.
+Completed Modules
+Core
+Master
+Patient
+Appointment
+Doctor
+EMR
+Laboratory
+Radiology
+Development Order
+Phase 1: Core + Master
+Phase 2: Patient + Doctor + Appointment
+Phase 3: EMR
+Phase 4: Laboratory + Radiology
+Phase 5: Operation Theatre + Pharmacy + Inventory + Procurement + HR
+Phase 6: Billing + Payments + Insurance + Accounts
+Phase 7: Reports + Communication + Audit + AI
+Module Flow
+Core
+  │
+Master
+  │
+Patient ───┐
+           ├── Appointment ──► EMR ──► Laboratory
+Doctor ────┘                     └──► Radiology
+Patient Journey
+Registration → Appointment → Queue → Doctor Consultation (EMR) → Lab/Radiology (if required) → Results → Prescription → Billing (future)
+Shared Keys
+Module
+Key
+Used By
+Core
+clinic_id
+All
+Patient
+patient_id
+Appointment, EMR, Lab, Radiology
+Doctor
+doctor_id
+Appointment, EMR
+Appointment
+appointment_id
+EMR
+EMR
+visit_id
+Lab, Radiology
+Laboratory
+lab_order_id
+EMR
+Radiology
+radiology_order_id
+EMR
+Future Modules
+Operation Theatre
+Pharmacy
+Inventory
+Procurement
+HR
+Billing
+Payments
+Insurance
+Accounts
+Reports
+Communication
+Audit & System
+AI & Automation

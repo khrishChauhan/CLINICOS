@@ -19,7 +19,7 @@ export const queueService = {
     clinicId: string,
     doctorId: string | null,
     userId: string
-  ): Promise<{ appointment: AppointmentRow, queueItem: AppointmentQueueRow }> {
+  ): Promise<{ appointment: AppointmentRow, queueItem: AppointmentQueueRow, token: any }> {
     
     // 1. Generate Token
     const token = await tokenService.generateTokenForClinic(supabase, clinicId, appointmentId, doctorId)
@@ -28,11 +28,9 @@ export const queueService = {
     let queuePosition = 1;
     let estimatedWait = 0;
     
-    if (doctorId) {
-      const waiting = await queueRepository.getAllWaitingInQueue(supabase, clinicId, doctorId)
-      queuePosition = waiting.length + 1
-      estimatedWait = waiting.length * WAIT_TIME_PER_PATIENT
-    }
+    const waiting = await queueRepository.getAllWaitingInQueue(supabase, clinicId, doctorId)
+    queuePosition = waiting.length + 1
+    estimatedWait = waiting.length * WAIT_TIME_PER_PATIENT
 
     // 3. Add to Queue
     const queueItem = await queueRepository.addToQueue(supabase, {
@@ -51,7 +49,7 @@ export const queueService = {
     // 4. Update Appointment Status
     const appointment = await appointmentLifecycleService.changeStatus(supabase, appointmentId, clinicId, 'Checked In', userId, `Checked in. Token: ${token.token_number}`)
     
-    return { appointment: appointment as AppointmentRow, queueItem }
+    return { appointment: appointment as AppointmentRow, queueItem, token }
   },
 
   /**

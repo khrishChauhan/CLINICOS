@@ -64,14 +64,21 @@ export const queueRepository = {
     return data as AppointmentQueueRow | null
   },
 
-  async getAllWaitingInQueue(supabase: SupabaseClient, clinicId: string, doctorId: string) {
-    const { data, error } = await supabase
+  async getAllWaitingInQueue(supabase: SupabaseClient, clinicId: string, doctorId: string | null) {
+    let query = supabase
       .from('appointment_queue')
       .select('*')
       .eq('clinic_id', clinicId)
-      .eq('doctor_id', doctorId)
       .eq('queue_status', 'Waiting')
       .order('current_position', { ascending: true })
+
+    if (doctorId) {
+      query = query.eq('doctor_id', doctorId)
+    } else {
+      query = query.is('doctor_id', null)
+    }
+
+    const { data, error } = await query
     if (error) throw new Error(error.message)
     return data as AppointmentQueueRow[]
   }

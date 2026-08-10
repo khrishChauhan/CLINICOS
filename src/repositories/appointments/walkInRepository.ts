@@ -22,6 +22,17 @@ export const walkInRepository = {
     if (error) throw new Error(error.message)
     return data as WalkInRegistrationRow
   },
+
+  async updateWalkInToken(supabase: SupabaseClient, id: string, tokenNumber: string) {
+    const { data, error } = await supabase
+      .from('walk_in_registrations')
+      .update({ token_number: tokenNumber })
+      .eq('id', id)
+      .select()
+      .single()
+    if (error) throw new Error(error.message)
+    return data as WalkInRegistrationRow
+  },
   
   async getWalkInsForClinic(supabase: SupabaseClient, clinicId: string, date: string) {
     const startOfDay = new Date(date)

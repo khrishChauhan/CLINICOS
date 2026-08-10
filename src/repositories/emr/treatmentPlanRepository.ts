@@ -4,7 +4,7 @@ import type { TreatmentPlanRow } from '@/types/emr'
 export const treatmentPlanRepository = {
   async getByPatient(supabase: SupabaseClient, patientId: string): Promise<TreatmentPlanRow[]> {
     const { data, error } = await supabase
-      .schema('emr')
+      
       .from('treatment_plans')
       .select('*')
       .eq('patient_id', patientId)
@@ -15,7 +15,7 @@ export const treatmentPlanRepository = {
 
   async create(supabase: SupabaseClient, payload: Partial<TreatmentPlanRow>): Promise<TreatmentPlanRow> {
     const { data, error } = await supabase
-      .schema('emr')
+      
       .from('treatment_plans')
       .insert([payload])
       .select()
@@ -26,7 +26,7 @@ export const treatmentPlanRepository = {
 
   async update(supabase: SupabaseClient, id: string, updates: Partial<TreatmentPlanRow>): Promise<TreatmentPlanRow> {
     const { data, error } = await supabase
-      .schema('emr')
+      
       .from('treatment_plans')
       .update({ ...updates, updated_at: new Date().toISOString() })
       .eq('id', id)

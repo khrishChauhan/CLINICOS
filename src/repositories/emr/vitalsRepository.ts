@@ -4,7 +4,7 @@ import type { VitalsRow } from '@/types/emr'
 export const vitalsRepository = {
   async getByVisitId(supabase: SupabaseClient, visitId: string): Promise<VitalsRow[]> {
     const { data, error } = await supabase
-      .schema('emr')
+      
       .from('vitals')
       .select('*')
       .eq('visit_id', visitId)
@@ -15,7 +15,7 @@ export const vitalsRepository = {
 
   async create(supabase: SupabaseClient, payload: Partial<VitalsRow>): Promise<VitalsRow> {
     const { data, error } = await supabase
-      .schema('emr')
+      
       .from('vitals')
       .insert([payload])
       .select()
@@ -26,7 +26,7 @@ export const vitalsRepository = {
 
   async getLatestByVisitId(supabase: SupabaseClient, visitId: string): Promise<VitalsRow | null> {
     const { data, error } = await supabase
-      .schema('emr')
+      
       .from('vitals')
       .select('*')
       .eq('visit_id', visitId)

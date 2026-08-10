@@ -4,7 +4,7 @@ import type { VisitRow, CreateVisitPayload } from '@/types/emr'
 export const visitRepository = {
   async getVisitById(supabase: SupabaseClient, id: string): Promise<VisitRow | null> {
     const { data, error } = await supabase
-      .schema('emr')
+      
       .from('visits')
       .select('*')
       .eq('id', id)
@@ -15,7 +15,7 @@ export const visitRepository = {
 
   async getVisitsByPatient(supabase: SupabaseClient, clinicId: string, patientId: string): Promise<VisitRow[]> {
     const { data, error } = await supabase
-      .schema('emr')
+      
       .from('visits')
       .select('*')
       .eq('clinic_id', clinicId)
@@ -27,7 +27,7 @@ export const visitRepository = {
 
   async getVisitByAppointmentId(supabase: SupabaseClient, appointmentId: string): Promise<VisitRow | null> {
     const { data, error } = await supabase
-      .schema('emr')
+      
       .from('visits')
       .select('*')
       .eq('appointment_id', appointmentId)
@@ -38,7 +38,7 @@ export const visitRepository = {
 
   async getVisitsByDoctor(supabase: SupabaseClient, clinicId: string, doctorId: string, limit = 20): Promise<VisitRow[]> {
     const { data, error } = await supabase
-      .schema('emr')
+      
       .from('visits')
       .select('*')
       .eq('clinic_id', clinicId)
@@ -57,7 +57,7 @@ export const visitRepository = {
     if (numberError) throw new Error(`Failed to generate visit number: ${numberError.message}`)
 
     const { data, error } = await supabase
-      .schema('emr')
+      
       .from('visits')
       .insert([{ ...payload, visit_number: numberData }])
       .select()
@@ -68,7 +68,7 @@ export const visitRepository = {
 
   async updateVisit(supabase: SupabaseClient, id: string, updates: Partial<VisitRow>): Promise<VisitRow> {
     const { data, error } = await supabase
-      .schema('emr')
+      
       .from('visits')
       .update({ ...updates, updated_at: new Date().toISOString() })
       .eq('id', id)
@@ -80,7 +80,7 @@ export const visitRepository = {
 
   async listVisits(supabase: SupabaseClient, clinicId: string, filters?: { status?: string; date?: string }): Promise<VisitRow[]> {
     let query = supabase
-      .schema('emr')
+      
       .from('visits')
       .select('*')
       .eq('clinic_id', clinicId)

@@ -25,7 +25,7 @@ export async function createDraftInvoice(
   supabase: SupabaseClient,
   clinicId: string,
   patientId: string,
-  consultationId: string | null,
+  visitId: string | null,
   userId: string
 ): Promise<BillingInvoiceRow> {
   const { data, error } = await supabase
@@ -33,7 +33,7 @@ export async function createDraftInvoice(
     .insert([{
       clinic_id: clinicId,
       patient_id: patientId,
-      consultation_id: consultationId,
+      visit_id: visitId,
       status: 'Draft',
       created_by: userId
     }])

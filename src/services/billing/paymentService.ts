@@ -1,6 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { getInvoice, updateInvoiceTotals } from '@/repositories/billing/invoiceRepository'
 import { recordPayment } from '@/repositories/billing/paymentRepository'
+import { appendAuditLog } from '@/repositories/platform/auditRepository'
 
 export const paymentService = {
 
@@ -50,6 +51,31 @@ export const paymentService = {
       amount_due: newAmountDue,
       status: newStatus as any
     })
+
+    // 3. Audit Log
+    try {
+      await appendAuditLog(
+        supabase,
+        userId,
+        'Payment Collected',
+        'billing_invoices',
+        invoiceId,
+        { amount, paymentMethod, newStatus }
+      )
+      
+      if (newStatus === 'Paid') {
+        await appendAuditLog(
+          supabase,
+          userId,
+          'Invoice Fully Paid',
+          'billing_invoices',
+          invoiceId,
+          { grandTotal: invoice.grand_total }
+        )
+      }
+    } catch (auditErr) {
+      console.error('Failed to log audit for payment', auditErr)
+    }
   }
 
 }

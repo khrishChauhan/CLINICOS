@@ -5,14 +5,20 @@ import { getClinicalOrdersAction, createClinicalOrderAction } from '@/actions/em
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import type { ClinicalOrderRow } from '@/types/emr'
+import { getMasterDataAction } from '@/actions/master/masterActions'
+import { createLabOrderAction } from '@/actions/laboratory/labOrderActions'
+import { createRadiologyOrderAction } from '@/actions/radiology/radiologyOrderActions'
 
-export default function ClinicalOrdersPanel({ visitId }: { visitId: string }) {
+export default function ClinicalOrdersPanel({ visitId, patientId, doctorId }: { visitId: string, patientId: string, doctorId: string }) {
   const [orders, setOrders] = useState<ClinicalOrderRow[]>([])
   const [loading, setLoading] = useState(true)
   const [adding, setAdding] = useState(false)
 
   const [type, setType] = useState('Laboratory')
   const [ref, setRef] = useState('')
+
+  const [masterLabTests, setMasterLabTests] = useState<any[]>([])
+  const [masterRadTests, setMasterRadTests] = useState<any[]>([])
 
   const loadOrders = useCallback(async () => {
     setLoading(true)
@@ -21,12 +27,45 @@ export default function ClinicalOrdersPanel({ visitId }: { visitId: string }) {
     setLoading(false)
   }, [visitId])
 
-  useEffect(() => { loadOrders() }, [loadOrders])
+  useEffect(() => { 
+    loadOrders() 
+    getMasterDataAction('lab_tests').then(r => { if(r.success && r.data) setMasterLabTests(r.data as any[]) })
+    getMasterDataAction('imaging_tests').then(r => { if(r.success && r.data) setMasterRadTests(r.data as any[]) })
+  }, [loadOrders])
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault()
     setAdding(true)
-    const res = await createClinicalOrderAction(visitId, { order_type: type, order_reference: ref })
+
+    let actualRef = ref
+    // Attempt to create actual Lab/Radiology orders
+    if (type === 'Laboratory') {
+      const test = masterLabTests.find(t => t.test_name === ref || t.test_code === ref)
+      if (test) {
+        await createLabOrderAction({
+          patient_id: patientId,
+          visit_id: visitId,
+          doctor_id: doctorId,
+          priority: 'Routine',
+          items: [{ test_id: test.id, test_name: test.test_name }]
+        })
+        actualRef = test.test_name
+      }
+    } else if (type === 'Radiology') {
+      const test = masterRadTests.find(t => t.imaging_name === ref || t.imaging_code === ref)
+      if (test) {
+        await createRadiologyOrderAction({
+          patient_id: patientId,
+          visit_id: visitId,
+          doctor_id: doctorId,
+          priority: 'Routine',
+          items: [{ imaging_test_id: test.id, imaging_name: test.imaging_name }]
+        })
+        actualRef = test.imaging_name
+      }
+    }
+
+    const res = await createClinicalOrderAction(visitId, { order_type: type, order_reference: actualRef })
     if (res.success && res.data) {
       setOrders([res.data!, ...orders])
       setRef('')
@@ -48,7 +87,11 @@ export default function ClinicalOrdersPanel({ visitId }: { visitId: string }) {
         </div>
         <div>
           <label className="block text-xs font-semibold text-slate-500 mb-1">Order Ref / Name</label>
-          <Input required placeholder="e.g. CBC Panel" value={ref} onChange={e => setRef(e.target.value)} />
+          <Input required list="tests-list" placeholder="e.g. CBC Panel" value={ref} onChange={e => setRef(e.target.value)} />
+          <datalist id="tests-list">
+            {type === 'Laboratory' && masterLabTests.map(t => <option key={t.id} value={t.test_name} />)}
+            {type === 'Radiology' && masterRadTests.map(t => <option key={t.id} value={t.imaging_name} />)}
+          </datalist>
         </div>
         <div>
           <Button type="submit" disabled={adding} className="w-full">+ Create Order</Button>

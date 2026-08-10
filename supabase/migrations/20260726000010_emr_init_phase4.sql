@@ -5,10 +5,10 @@
 -- ─────────────────────────────────────────────────────────────────────────────
 -- Referrals
 -- ─────────────────────────────────────────────────────────────────────────────
-CREATE TABLE IF NOT EXISTS emr.referrals (
+CREATE TABLE IF NOT EXISTS public.referrals (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     clinic_id UUID NOT NULL REFERENCES public.clinics(id) ON DELETE CASCADE,
-    visit_id UUID NOT NULL REFERENCES emr.visits(id) ON DELETE CASCADE,
+    visit_id UUID NOT NULL REFERENCES public.visits(id) ON DELETE CASCADE,
     
     referred_doctor TEXT,
     referred_hospital TEXT,
@@ -20,16 +20,16 @@ CREATE TABLE IF NOT EXISTS emr.referrals (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-CREATE INDEX IF NOT EXISTS idx_referrals_visit ON emr.referrals(visit_id);
+CREATE INDEX IF NOT EXISTS idx_referrals_visit ON public.referrals(visit_id);
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- Clinical Alerts
 -- ─────────────────────────────────────────────────────────────────────────────
-CREATE TABLE IF NOT EXISTS emr.clinical_alerts (
+CREATE TABLE IF NOT EXISTS public.clinical_alerts (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     clinic_id UUID NOT NULL REFERENCES public.clinics(id) ON DELETE CASCADE,
     patient_id UUID NOT NULL REFERENCES public.patients(id) ON DELETE CASCADE,
-    visit_id UUID REFERENCES emr.visits(id) ON DELETE SET NULL, -- Can be linked to visit, but fundamentally belongs to patient
+    visit_id UUID REFERENCES public.visits(id) ON DELETE SET NULL, -- Can be linked to visit, but fundamentally belongs to patient
     
     alert_type VARCHAR(100) NOT NULL, -- Allergy Alert, Drug Interaction, etc.
     alert_message TEXT NOT NULL,
@@ -40,17 +40,17 @@ CREATE TABLE IF NOT EXISTS emr.clinical_alerts (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-CREATE INDEX IF NOT EXISTS idx_clinical_alerts_patient ON emr.clinical_alerts(patient_id);
-CREATE INDEX IF NOT EXISTS idx_clinical_alerts_unresolved ON emr.clinical_alerts(patient_id) WHERE resolved = false;
+CREATE INDEX IF NOT EXISTS idx_clinical_alerts_patient ON public.clinical_alerts(patient_id);
+CREATE INDEX IF NOT EXISTS idx_clinical_alerts_unresolved ON public.clinical_alerts(patient_id) WHERE resolved = false;
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- Treatment Plans
 -- ─────────────────────────────────────────────────────────────────────────────
-CREATE TABLE IF NOT EXISTS emr.treatment_plans (
+CREATE TABLE IF NOT EXISTS public.treatment_plans (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     clinic_id UUID NOT NULL REFERENCES public.clinics(id) ON DELETE CASCADE,
     patient_id UUID NOT NULL REFERENCES public.patients(id) ON DELETE CASCADE,
-    visit_id UUID NOT NULL REFERENCES emr.visits(id) ON DELETE CASCADE,
+    visit_id UUID NOT NULL REFERENCES public.visits(id) ON DELETE CASCADE,
     
     treatment_goal TEXT NOT NULL,
     treatment_description TEXT NOT NULL,
@@ -62,15 +62,15 @@ CREATE TABLE IF NOT EXISTS emr.treatment_plans (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-CREATE INDEX IF NOT EXISTS idx_treatment_plans_patient ON emr.treatment_plans(patient_id);
+CREATE INDEX IF NOT EXISTS idx_treatment_plans_patient ON public.treatment_plans(patient_id);
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- Clinical Orders
 -- ─────────────────────────────────────────────────────────────────────────────
-CREATE TABLE IF NOT EXISTS emr.clinical_orders (
+CREATE TABLE IF NOT EXISTS public.clinical_orders (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     clinic_id UUID NOT NULL REFERENCES public.clinics(id) ON DELETE CASCADE,
-    visit_id UUID NOT NULL REFERENCES emr.visits(id) ON DELETE CASCADE,
+    visit_id UUID NOT NULL REFERENCES public.visits(id) ON DELETE CASCADE,
     
     order_type VARCHAR(100) NOT NULL, -- Laboratory, Radiology, Procedure, External
     order_reference TEXT, -- LOINC/CPT/internal code
@@ -82,17 +82,17 @@ CREATE TABLE IF NOT EXISTS emr.clinical_orders (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-CREATE INDEX IF NOT EXISTS idx_clinical_orders_visit ON emr.clinical_orders(visit_id);
+CREATE INDEX IF NOT EXISTS idx_clinical_orders_visit ON public.clinical_orders(visit_id);
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- RLS Policies
 -- ─────────────────────────────────────────────────────────────────────────────
-ALTER TABLE emr.referrals ENABLE ROW LEVEL SECURITY;
-ALTER TABLE emr.clinical_alerts ENABLE ROW LEVEL SECURITY;
-ALTER TABLE emr.treatment_plans ENABLE ROW LEVEL SECURITY;
-ALTER TABLE emr.clinical_orders ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.referrals ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.clinical_alerts ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.treatment_plans ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.clinical_orders ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY emr_referrals_policy ON emr.referrals FOR ALL USING (clinic_id = (SELECT clinic_id FROM public.users WHERE id = auth.uid()));
-CREATE POLICY emr_clinical_alerts_policy ON emr.clinical_alerts FOR ALL USING (clinic_id = (SELECT clinic_id FROM public.users WHERE id = auth.uid()));
-CREATE POLICY emr_treatment_plans_policy ON emr.treatment_plans FOR ALL USING (clinic_id = (SELECT clinic_id FROM public.users WHERE id = auth.uid()));
-CREATE POLICY emr_clinical_orders_policy ON emr.clinical_orders FOR ALL USING (clinic_id = (SELECT clinic_id FROM public.users WHERE id = auth.uid()));
+CREATE POLICY emr_referrals_policy ON public.referrals FOR ALL USING (clinic_id = (SELECT clinic_id FROM public.users WHERE id = auth.uid()));
+CREATE POLICY emr_clinical_alerts_policy ON public.clinical_alerts FOR ALL USING (clinic_id = (SELECT clinic_id FROM public.users WHERE id = auth.uid()));
+CREATE POLICY emr_treatment_plans_policy ON public.treatment_plans FOR ALL USING (clinic_id = (SELECT clinic_id FROM public.users WHERE id = auth.uid()));
+CREATE POLICY emr_clinical_orders_policy ON public.clinical_orders FOR ALL USING (clinic_id = (SELECT clinic_id FROM public.users WHERE id = auth.uid()));

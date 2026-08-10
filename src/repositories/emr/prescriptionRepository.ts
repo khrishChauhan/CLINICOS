@@ -4,7 +4,7 @@ import type { PrescriptionRow, PrescriptionItemRow } from '@/types/emr'
 export const prescriptionRepository = {
   async getByVisit(supabase: SupabaseClient, visitId: string): Promise<PrescriptionRow | null> {
     const { data, error } = await supabase
-      .schema('emr')
+      
       .from('prescriptions')
       .select('*')
       .eq('visit_id', visitId)
@@ -15,7 +15,7 @@ export const prescriptionRepository = {
 
   async upsert(supabase: SupabaseClient, payload: Partial<PrescriptionRow>): Promise<PrescriptionRow> {
     const { data, error } = await supabase
-      .schema('emr')
+      
       .from('prescriptions')
       .upsert([{ ...payload, updated_at: new Date().toISOString() }], { onConflict: 'visit_id' })
       .select()
@@ -28,7 +28,7 @@ export const prescriptionRepository = {
 export const prescriptionItemRepository = {
   async getByPrescription(supabase: SupabaseClient, prescriptionId: string): Promise<PrescriptionItemRow[]> {
     const { data, error } = await supabase
-      .schema('emr')
+      
       .from('prescription_items')
       .select('*')
       .eq('prescription_id', prescriptionId)
@@ -39,7 +39,7 @@ export const prescriptionItemRepository = {
 
   async create(supabase: SupabaseClient, payload: Partial<PrescriptionItemRow>): Promise<PrescriptionItemRow> {
     const { data, error } = await supabase
-      .schema('emr')
+      
       .from('prescription_items')
       .insert([payload])
       .select()
@@ -50,7 +50,7 @@ export const prescriptionItemRepository = {
 
   async delete(supabase: SupabaseClient, id: string): Promise<void> {
     const { error } = await supabase
-      .schema('emr')
+      
       .from('prescription_items')
       .delete()
       .eq('id', id)
@@ -59,7 +59,7 @@ export const prescriptionItemRepository = {
 
   async deleteByPrescription(supabase: SupabaseClient, prescriptionId: string): Promise<void> {
     const { error } = await supabase
-      .schema('emr')
+      
       .from('prescription_items')
       .delete()
       .eq('prescription_id', prescriptionId)

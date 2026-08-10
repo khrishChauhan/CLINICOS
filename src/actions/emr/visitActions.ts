@@ -1,6 +1,6 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { visitService } from '@/services/emr/visitService'
 import { visitRepository } from '@/repositories/emr/visitRepository'
 import type { VisitRow } from '@/types/emr'
@@ -9,7 +9,8 @@ async function getAuthContext() {
   const supabase = await createClient()
   const { data: { user }, error } = await supabase.auth.getUser()
   if (error || !user) throw new Error('Unauthorized')
-  const { data: profile } = await supabase.from('users').select('clinic_id').eq('id', user.id).single()
+  const adminClient = createAdminClient()
+  const { data: profile } = await adminClient.from('users').select('clinic_id').eq('id', user.id).single()
   if (!profile?.clinic_id) throw new Error('Clinic context missing')
   return { supabase, user, clinicId: profile.clinic_id }
 }
@@ -18,13 +19,29 @@ async function getAuthContext() {
 export async function startConsultationAction(
   appointmentId: string,
   patientId: string,
-  doctorId: string,
+  appointmentDoctorUserId?: string | null,
   departmentId?: string | null
 ) {
   try {
     const { supabase, user, clinicId } = await getAuthContext()
+    
+    // The frontend passes appt.doctor_id, which in the appointments table is actually a reference to users(id).
+    // If it's unassigned, we default to the currently logged-in user.
+    const activeUserId = appointmentDoctorUserId || user.id
+
+    // We MUST map this user_id to the actual doctor.doctors(id) for the visits table
+    const { data: doctor } = await supabase
+      .schema('doctor')
+      .from('doctors')
+      .select('id')
+      .eq('user_id', activeUserId)
+      .single()
+    
+    if (!doctor) throw new Error('Selected user is not registered as a doctor')
+    const actualDoctorId = doctor.id
+
     const visit = await visitService.startOrGetVisit(
-      supabase, clinicId, appointmentId, patientId, doctorId, user.id, departmentId
+      supabase, clinicId, appointmentId, patientId, actualDoctorId, user.id, departmentId
     )
     return { success: true, data: visit }
   } catch (error: any) {

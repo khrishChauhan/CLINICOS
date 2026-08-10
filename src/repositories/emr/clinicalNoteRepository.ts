@@ -4,7 +4,7 @@ import type { ClinicalNoteRow } from '@/types/emr'
 export const clinicalNoteRepository = {
   async getByVisit(supabase: SupabaseClient, visitId: string): Promise<ClinicalNoteRow[]> {
     const { data, error } = await supabase
-      .schema('emr')
+      
       .from('clinical_notes')
       .select('*')
       .eq('visit_id', visitId)
@@ -15,7 +15,7 @@ export const clinicalNoteRepository = {
 
   async create(supabase: SupabaseClient, payload: Partial<ClinicalNoteRow>): Promise<ClinicalNoteRow> {
     const { data, error } = await supabase
-      .schema('emr')
+      
       .from('clinical_notes')
       .insert([{ ...payload, edit_history: [] }])
       .select()
@@ -26,7 +26,7 @@ export const clinicalNoteRepository = {
 
   async update(supabase: SupabaseClient, id: string, updates: Partial<ClinicalNoteRow>): Promise<ClinicalNoteRow> {
     const { data, error } = await supabase
-      .schema('emr')
+      
       .from('clinical_notes')
       .update({ ...updates, updated_at: new Date().toISOString() })
       .eq('id', id)
@@ -38,7 +38,7 @@ export const clinicalNoteRepository = {
 
   async getById(supabase: SupabaseClient, id: string): Promise<ClinicalNoteRow | null> {
     const { data, error } = await supabase
-      .schema('emr')
+      
       .from('clinical_notes')
       .select('*')
       .eq('id', id)

@@ -65,9 +65,12 @@ export default function ConsultationFeeManager({ doctorId }: { doctorId: string 
         <div>
           <label className="text-xs font-semibold text-slate-500 uppercase">Consultation Type *</label>
           <select 
-            className="w-full mt-1 border border-slate-300 rounded-lg p-2 text-sm outline-none"
+            className="flex h-10 w-full mt-1 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors"
             value={newFee.consultation_type} onChange={e => setNewFee({...newFee, consultation_type: e.target.value})}
           >
+            {consultationTypes.length === 0 && (
+              <option value="Standard OPD">Standard OPD</option>
+            )}
             {consultationTypes.map(c => (
               <option key={c.id} value={c.consultation_type}>{c.consultation_type}</option>
             ))}

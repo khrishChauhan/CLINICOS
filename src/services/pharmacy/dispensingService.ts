@@ -1,71 +1,55 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
-import { createDispenseRecord, createDispenseItem } from '@/repositories/pharmacy/dispensingRepository'
-import { recordStockTransaction } from '@/repositories/pharmacy/inventoryRepository'
+import { dispenseMedicinesFEFO } from '@/repositories/pharmacy/dispensingRepository'
+import { appendAuditLog } from '@/repositories/platform/auditRepository'
 
 export const dispensingService = {
   /**
-   * Evaluates available batches using FEFO and executes stock deduction.
+   * Executes atomic FEFO dispensing via a Postgres RPC function.
+   * This completely prevents double-dispensing and race conditions at the database level.
+   * It also atomically handles billing integration inside the transaction.
    */
   async dispenseMedicine(
     supabase: SupabaseClient,
     clinicId: string,
     patientId: string,
     prescriptionId: string | null,
+    visitId: string | null,
     userId: string,
-    itemsToDispense: { medicine_id: string; requested_quantity: number; unit_price: number }[]
+    itemsToDispense: { 
+      medicine_id: string; 
+      medicine_name: string; 
+      requested_quantity: number; 
+      unit_price: number;
+      substituted_medicine_id?: string | null;
+      substitution_reason?: string | null;
+    }[]
   ) {
-    // 1. Create Dispense Record Wrapper
-    const record = await createDispenseRecord(supabase, clinicId, patientId, prescriptionId, userId)
+    // 1. Format items for the RPC
+    const rpcItems = itemsToDispense.map(item => ({
+      medicine_id: item.medicine_id,
+      quantity: item.requested_quantity,
+      original_medicine_id: item.substituted_medicine_id || null,
+      substitution_reason: item.substitution_reason || null
+    }))
 
-    for (const item of itemsToDispense) {
-      let remainingQuantity = item.requested_quantity
+    // 2. Call the Atomic RPC
+    const dispenseId = await dispenseMedicinesFEFO(
+      supabase,
+      clinicId,
+      patientId,
+      userId,
+      visitId,
+      prescriptionId,
+      rpcItems
+    )
 
-      // 2. Fetch available stock for this medicine, ordered by expiry_date ASC (FEFO)
-      const { data: stockBatches, error } = await supabase
-        .from('medicine_stock')
-        .select('*, medicine_batches(expiry_date)')
-        .eq('medicine_id', item.medicine_id)
-        .gt('current_quantity', 0)
-        .order('medicine_batches(expiry_date)', { ascending: true }) // <--- FEFO Engine Logic
+    // 3. Audit Logging
+    await appendAuditLog(supabase, userId, 'Pharmacy Dispense', 'dispense_records', dispenseId, {
+      items_count: itemsToDispense.length,
+      has_substitutions: itemsToDispense.some(i => i.substituted_medicine_id != null),
+      is_otc: visitId == null
+    })
 
-      if (error) throw new Error(error.message)
-
-      let availableTotal = stockBatches.reduce((sum, b) => sum + b.current_quantity, 0)
-      if (availableTotal < remainingQuantity) {
-        throw new Error(`Insufficient stock for medicine ID ${item.medicine_id}`)
-      }
-
-      // 3. Deduct stock sequentially from batches
-      for (const batch of stockBatches) {
-        if (remainingQuantity <= 0) break
-
-        const deductQty = Math.min(batch.current_quantity, remainingQuantity)
-        remainingQuantity -= deductQty
-
-        // Record stock transaction (Triggers auto-deduction in medicine_stock)
-        await recordStockTransaction(supabase, {
-          clinic_id: clinicId,
-          medicine_id: item.medicine_id,
-          batch_id: batch.batch_id,
-          transaction_type: 'Dispense',
-          quantity_change: -deductQty, // Negative because dispensing
-          reference_id: record.id,
-          remarks: 'Dispensed to patient',
-          created_by: userId
-        })
-
-        // Record dispense item
-        await createDispenseItem(supabase, {
-          dispense_record_id: record.id,
-          medicine_id: item.medicine_id,
-          batch_id: batch.batch_id,
-          quantity: deductQty,
-          unit_price: item.unit_price,
-          total_price: deductQty * item.unit_price
-        })
-      }
-    }
-
-    return record
+    return { id: dispenseId }
   }
 }

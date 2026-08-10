@@ -52,15 +52,12 @@ export const walkInService = {
     })
 
     // 3. Join Queue & Get Token
-    const { queueItem, appointment } = await queueService.checkInPatient(supabase, apt.id, clinicId, doctorId, userId)
+    const { queueItem, appointment, token } = await queueService.checkInPatient(supabase, apt.id, clinicId, doctorId, userId)
 
     // 4. Update WalkIn with token
-    if (appointment.token_id || appointment.appointment_number) {
-      // Actually queueService doesn't attach token_number to appointment, it just returns token in logs.
-      // Wait, let's look at checkInPatient. It generates token and we need to fetch it.
-      // queueService.checkInPatient returns { appointment, queueItem }.
-      // To get the token number, we can fetch from tokenRepository using appointment_id, or update queueService to return it.
-      // Let's assume we fetch it since WalkIn isn't high volume concurrent.
+    if (token && token.token_number) {
+      await walkInRepository.updateWalkInToken(supabase, walkIn.id, token.token_number)
+      walkIn.token_number = token.token_number
     }
     
     // We will update the status of WalkIn

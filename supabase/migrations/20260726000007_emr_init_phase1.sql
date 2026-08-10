@@ -2,12 +2,12 @@
 -- Schema: emr
 -- Creates: visits, soap_notes, chief_complaints, vitals
 
-CREATE SCHEMA IF NOT EXISTS emr;
+
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- Sequence tracker for per-clinic visit numbers
 -- ─────────────────────────────────────────────────────────────────────────────
-CREATE TABLE IF NOT EXISTS emr.visit_number_sequences (
+CREATE TABLE IF NOT EXISTS public.visit_number_sequences (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     clinic_id UUID NOT NULL REFERENCES public.clinics(id) ON DELETE CASCADE,
     seq_date DATE NOT NULL DEFAULT CURRENT_DATE,
@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS emr.visit_number_sequences (
 );
 
 -- Function to atomically get + increment the daily sequence per clinic
-CREATE OR REPLACE FUNCTION emr.next_visit_number(p_clinic_id UUID)
+CREATE OR REPLACE FUNCTION public.next_visit_number(p_clinic_id UUID)
 RETURNS TEXT
 LANGUAGE plpgsql
 AS $$
@@ -24,10 +24,10 @@ DECLARE
     v_date TEXT := TO_CHAR(CURRENT_DATE, 'YYYYMMDD');
     v_seq  INTEGER;
 BEGIN
-    INSERT INTO emr.visit_number_sequences (clinic_id, seq_date, last_seq)
+    INSERT INTO public.visit_number_sequences (clinic_id, seq_date, last_seq)
     VALUES (p_clinic_id, CURRENT_DATE, 1)
     ON CONFLICT (clinic_id, seq_date)
-    DO UPDATE SET last_seq = emr.visit_number_sequences.last_seq + 1
+    DO UPDATE SET last_seq = public.visit_number_sequences.last_seq + 1
     RETURNING last_seq INTO v_seq;
 
     RETURN 'VST-' || v_date || '-' || LPAD(v_seq::TEXT, 4, '0');
@@ -37,7 +37,7 @@ $$;
 -- ─────────────────────────────────────────────────────────────────────────────
 -- Visits
 -- ─────────────────────────────────────────────────────────────────────────────
-CREATE TABLE IF NOT EXISTS emr.visits (
+CREATE TABLE IF NOT EXISTS public.visits (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     clinic_id UUID NOT NULL REFERENCES public.clinics(id) ON DELETE CASCADE,
     patient_id UUID NOT NULL REFERENCES public.patients(id) ON DELETE RESTRICT,
@@ -70,20 +70,20 @@ CREATE TABLE IF NOT EXISTS emr.visits (
     CONSTRAINT visits_number_clinic_unique UNIQUE (clinic_id, visit_number)
 );
 
-CREATE INDEX IF NOT EXISTS idx_visits_clinic ON emr.visits(clinic_id);
-CREATE INDEX IF NOT EXISTS idx_visits_patient ON emr.visits(patient_id);
-CREATE INDEX IF NOT EXISTS idx_visits_doctor ON emr.visits(doctor_id);
-CREATE INDEX IF NOT EXISTS idx_visits_appointment ON emr.visits(appointment_id);
-CREATE INDEX IF NOT EXISTS idx_visits_date ON emr.visits(visit_date);
-CREATE INDEX IF NOT EXISTS idx_visits_status ON emr.visits(consultation_status);
+CREATE INDEX IF NOT EXISTS idx_visits_clinic ON public.visits(clinic_id);
+CREATE INDEX IF NOT EXISTS idx_visits_patient ON public.visits(patient_id);
+CREATE INDEX IF NOT EXISTS idx_visits_doctor ON public.visits(doctor_id);
+CREATE INDEX IF NOT EXISTS idx_visits_appointment ON public.visits(appointment_id);
+CREATE INDEX IF NOT EXISTS idx_visits_date ON public.visits(visit_date);
+CREATE INDEX IF NOT EXISTS idx_visits_status ON public.visits(consultation_status);
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- SOAP Notes
 -- ─────────────────────────────────────────────────────────────────────────────
-CREATE TABLE IF NOT EXISTS emr.soap_notes (
+CREATE TABLE IF NOT EXISTS public.soap_notes (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     clinic_id UUID NOT NULL REFERENCES public.clinics(id) ON DELETE CASCADE,
-    visit_id UUID NOT NULL REFERENCES emr.visits(id) ON DELETE CASCADE,
+    visit_id UUID NOT NULL REFERENCES public.visits(id) ON DELETE CASCADE,
 
     subjective TEXT,    -- Patient's own description of symptoms
     objective TEXT,     -- Clinical findings / examination
@@ -97,15 +97,15 @@ CREATE TABLE IF NOT EXISTS emr.soap_notes (
     CONSTRAINT soap_notes_visit_unique UNIQUE (visit_id)  -- One SOAP per visit
 );
 
-CREATE INDEX IF NOT EXISTS idx_soap_notes_visit ON emr.soap_notes(visit_id);
+CREATE INDEX IF NOT EXISTS idx_soap_notes_visit ON public.soap_notes(visit_id);
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- Chief Complaints (multiple per visit)
 -- ─────────────────────────────────────────────────────────────────────────────
-CREATE TABLE IF NOT EXISTS emr.chief_complaints (
+CREATE TABLE IF NOT EXISTS public.chief_complaints (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     clinic_id UUID NOT NULL REFERENCES public.clinics(id) ON DELETE CASCADE,
-    visit_id UUID NOT NULL REFERENCES emr.visits(id) ON DELETE CASCADE,
+    visit_id UUID NOT NULL REFERENCES public.visits(id) ON DELETE CASCADE,
 
     complaint TEXT NOT NULL,
     duration TEXT,           -- e.g., "3 days", "2 weeks"
@@ -115,15 +115,15 @@ CREATE TABLE IF NOT EXISTS emr.chief_complaints (
     created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-CREATE INDEX IF NOT EXISTS idx_chief_complaints_visit ON emr.chief_complaints(visit_id);
+CREATE INDEX IF NOT EXISTS idx_chief_complaints_visit ON public.chief_complaints(visit_id);
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- Vitals (multiple records per visit allowed)
 -- ─────────────────────────────────────────────────────────────────────────────
-CREATE TABLE IF NOT EXISTS emr.vitals (
+CREATE TABLE IF NOT EXISTS public.vitals (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     clinic_id UUID NOT NULL REFERENCES public.clinics(id) ON DELETE CASCADE,
-    visit_id UUID NOT NULL REFERENCES emr.visits(id) ON DELETE CASCADE,
+    visit_id UUID NOT NULL REFERENCES public.visits(id) ON DELETE CASCADE,
 
     height_cm NUMERIC(5,2),          -- centimeters
     weight_kg NUMERIC(5,2),          -- kilograms
@@ -141,31 +141,31 @@ CREATE TABLE IF NOT EXISTS emr.vitals (
     recorded_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-CREATE INDEX IF NOT EXISTS idx_vitals_visit ON emr.vitals(visit_id);
+CREATE INDEX IF NOT EXISTS idx_vitals_visit ON public.vitals(visit_id);
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- RLS
 -- ─────────────────────────────────────────────────────────────────────────────
-ALTER TABLE emr.visit_number_sequences ENABLE ROW LEVEL SECURITY;
-ALTER TABLE emr.visits ENABLE ROW LEVEL SECURITY;
-ALTER TABLE emr.soap_notes ENABLE ROW LEVEL SECURITY;
-ALTER TABLE emr.chief_complaints ENABLE ROW LEVEL SECURITY;
-ALTER TABLE emr.vitals ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.visit_number_sequences ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.visits ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.soap_notes ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.chief_complaints ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.vitals ENABLE ROW LEVEL SECURITY;
 
 -- RLS helper expression
 -- All policies enforce clinic_id matches the authenticated user's clinic_id
 
-CREATE POLICY emr_visit_seq_policy ON emr.visit_number_sequences
+CREATE POLICY emr_visit_seq_policy ON public.visit_number_sequences
     FOR ALL USING (clinic_id = (SELECT clinic_id FROM public.users WHERE id = auth.uid()));
 
-CREATE POLICY emr_visits_policy ON emr.visits
+CREATE POLICY emr_visits_policy ON public.visits
     FOR ALL USING (clinic_id = (SELECT clinic_id FROM public.users WHERE id = auth.uid()));
 
-CREATE POLICY emr_soap_policy ON emr.soap_notes
+CREATE POLICY emr_soap_policy ON public.soap_notes
     FOR ALL USING (clinic_id = (SELECT clinic_id FROM public.users WHERE id = auth.uid()));
 
-CREATE POLICY emr_cc_policy ON emr.chief_complaints
+CREATE POLICY emr_cc_policy ON public.chief_complaints
     FOR ALL USING (clinic_id = (SELECT clinic_id FROM public.users WHERE id = auth.uid()));
 
-CREATE POLICY emr_vitals_policy ON emr.vitals
+CREATE POLICY emr_vitals_policy ON public.vitals
     FOR ALL USING (clinic_id = (SELECT clinic_id FROM public.users WHERE id = auth.uid()));

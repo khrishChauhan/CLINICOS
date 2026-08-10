@@ -5,11 +5,11 @@
 -- ─────────────────────────────────────────────────────────────────────────────
 -- Diagnosis History
 -- ─────────────────────────────────────────────────────────────────────────────
-CREATE TABLE IF NOT EXISTS emr.diagnosis_history (
+CREATE TABLE IF NOT EXISTS public.diagnosis_history (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     clinic_id UUID NOT NULL REFERENCES public.clinics(id) ON DELETE CASCADE,
     patient_id UUID NOT NULL REFERENCES public.patients(id) ON DELETE CASCADE,
-    visit_id UUID NOT NULL REFERENCES emr.visits(id) ON DELETE CASCADE,
+    visit_id UUID NOT NULL REFERENCES public.visits(id) ON DELETE CASCADE,
     
     diagnosis_name TEXT NOT NULL,
     diagnosis_date TIMESTAMPTZ NOT NULL,
@@ -19,15 +19,15 @@ CREATE TABLE IF NOT EXISTS emr.diagnosis_history (
     created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-CREATE INDEX IF NOT EXISTS idx_diagnosis_history_patient ON emr.diagnosis_history(patient_id);
+CREATE INDEX IF NOT EXISTS idx_diagnosis_history_patient ON public.diagnosis_history(patient_id);
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- EMR Audit
 -- ─────────────────────────────────────────────────────────────────────────────
-CREATE TABLE IF NOT EXISTS emr.emr_audit (
+CREATE TABLE IF NOT EXISTS public.emr_audit (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     clinic_id UUID NOT NULL REFERENCES public.clinics(id) ON DELETE CASCADE,
-    visit_id UUID REFERENCES emr.visits(id) ON DELETE SET NULL,
+    visit_id UUID REFERENCES public.visits(id) ON DELETE SET NULL,
     patient_id UUID REFERENCES public.patients(id) ON DELETE SET NULL,
     
     action VARCHAR(100) NOT NULL, -- 'CREATED', 'UPDATED', 'DELETED', 'RESOLVED', 'VIEWED'
@@ -42,32 +42,32 @@ CREATE TABLE IF NOT EXISTS emr.emr_audit (
     action_time TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-CREATE INDEX IF NOT EXISTS idx_emr_audit_visit ON emr.emr_audit(visit_id);
-CREATE INDEX IF NOT EXISTS idx_emr_audit_patient ON emr.emr_audit(patient_id);
+CREATE INDEX IF NOT EXISTS idx_emr_audit_visit ON public.emr_audit(visit_id);
+CREATE INDEX IF NOT EXISTS idx_emr_audit_patient ON public.emr_audit(patient_id);
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- RLS Policies
 -- ─────────────────────────────────────────────────────────────────────────────
-ALTER TABLE emr.diagnosis_history ENABLE ROW LEVEL SECURITY;
-ALTER TABLE emr.emr_audit ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.diagnosis_history ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.emr_audit ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY emr_diagnosis_history_policy ON emr.diagnosis_history 
+CREATE POLICY emr_diagnosis_history_policy ON public.diagnosis_history 
     FOR ALL USING (clinic_id = (SELECT clinic_id FROM public.users WHERE id = auth.uid()));
 
 -- IMMUTABLE AUDIT LOGS: Only SELECT and INSERT allowed
-CREATE POLICY emr_audit_select_policy ON emr.emr_audit 
+CREATE POLICY emr_audit_select_policy ON public.emr_audit 
     FOR SELECT USING (clinic_id = (SELECT clinic_id FROM public.users WHERE id = auth.uid()));
 
-CREATE POLICY emr_audit_insert_policy ON emr.emr_audit 
+CREATE POLICY emr_audit_insert_policy ON public.emr_audit 
     FOR INSERT WITH CHECK (clinic_id = (SELECT clinic_id FROM public.users WHERE id = auth.uid()));
 
 -- Hard revoke of UPDATE/DELETE at the database level for authenticated users
-REVOKE UPDATE, DELETE ON emr.emr_audit FROM authenticated;
+REVOKE UPDATE, DELETE ON public.emr_audit FROM authenticated;
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- Transactional Diagnosis Resolution (RPC)
 -- ─────────────────────────────────────────────────────────────────────────────
-CREATE OR REPLACE FUNCTION emr.resolve_diagnosis_tx(
+CREATE OR REPLACE FUNCTION public.resolve_diagnosis_tx(
   p_diagnosis_id UUID,
   p_status VARCHAR,
   p_user_id UUID
@@ -76,18 +76,18 @@ DECLARE
   v_diag RECORD;
 BEGIN
   -- 1. Fetch existing diagnosis
-  SELECT * INTO v_diag FROM emr.diagnoses WHERE id = p_diagnosis_id;
+  SELECT * INTO v_diag FROM public.diagnoses WHERE id = p_diagnosis_id;
   IF NOT FOUND THEN
     RAISE EXCEPTION 'Diagnosis not found';
   END IF;
 
   -- 2. Update the diagnosis
-  UPDATE emr.diagnoses
+  UPDATE public.diagnoses
   SET status = p_status, updated_at = now()
   WHERE id = p_diagnosis_id;
 
   -- 3. Insert into diagnosis_history
-  INSERT INTO emr.diagnosis_history (
+  INSERT INTO public.diagnosis_history (
     clinic_id, patient_id, visit_id, diagnosis_name, diagnosis_date, status, resolved_date
   ) VALUES (
     v_diag.clinic_id,

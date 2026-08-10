@@ -103,5 +103,6 @@ export interface DispenseItemRow {
   quantity: number
   unit_price: number
   total_price: number
+  substituted_medicine_id?: string | null
   created_at: string
 }

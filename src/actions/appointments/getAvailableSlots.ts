@@ -1,15 +1,16 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { slotGenerationService } from '@/services/appointments/slotGenerationService'
 
 export async function getAvailableSlotsAction(doctorId: string, date: string) {
   try {
     const supabase = await createClient()
+    const adminClient = createAdminClient()
     const { data: { user }, error: userError } = await supabase.auth.getUser()
     if (userError || !user) throw new Error('Unauthorized')
     
-    const { data: profile } = await supabase
+    const { data: profile } = await adminClient
       .from('users')
       .select('clinic_id')
       .eq('id', user.id)

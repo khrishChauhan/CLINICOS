@@ -4,7 +4,7 @@ import type { FollowUpPlanRow } from '@/types/emr'
 export const followUpPlanRepository = {
   async getByVisit(supabase: SupabaseClient, visitId: string): Promise<FollowUpPlanRow | null> {
     const { data, error } = await supabase
-      .schema('emr')
+      
       .from('follow_up_plans')
       .select('*')
       .eq('visit_id', visitId)
@@ -15,7 +15,7 @@ export const followUpPlanRepository = {
 
   async upsert(supabase: SupabaseClient, payload: Partial<FollowUpPlanRow>): Promise<FollowUpPlanRow> {
     const { data, error } = await supabase
-      .schema('emr')
+      
       .from('follow_up_plans')
       .upsert([{ ...payload, updated_at: new Date().toISOString() }], { onConflict: 'visit_id' })
       .select()

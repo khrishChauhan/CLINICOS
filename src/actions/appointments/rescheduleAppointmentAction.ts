@@ -1,6 +1,6 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { rescheduleService } from '@/services/appointments/rescheduleService'
 import { revalidatePath } from 'next/cache'
 
@@ -12,10 +12,11 @@ export async function rescheduleAppointmentAction(
 ) {
   try {
     const supabase = await createClient()
+    const adminClient = createAdminClient()
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) throw new Error('Unauthorized')
 
-    const { data: profile } = await supabase
+    const { data: profile } = await adminClient
       .from('users')
       .select('clinic_id')
       .eq('id', user.id)

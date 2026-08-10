@@ -4,7 +4,7 @@ import type { SoapNoteRow } from '@/types/emr'
 export const soapNoteRepository = {
   async getByVisitId(supabase: SupabaseClient, visitId: string): Promise<SoapNoteRow | null> {
     const { data, error } = await supabase
-      .schema('emr')
+      
       .from('soap_notes')
       .select('*')
       .eq('visit_id', visitId)
@@ -15,7 +15,7 @@ export const soapNoteRepository = {
 
   async upsert(supabase: SupabaseClient, payload: Partial<SoapNoteRow>): Promise<SoapNoteRow> {
     const { data, error } = await supabase
-      .schema('emr')
+      
       .from('soap_notes')
       .upsert([{ ...payload, updated_at: new Date().toISOString() }], { onConflict: 'visit_id' })
       .select()

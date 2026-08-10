@@ -5,10 +5,10 @@
 -- ─────────────────────────────────────────────────────────────────────────────
 -- Diagnoses
 -- ─────────────────────────────────────────────────────────────────────────────
-CREATE TABLE IF NOT EXISTS emr.diagnoses (
+CREATE TABLE IF NOT EXISTS public.diagnoses (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     clinic_id UUID NOT NULL REFERENCES public.clinics(id) ON DELETE CASCADE,
-    visit_id UUID NOT NULL REFERENCES emr.visits(id) ON DELETE CASCADE,
+    visit_id UUID NOT NULL REFERENCES public.visits(id) ON DELETE CASCADE,
 
     diagnosis_code VARCHAR(50),
     diagnosis_name TEXT NOT NULL,
@@ -24,16 +24,16 @@ CREATE TABLE IF NOT EXISTS emr.diagnoses (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-CREATE INDEX IF NOT EXISTS idx_diagnoses_visit ON emr.diagnoses(visit_id);
-CREATE INDEX IF NOT EXISTS idx_diagnoses_clinic ON emr.diagnoses(clinic_id);
+CREATE INDEX IF NOT EXISTS idx_diagnoses_visit ON public.diagnoses(visit_id);
+CREATE INDEX IF NOT EXISTS idx_diagnoses_clinic ON public.diagnoses(clinic_id);
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- Procedures
 -- ─────────────────────────────────────────────────────────────────────────────
-CREATE TABLE IF NOT EXISTS emr.procedures (
+CREATE TABLE IF NOT EXISTS public.procedures (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     clinic_id UUID NOT NULL REFERENCES public.clinics(id) ON DELETE CASCADE,
-    visit_id UUID NOT NULL REFERENCES emr.visits(id) ON DELETE CASCADE,
+    visit_id UUID NOT NULL REFERENCES public.visits(id) ON DELETE CASCADE,
 
     procedure_code VARCHAR(50),
     procedure_name TEXT NOT NULL,
@@ -47,15 +47,15 @@ CREATE TABLE IF NOT EXISTS emr.procedures (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-CREATE INDEX IF NOT EXISTS idx_procedures_visit ON emr.procedures(visit_id);
+CREATE INDEX IF NOT EXISTS idx_procedures_visit ON public.procedures(visit_id);
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- Prescriptions (one per visit, can be updated while consultation is active)
 -- ─────────────────────────────────────────────────────────────────────────────
-CREATE TABLE IF NOT EXISTS emr.prescriptions (
+CREATE TABLE IF NOT EXISTS public.prescriptions (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     clinic_id UUID NOT NULL REFERENCES public.clinics(id) ON DELETE CASCADE,
-    visit_id UUID NOT NULL REFERENCES emr.visits(id) ON DELETE CASCADE,
+    visit_id UUID NOT NULL REFERENCES public.visits(id) ON DELETE CASCADE,
     doctor_id UUID NOT NULL REFERENCES doctor.doctors(id) ON DELETE RESTRICT,
 
     prescription_date DATE NOT NULL DEFAULT CURRENT_DATE,
@@ -70,16 +70,16 @@ CREATE TABLE IF NOT EXISTS emr.prescriptions (
     CONSTRAINT prescriptions_visit_unique UNIQUE (visit_id)  -- One prescription per visit
 );
 
-CREATE INDEX IF NOT EXISTS idx_prescriptions_visit ON emr.prescriptions(visit_id);
-CREATE INDEX IF NOT EXISTS idx_prescriptions_doctor ON emr.prescriptions(doctor_id);
+CREATE INDEX IF NOT EXISTS idx_prescriptions_visit ON public.prescriptions(visit_id);
+CREATE INDEX IF NOT EXISTS idx_prescriptions_doctor ON public.prescriptions(doctor_id);
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- Prescription Items (multiple medicines per prescription)
 -- ─────────────────────────────────────────────────────────────────────────────
-CREATE TABLE IF NOT EXISTS emr.prescription_items (
+CREATE TABLE IF NOT EXISTS public.prescription_items (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     clinic_id UUID NOT NULL REFERENCES public.clinics(id) ON DELETE CASCADE,
-    prescription_id UUID NOT NULL REFERENCES emr.prescriptions(id) ON DELETE CASCADE,
+    prescription_id UUID NOT NULL REFERENCES public.prescriptions(id) ON DELETE CASCADE,
 
     medicine_id UUID,                   -- optional: future medicine master FK
     medicine_name TEXT NOT NULL,
@@ -94,24 +94,24 @@ CREATE TABLE IF NOT EXISTS emr.prescription_items (
     created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-CREATE INDEX IF NOT EXISTS idx_prescription_items_prescription ON emr.prescription_items(prescription_id);
+CREATE INDEX IF NOT EXISTS idx_prescription_items_prescription ON public.prescription_items(prescription_id);
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- RLS
 -- ─────────────────────────────────────────────────────────────────────────────
-ALTER TABLE emr.diagnoses ENABLE ROW LEVEL SECURITY;
-ALTER TABLE emr.procedures ENABLE ROW LEVEL SECURITY;
-ALTER TABLE emr.prescriptions ENABLE ROW LEVEL SECURITY;
-ALTER TABLE emr.prescription_items ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.diagnoses ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.procedures ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.prescriptions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.prescription_items ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY emr_diagnoses_policy ON emr.diagnoses
+CREATE POLICY emr_diagnoses_policy ON public.diagnoses
     FOR ALL USING (clinic_id = (SELECT clinic_id FROM public.users WHERE id = auth.uid()));
 
-CREATE POLICY emr_procedures_policy ON emr.procedures
+CREATE POLICY emr_procedures_policy ON public.procedures
     FOR ALL USING (clinic_id = (SELECT clinic_id FROM public.users WHERE id = auth.uid()));
 
-CREATE POLICY emr_prescriptions_policy ON emr.prescriptions
+CREATE POLICY emr_prescriptions_policy ON public.prescriptions
     FOR ALL USING (clinic_id = (SELECT clinic_id FROM public.users WHERE id = auth.uid()));
 
-CREATE POLICY emr_prescription_items_policy ON emr.prescription_items
+CREATE POLICY emr_prescription_items_policy ON public.prescription_items
     FOR ALL USING (clinic_id = (SELECT clinic_id FROM public.users WHERE id = auth.uid()));

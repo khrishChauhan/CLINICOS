@@ -4,7 +4,7 @@ import type { ChiefComplaintRow } from '@/types/emr'
 export const chiefComplaintRepository = {
   async getByVisitId(supabase: SupabaseClient, visitId: string): Promise<ChiefComplaintRow[]> {
     const { data, error } = await supabase
-      .schema('emr')
+      
       .from('chief_complaints')
       .select('*')
       .eq('visit_id', visitId)
@@ -15,7 +15,7 @@ export const chiefComplaintRepository = {
 
   async create(supabase: SupabaseClient, payload: Partial<ChiefComplaintRow>): Promise<ChiefComplaintRow> {
     const { data, error } = await supabase
-      .schema('emr')
+      
       .from('chief_complaints')
       .insert([payload])
       .select()
@@ -26,7 +26,7 @@ export const chiefComplaintRepository = {
 
   async delete(supabase: SupabaseClient, id: string): Promise<void> {
     const { error } = await supabase
-      .schema('emr')
+      
       .from('chief_complaints')
       .delete()
       .eq('id', id)

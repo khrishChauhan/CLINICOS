@@ -4,7 +4,7 @@ import type { DiagnosisRow, DiagnosisType, DiagnosisStatus } from '@/types/emr'
 export const diagnosisRepository = {
   async getByVisit(supabase: SupabaseClient, visitId: string): Promise<DiagnosisRow[]> {
     const { data, error } = await supabase
-      .schema('emr')
+      
       .from('diagnoses')
       .select('*')
       .eq('visit_id', visitId)
@@ -15,7 +15,7 @@ export const diagnosisRepository = {
 
   async create(supabase: SupabaseClient, payload: Partial<DiagnosisRow>): Promise<DiagnosisRow> {
     const { data, error } = await supabase
-      .schema('emr')
+      
       .from('diagnoses')
       .insert([payload])
       .select()
@@ -26,7 +26,7 @@ export const diagnosisRepository = {
 
   async update(supabase: SupabaseClient, id: string, updates: Partial<DiagnosisRow>): Promise<DiagnosisRow> {
     const { data, error } = await supabase
-      .schema('emr')
+      
       .from('diagnoses')
       .update({ ...updates, updated_at: new Date().toISOString() })
       .eq('id', id)
@@ -38,7 +38,7 @@ export const diagnosisRepository = {
 
   async delete(supabase: SupabaseClient, id: string): Promise<void> {
     const { error } = await supabase
-      .schema('emr')
+      
       .from('diagnoses')
       .delete()
       .eq('id', id)
@@ -48,7 +48,7 @@ export const diagnosisRepository = {
   /** Demote all existing Primary diagnoses for this visit to Secondary */
   async demoteExistingPrimary(supabase: SupabaseClient, visitId: string): Promise<void> {
     const { error } = await supabase
-      .schema('emr')
+      
       .from('diagnoses')
       .update({ diagnosis_type: 'Secondary', updated_at: new Date().toISOString() })
       .eq('visit_id', visitId)
