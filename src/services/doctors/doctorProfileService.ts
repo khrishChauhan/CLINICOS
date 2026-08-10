@@ -15,10 +15,24 @@ export const doctorProfileService = {
     // 1. Auto-generate Doctor Code if missing
     let doctorCode = payload.doctor_code
     if (!doctorCode) {
-      // Very simple auto-generator for MVP
+      // Collision-safe: find the highest existing numeric suffix for this clinic
+      // and increment it, rather than using row-count (which breaks on deletions/conflicts).
       const docs = await doctorRepository.getDoctors(supabase, clinicId)
-      const count = docs.length + 1
-      doctorCode = `DOC-${count.toString().padStart(3, '0')}`
+      let maxNum = 0
+      for (const d of docs) {
+        const match = d.doctor_code?.match(/(\d+)$/)
+        if (match) {
+          const n = parseInt(match[1], 10)
+          if (n > maxNum) maxNum = n
+        }
+      }
+      // Keep trying until we find an unused code (handles gaps from deletions)
+      let candidate = maxNum + 1
+      const existingCodes = new Set(docs.map((d: DoctorRow) => d.doctor_code))
+      while (existingCodes.has(`DOC-${candidate.toString().padStart(3, '0')}`)) {
+        candidate++
+      }
+      doctorCode = `DOC-${candidate.toString().padStart(3, '0')}`
     }
 
     // 2. Insert into doctor.doctors

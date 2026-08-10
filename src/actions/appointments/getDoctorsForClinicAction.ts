@@ -14,11 +14,6 @@ async function getAuthContext() {
   const { data: profile } = await adminClient.from('users').select('clinic_id').eq('id', user.id).single()
   if (profile?.clinic_id) {
     clinicId = profile.clinic_id
-  } else {
-    const { data: clinics } = await adminClient.from('clinics').select('id').limit(1)
-    if (clinics && clinics.length > 0) {
-      clinicId = clinics[0].id
-    }
   }
 
   if (!clinicId) throw new Error('Clinic context missing')
