@@ -6,12 +6,15 @@ import { redirect } from 'next/navigation'
 
 export default async function InvoicePage({ params }: { params: { id: string } }) {
   const supabase = await createClient()
-  const { data: session } = await supabase.rpc('get_session_context')
-  if (!session) redirect('/login')
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
+  
+  const { data: userProfile } = await supabase.from('users').select('clinic_id').eq('id', user.id).single()
+  const clinicId = userProfile?.clinic_id
 
   try {
     const { invoice, items } = await getInvoice(supabase, params.id)
-    const services = await getServices(supabase, session.clinic_id)
+    const services = await getServices(supabase, clinicId)
     
     return <InvoiceBuilderClient invoice={invoice} items={items} catalog={services} />
   } catch (err: any) {
