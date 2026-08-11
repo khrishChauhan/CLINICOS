@@ -111,7 +111,7 @@ export default function DispenseClient({ medicines, patients, pendingPrescriptio
     
     const pres = pendingPrescriptions.find(p => p.id === pId)
     if (pres) {
-      setSelectedPatientId(pres.patient_id)
+      setSelectedPatientId(pres.visits?.appointments?.patient_id || '')
       
       pres.prescription_items?.forEach((item: any) => {
         // Match by medicine_id first (if linked), then fall back to medicine_name
@@ -158,11 +158,14 @@ export default function DispenseClient({ medicines, patients, pendingPrescriptio
             onChange={loadPrescription}
           >
             <option value="">-- OTC Walk-in (No Prescription) --</option>
-            {pendingPrescriptions.map(p => (
-              <option key={p.id} value={p.id}>
-                {p.patients?.first_name} {p.patients?.last_name} - {new Date(p.created_at).toLocaleDateString()}
-              </option>
-            ))}
+            {pendingPrescriptions.map(p => {
+              const patient = p.visits?.appointments?.patients;
+              return (
+                <option key={p.id} value={p.id}>
+                  {patient?.first_name} {patient?.last_name} - {new Date(p.created_at).toLocaleDateString()}
+                </option>
+              )
+            })}
           </select>
         </div>
 

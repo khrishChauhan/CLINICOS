@@ -49,7 +49,8 @@ export async function fetchPendingPrescriptionsAction() {
     // Fetch prescriptions that don't have a Completed dispense_record
     const { data, error } = await supabase
       .from('prescriptions')
-      .select('*, visits(*), patients(*), prescription_items(*)')
+      // prescriptions -> visits -> appointments -> patients
+      .select('*, visits(*, appointments(*, patients(*))), prescription_items(*)')
       .eq('clinic_id', session.clinic_id)
       .order('created_at', { ascending: false })
       .limit(50)
