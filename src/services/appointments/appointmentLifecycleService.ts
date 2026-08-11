@@ -1,6 +1,20 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { appointmentHistoryRepository } from '@/repositories/appointments/appointmentHistoryRepository'
 
+// ---------------------------------------------------------------------------
+// State Machine — valid forward transitions only
+// ---------------------------------------------------------------------------
+const VALID_TRANSITIONS: Record<string, string[]> = {
+  'Scheduled':       ['Confirmed', 'Checked In', 'Cancelled', 'Rescheduled', 'No Show'],
+  'Confirmed':       ['Checked In', 'Cancelled', 'Rescheduled', 'No Show'],
+  'Checked In':      ['In Consultation', 'Cancelled'],
+  'In Consultation': ['Completed', 'Cancelled'],
+  'Completed':       [], // terminal
+  'Cancelled':       [], // terminal
+  'No Show':         [], // terminal
+  'Rescheduled':     ['Scheduled', 'Confirmed', 'Cancelled'],
+}
+
 export const appointmentLifecycleService = {
   /**
    * Universal method to update appointment status and log history.
@@ -27,6 +41,15 @@ export const appointmentLifecycleService = {
 
     if (previousStatus === newStatus) {
       return // No change needed
+    }
+
+    // 1b. Validate transition via state machine
+    const allowedTransitions = VALID_TRANSITIONS[previousStatus]
+    if (allowedTransitions !== undefined && !allowedTransitions.includes(newStatus)) {
+      throw new Error(
+        `Invalid status transition: '${previousStatus}' → '${newStatus}'. ` +
+        `Allowed: [${allowedTransitions.join(', ') || 'none — this is a terminal state'}]`
+      )
     }
 
     // 2. Update status

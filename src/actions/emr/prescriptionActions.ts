@@ -53,8 +53,8 @@ export async function addPrescriptionItemAction(
 
 export async function deletePrescriptionItemAction(itemId: string) {
   try {
-    const { supabase } = await getAuthContext()
-    await prescriptionService.removeItem(supabase, itemId)
+    const { supabase, clinicId } = await getAuthContext()
+    await prescriptionService.removeItem(supabase, itemId, clinicId)
     return { success: true }
   } catch (error: any) {
     return { success: false, error: error.message }

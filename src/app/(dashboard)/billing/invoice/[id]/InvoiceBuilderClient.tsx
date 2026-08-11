@@ -26,6 +26,7 @@ export default function InvoiceBuilderClient({ invoice, items, catalog }: Props)
   const [payAmount, setPayAmount] = useState(invoice.amount_due)
   const [payMethod, setPayMethod] = useState('Cash')
   const [payRef, setPayRef] = useState('')
+  const [isPaymentLoading, setIsPaymentLoading] = useState(false)
 
   async function handleAddItem() {
     if (!selectedService) return
@@ -53,12 +54,19 @@ export default function InvoiceBuilderClient({ invoice, items, catalog }: Props)
 
   async function handlePayment(e: React.FormEvent) {
     e.preventDefault()
-    const res = await collectPaymentAction(invoice.id, invoice.patient_id, Number(payAmount), payMethod, payRef)
-    if (res.ok) {
-      toast.success('Payment Collected')
-      setShowPayment(false)
-    } else {
-      toast.error('Failed: ' + res.error)
+    if (isPaymentLoading) return // prevent double submission
+    setIsPaymentLoading(true)
+    try {
+      const res = await collectPaymentAction(invoice.id, invoice.patient_id, Number(payAmount), payMethod, payRef)
+      if (res.ok) {
+        toast.success('Payment Collected')
+        setShowPayment(false)
+        router.refresh()
+      } else {
+        toast.error('Failed: ' + res.error)
+      }
+    } finally {
+      setIsPaymentLoading(false)
     }
   }
 
@@ -186,7 +194,9 @@ export default function InvoiceBuilderClient({ invoice, items, catalog }: Props)
               </div>
               <div className="flex justify-end gap-2 mt-6">
                 <button type="button" onClick={() => setShowPayment(false)} className="px-4 py-2 text-gray-500 font-medium">Cancel</button>
-                <button type="submit" className="bg-emerald-600 text-white px-4 py-2 rounded font-medium">Confirm Payment</button>
+                <button type="submit" disabled={isPaymentLoading} className="bg-emerald-600 text-white px-4 py-2 rounded font-medium disabled:opacity-60">
+                  {isPaymentLoading ? 'Processing...' : 'Confirm Payment'}
+                </button>
               </div>
             </form>
           </div>

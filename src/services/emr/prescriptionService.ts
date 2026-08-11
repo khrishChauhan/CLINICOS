@@ -72,7 +72,15 @@ export const prescriptionService = {
     })
   },
 
-  async removeItem(supabase: SupabaseClient, itemId: string): Promise<void> {
+  async removeItem(supabase: SupabaseClient, itemId: string, clinicId: string): Promise<void> {
+    // Verify ownership before deleting — prevents cross-tenant item deletion
+    const { data: item, error } = await supabase
+      .from('prescription_items')
+      .select('clinic_id')
+      .eq('id', itemId)
+      .single()
+    if (error || !item) throw new Error('Prescription item not found')
+    if (item.clinic_id !== clinicId) throw new Error('Unauthorized: item belongs to another clinic')
     await prescriptionItemRepository.delete(supabase, itemId)
   },
 
