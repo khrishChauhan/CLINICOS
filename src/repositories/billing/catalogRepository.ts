@@ -5,7 +5,7 @@ import { cache } from 'react'
 
 export const getServices = cache(async (supabase: SupabaseClient, clinicId: string): Promise<ServiceRow[]> => {
   const { data, error } = await supabase
-    .from('services')
+    .from('billing_services')
     .select('*').limit(100)
     .eq('clinic_id', clinicId)
     .order('name', { ascending: true })
@@ -19,7 +19,7 @@ export async function addService(
   payload: Omit<ServiceRow, 'id' | 'created_at' | 'updated_at'>
 ): Promise<ServiceRow> {
   const { data, error } = await supabase
-    .from('services')
+    .from('billing_services')
     .insert([payload])
     .select()
     .single()

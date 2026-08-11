@@ -106,7 +106,7 @@ export async function fetchEnterpriseDashboardAction() {
       inventoryService.getDashboardAlerts(supabase, session.clinic_id),
       getMedicines(supabase, session.clinic_id),
       supabase.from('stock_transactions')
-        .select('*, medicine_batches(batch_number), medicines(name)')
+        .select('*, medicine_batches(batch_number), medicines(generic_name, brand_name)')
         .eq('clinic_id', session.clinic_id)
         .order('created_at', { ascending: false })
         .limit(20)

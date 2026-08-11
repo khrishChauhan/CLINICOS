@@ -3,8 +3,8 @@ import VisitWorkspace from '@/components/emr/VisitWorkspace'
 import { getVisitAction } from '@/actions/emr/visitActions'
 import { redirect } from 'next/navigation'
 
-export default async function EMRVisitPage({ params }: { params: { id: string } }) {
-  const visitId = params.id
+export default async function EMRVisitPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id: visitId } = await params
   const res = await getVisitAction(visitId)
 
   if (!res.success || !res.data) {

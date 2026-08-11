@@ -17,12 +17,13 @@ import LanguagesManager from '@/components/doctors/LanguagesManager'
 import CommunicationPreferencesManager from '@/components/doctors/CommunicationPreferencesManager'
 import LoginDevicesManager from '@/components/doctors/LoginDevicesManager'
 import AuditTimeline from '@/components/doctors/AuditTimeline'
+import DoctorScheduleManager from '@/components/doctors/DoctorScheduleManager'
 
 export default function DoctorProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params)
   const doctorId = resolvedParams.id
   const isNew = doctorId === 'new'
-  const [activeTab, setActiveTab] = useState<'profile' | 'qualifications' | 'registrations' | 'blocks' | 'leaves' | 'fees' | 'signature' | 'documents' | 'performance' | 'notes' | 'awards' | 'languages' | 'communication' | 'devices' | 'audit'>('profile')
+  const [activeTab, setActiveTab] = useState<'profile' | 'qualifications' | 'registrations' | 'schedule' | 'blocks' | 'leaves' | 'fees' | 'signature' | 'documents' | 'performance' | 'notes' | 'awards' | 'languages' | 'communication' | 'devices' | 'audit'>('profile')
 
   return (
     <div className="flex-1 p-6 max-w-7xl w-full mx-auto space-y-6">
@@ -57,6 +58,12 @@ export default function DoctorProfilePage({ params }: { params: Promise<{ id: st
               className={`pb-2 px-1 text-sm font-semibold border-b-2 whitespace-nowrap ${activeTab === 'fees' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
             >
               Consultation Fees
+            </button>
+            <button 
+              onClick={() => setActiveTab('schedule')}
+              className={`pb-2 px-1 text-sm font-semibold border-b-2 whitespace-nowrap ${activeTab === 'schedule' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+            >
+              Schedule
             </button>
             <button 
               onClick={() => setActiveTab('blocks')}
@@ -135,6 +142,7 @@ export default function DoctorProfilePage({ params }: { params: Promise<{ id: st
         {activeTab === 'qualifications' && !isNew && <DoctorQualificationsManager doctorId={doctorId} />}
         {activeTab === 'registrations' && !isNew && <DoctorRegistrationsManager doctorId={doctorId} />}
         {activeTab === 'fees' && !isNew && <ConsultationFeeManager doctorId={doctorId} />}
+        {activeTab === 'schedule' && !isNew && <DoctorScheduleManager doctorId={doctorId} />}
         {activeTab === 'blocks' && !isNew && <BlockedSlotManager doctorId={doctorId} />}
         {activeTab === 'leaves' && !isNew && <LeaveManagement doctorId={doctorId} />}
         {activeTab === 'performance' && !isNew && <PerformanceDashboard doctorId={doctorId} />}

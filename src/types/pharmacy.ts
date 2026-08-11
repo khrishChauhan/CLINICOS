@@ -9,14 +9,16 @@ export interface MedicineCategoryRow {
 export interface MedicineRow {
   id: string
   clinic_id: string
+  master_medicine_id: string | null
   category_id: string | null
-  name: string
-  generic_name: string | null
-  manufacturer: string | null
-  unit: string | null
+  generic_name: string
+  brand_name: string | null
+  unit_id: string | null
   reorder_level: number
-  is_active: boolean
+  unit_price: number
+  status: string
   created_at: string
+  updated_at: string
 }
 
 export interface SupplierRow {

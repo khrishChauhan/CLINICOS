@@ -81,7 +81,7 @@ export default async function EnterpriseInventoryDashboard() {
                           {t.transaction_type}
                         </Badge>
                       </td>
-                      <td className="px-6 py-4 font-medium text-slate-700">{t.medicines?.name || 'Unknown'}</td>
+                      <td className="px-6 py-4 font-medium text-slate-700">{t.medicines?.brand_name || t.medicines?.generic_name || 'Unknown'}</td>
                       <td className="px-6 py-4 font-mono text-slate-500">{t.medicine_batches?.batch_number || 'Unknown'}</td>
                       <td className={`px-6 py-4 font-bold ${t.quantity_change > 0 ? 'text-green-600' : 'text-red-500'}`}>
                         {t.quantity_change > 0 ? '+' : ''}{t.quantity_change}

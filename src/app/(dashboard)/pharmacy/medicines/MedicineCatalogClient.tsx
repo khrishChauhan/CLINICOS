@@ -9,16 +9,18 @@ import type { MedicineRow } from '@/types/pharmacy'
 
 export default function MedicineCatalogClient({ initialData }: { initialData: MedicineRow[] }) {
   const router = useRouter()
-  const [name, setName] = useState('')
-  const [unit, setUnit] = useState('Tablets')
+  const [genericName, setGenericName] = useState('')
+  const [brandName, setBrandName] = useState('')
+  const [unitPrice, setUnitPrice] = useState(0)
   const [reorderLevel, setReorderLevel] = useState(10)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    const res = await createMedicineAction({ name, unit, reorder_level: reorderLevel })
+    const res = await createMedicineAction({ generic_name: genericName, brand_name: brandName, unit_price: unitPrice, reorder_level: reorderLevel })
     if (res.ok) {
       toast.success('Medicine created')
-      setName('')
+      setGenericName('')
+      setBrandName('')
       router.refresh()
     } else {
       toast.error(res.error)
@@ -36,18 +38,22 @@ export default function MedicineCatalogClient({ initialData }: { initialData: Me
         <h2 className="font-semibold mb-4">Add Medicine</h2>
         <form onSubmit={handleSubmit} className="grid grid-cols-4 gap-4 items-end">
           <div className="col-span-2">
-            <label className="text-xs font-semibold block mb-1">Medicine Name</label>
-            <input required value={name} onChange={e => setName(e.target.value)} className="w-full border p-2 rounded" placeholder="Paracetamol 500mg..." />
+            <label className="text-xs font-semibold block mb-1">Generic Name *</label>
+            <input required value={genericName} onChange={e => setGenericName(e.target.value)} className="w-full border p-2 rounded" placeholder="Paracetamol..." />
           </div>
           <div>
-            <label className="text-xs font-semibold block mb-1">Unit</label>
-            <input required value={unit} onChange={e => setUnit(e.target.value)} className="w-full border p-2 rounded" />
+            <label className="text-xs font-semibold block mb-1">Brand Name</label>
+            <input value={brandName} onChange={e => setBrandName(e.target.value)} className="w-full border p-2 rounded" placeholder="Calpol 500mg..." />
           </div>
           <div>
+            <label className="text-xs font-semibold block mb-1">Unit Price (₹)</label>
+            <input required type="number" step="0.01" value={unitPrice} onChange={e => setUnitPrice(Number(e.target.value))} className="w-full border p-2 rounded" />
+          </div>
+          <div className="col-span-3">
             <label className="text-xs font-semibold block mb-1">Reorder Level</label>
             <input required type="number" value={reorderLevel} onChange={e => setReorderLevel(Number(e.target.value))} className="w-full border p-2 rounded" />
           </div>
-          <button type="submit" className="col-span-4 bg-blue-600 text-white px-4 py-2 rounded font-medium h-[42px]">Create Medicine</button>
+          <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded font-medium h-[42px]">Create Medicine</button>
         </form>
       </div>
 
@@ -63,8 +69,8 @@ export default function MedicineCatalogClient({ initialData }: { initialData: Me
           <tbody>
             {initialData.map(m => (
               <tr key={m.id} className="border-b hover:bg-slate-50">
-                <td className="p-4 font-medium">{m.name}</td>
-                <td className="p-4 text-gray-500">{m.unit}</td>
+                <td className="p-4 font-medium">{m.brand_name || m.generic_name}</td>
+                <td className="p-4 text-gray-500">{m.generic_name}</td>
                 <td className="p-4 text-right font-semibold text-red-500">{m.reorder_level}</td>
               </tr>
             ))}

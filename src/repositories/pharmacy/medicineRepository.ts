@@ -6,7 +6,7 @@ export async function getMedicines(supabase: SupabaseClient, clinicId: string): 
     .from('medicines')
     .select('*').limit(100)
     .eq('clinic_id', clinicId)
-    .order('name', { ascending: true })
+    .order('generic_name', { ascending: true })
   
   if (error) throw new Error(`Failed to fetch medicines: ${error.message}`)
   return data as MedicineRow[]

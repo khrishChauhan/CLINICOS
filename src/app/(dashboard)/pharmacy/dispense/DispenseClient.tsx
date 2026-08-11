@@ -34,10 +34,13 @@ export default function DispenseClient({ medicines, patients, pendingPrescriptio
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [])
 
-  const filteredMeds = medicines.filter(m => 
-    m.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    m.generic_name?.toLowerCase().includes(searchQuery.toLowerCase())
-  ).slice(0, 10)
+  const getMedName = (m: any) => m.brand_name || m.generic_name || ''
+
+  const filteredMeds = medicines.filter(m => {
+    const q = searchQuery.toLowerCase()
+    return getMedName(m).toLowerCase().includes(q) ||
+           (m.generic_name?.toLowerCase().includes(q))
+  }).slice(0, 10)
 
   const addToCart = (med: any, reqQty: number = 1, origId: string | null = null, subReason: string | null = null) => {
     setCart(prev => {
@@ -47,9 +50,9 @@ export default function DispenseClient({ medicines, patients, pendingPrescriptio
       }
       return [...prev, { 
         id: med.id, 
-        name: med.name, 
+        name: getMedName(med), 
         quantity: reqQty, 
-        price: med.unit_price, 
+        price: med.unit_price || 0, 
         generic_name: med.generic_name,
         original_medicine_id: origId,
         substitution_reason: subReason
@@ -111,13 +114,17 @@ export default function DispenseClient({ medicines, patients, pendingPrescriptio
       setSelectedPatientId(pres.patient_id)
       
       pres.prescription_items?.forEach((item: any) => {
-        const med = medicines.find(m => m.id === item.medicine_id)
+        // Match by medicine_id first (if linked), then fall back to medicine_name
+        const med = medicines.find(m =>
+          (item.medicine_id && m.id === item.medicine_id) ||
+          (!item.medicine_id && getMedName(m).toLowerCase() === (item.medicine_name || '').toLowerCase()) ||
+          (!item.medicine_id && m.generic_name?.toLowerCase() === (item.medicine_name || '').toLowerCase())
+        )
         if (med) {
-          addToCart(med, item.quantity)
+          addToCart(med, item.quantity || 1)
         } else {
-          // Medicine not in catalog or out of stock maybe? Need substitution
           const origName = item.medicine_name || 'Unknown'
-          setSubstituteFor({ origId: item.medicine_id, origName, reqQty: item.quantity })
+          setSubstituteFor({ origId: item.medicine_id || '', origName, reqQty: item.quantity || 1 })
           setSubModalOpen(true)
         }
       })
@@ -177,7 +184,7 @@ export default function DispenseClient({ medicines, patients, pendingPrescriptio
               {filteredMeds.map(m => (
                 <div key={m.id} className="p-4 border border-slate-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 flex justify-between items-center transition-colors">
                   <div>
-                    <h3 className="font-bold text-slate-800 text-lg">{m.name}</h3>
+                    <h3 className="font-bold text-slate-800 text-lg">{getMedName(m)}</h3>
                     <p className="text-sm text-slate-500">{m.generic_name}</p>
                   </div>
                   <div className="text-right flex items-center gap-3">

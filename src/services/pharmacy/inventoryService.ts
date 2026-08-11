@@ -29,7 +29,7 @@ export const inventoryService = {
       if (expiry <= ninetyDaysFromNow) {
         expiringBatches.push({
           batch_number: record.medicine_batches.batch_number,
-          medicine_name: record.medicines.name,
+          medicine_name: record.medicines?.brand_name || record.medicines?.generic_name || 'Unknown',
           expiry_date: record.medicine_batches.expiry_date,
           current_quantity: record.current_quantity
         })

@@ -201,8 +201,8 @@ export default function BookAppointmentModal({ onClose, onSuccess, doctors }: Pr
                 >
                   <option value="">Select a doctor...</option>
                   {doctors.map(doc => (
-                    <option key={doc.id} value={doc.id}>
-                      Dr. {doc.first_name} {doc.last_name}
+                    <option key={doc.id} value={doc.user_id || ''} disabled={!doc.user_id}>
+                      Dr. {doc.first_name} {doc.last_name} {!doc.user_id && '(No User Account)'}
                     </option>
                   ))}
                 </select>
