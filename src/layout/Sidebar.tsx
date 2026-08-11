@@ -37,9 +37,6 @@ const navItems = [
   { name: 'Pathology Lab', path: '/laboratory', icon: FlaskConical },
   { name: 'Staff Directory', path: '/staff', icon: ClipboardList },
   { name: 'Audits & Reports', path: '/reports', icon: FileChartColumn },
-  { name: 'Analytics', path: '/analytics', icon: ChartColumnIncreasing },
-  { name: 'Configurations', path: '/settings', icon: Settings },
-  { name: 'Help & Support', path: '/support', icon: LifeBuoy },
 ];
 
 export default function Sidebar() {
