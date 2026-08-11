@@ -6,8 +6,8 @@ export async function getMedicineStock(supabase: SupabaseClient, clinicId: strin
     .from('medicine_stock')
     .select('*, medicines(*), medicine_batches(*)')
     .eq('clinic_id', clinicId)
-    .gt('quantity', 0)
-    .order('quantity', { ascending: true })
+    .gt('current_quantity', 0)
+    .order('current_quantity', { ascending: true })
 
   if (error) throw new Error(`Failed to fetch stock: ${error.message}`)
   return data
