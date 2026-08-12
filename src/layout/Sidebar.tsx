@@ -32,7 +32,7 @@ const navItems = [
   { name: 'EMR Consult', path: '/emr', icon: FileText },
   { name: 'Cashier Ledger', path: '/ledger', icon: IndianRupee },
   { name: 'Pharmacy Store', path: '/pharmacy', icon: ShoppingBag },
-  { name: 'Consumables', path: '/consumables', icon: Package },
+  // { name: 'Consumables', path: '/consumables', icon: Package },
   { name: 'Operation Theatre', path: '/operation-theatre', icon: Heart },
   { name: 'Pathology Lab', path: '/laboratory', icon: FlaskConical },
   { name: 'Staff Directory', path: '/staff', icon: ClipboardList },

@@ -6,14 +6,17 @@ import { Badge } from '@/components/ui/Badge'
 import dayjs from 'dayjs'
 import { OTSurgeryDetailsClient } from './OTSurgeryDetailsClient'
 
-export default async function OTSurgeryDetailsPage({ params }: { params: { id: string } }) {
+export default async function OTSurgeryDetailsPage({ params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = await params
+  const id = resolvedParams.id
+
   const supabase = await createClient()
   const repo = new OTRepository(supabase)
   
   const [surgRes, notesRes, consRes] = await Promise.all([
-    repo.getSurgeryById(params.id),
-    repo.getNotes(params.id),
-    repo.getConsumables(params.id)
+    repo.getSurgeryById(id),
+    repo.getNotes(id),
+    repo.getConsumables(id)
   ])
 
   if (surgRes.error) {
@@ -43,7 +46,7 @@ export default async function OTSurgeryDetailsPage({ params }: { params: { id: s
             <p className="text-lg text-slate-600 font-semibold mt-1">{surgery.procedure_name}</p>
             <div className="text-sm text-slate-500 mt-2 grid grid-cols-2 gap-x-8 gap-y-1">
               <p>Room: {surgery.room?.name}</p>
-              <p>Surgeon: Dr. {surgery.lead_surgeon?.last_name}</p>
+              <p>Surgeon: Dr. {surgery.lead_surgeon?.username}</p>
               <p>Time: {dayjs(surgery.scheduled_start_time).format('DD MMM YYYY, HH:mm')}</p>
               <p>Diagnosis: {surgery.diagnosis || 'N/A'}</p>
             </div>

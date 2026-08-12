@@ -1,6 +1,6 @@
 'use server'
 
-import { createClient, createAdminClient } from '@/lib/supabase/server'
+import { createClient } from '@/lib/supabase/server'
 import { createMedicine, getMedicines } from '@/repositories/pharmacy/medicineRepository'
 import { inventoryService } from '@/services/pharmacy/inventoryService'
 import { purchaseService } from '@/services/pharmacy/purchaseService'
@@ -11,22 +11,17 @@ async function getSessionContext(supabase: any) {
   const { data: { user }, error: authError } = await supabase.auth.getUser()
   if (authError || !user) throw new Error('Unauthorized')
 
-  let { data: session } = await supabase.rpc('get_session_context')
-  if (!session || !session.clinic_id) {
-    const adminClient = createAdminClient()
-    const { data: userData } = await adminClient.from('users').select('clinic_id').eq('id', user.id).single()
-    if (userData && userData.clinic_id) {
-      session = { clinic_id: userData.clinic_id, user_id: user.id }
-    } else {
-      throw new Error('Unauthorized - No Clinic Associated')
-    }
+  const { data: userData, error: userError } = await supabase
+    .from('users')
+    .select('clinic_id')
+    .eq('id', user.id)
+    .single()
+
+  if (userError || !userData?.clinic_id) {
+    throw new Error('Unauthorized - No Clinic Associated')
   }
-  
-  if (!session.user_id) {
-    session.user_id = user.id
-  }
-  
-  return session
+
+  return { clinic_id: userData.clinic_id, user_id: user.id }
 }
 
 export async function fetchMedicinesAction() {

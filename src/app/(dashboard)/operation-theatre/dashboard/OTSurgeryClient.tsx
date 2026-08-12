@@ -13,7 +13,7 @@ export function OTSurgeryClient({ surgery }: { surgery: any }) {
   const [showChecklist, setShowChecklist] = useState(false)
   
   // Basic checklist state
-  const checklistObj = surgery.checklists?.[0] || {}
+  const checklistObj = Array.isArray(surgery.checklists) ? surgery.checklists[0] : surgery.checklists || {}
   const [checklist, setChecklist] = useState({
     identity_verified: checklistObj.identity_verified || false,
     consent_signed: checklistObj.consent_signed || false,
@@ -89,7 +89,7 @@ export function OTSurgeryClient({ surgery }: { surgery: any }) {
           </h3>
           <p className="text-sm font-semibold text-slate-700 mt-1">{surgery.procedure_name}</p>
           <p className="text-xs text-slate-500 mt-1">
-            Room: {surgery.room?.name} | Surgeon: Dr. {surgery.lead_surgeon?.last_name}
+            Room: {surgery.room?.name} | Surgeon: {surgery.lead_surgeon?.username || surgery.lead_surgeon?.email}
           </p>
           <p className="text-xs text-slate-500">
             Time: {dayjs(surgery.scheduled_start_time).format('HH:mm')} - {dayjs(surgery.scheduled_end_time).format('HH:mm')}
@@ -125,7 +125,8 @@ export function OTSurgeryClient({ surgery }: { surgery: any }) {
         </div>
       )}
 
-      <div className="flex justify-end border-t border-slate-100 pt-3 mt-1">
+      <div className="flex justify-end border-t border-slate-100 pt-3 mt-1 gap-2">
+        <Button size="sm" variant="outline" onClick={() => window.location.href = `/operation-theatre/surgery/${surgery.id}`}>View Details</Button>
         {renderActions()}
       </div>
     </Card>

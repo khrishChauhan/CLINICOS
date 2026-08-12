@@ -7,15 +7,19 @@ import { revalidatePath } from 'next/cache'
 
 async function getSessionContext() {
   const supabase = await createClient()
-  const { data, error } = await supabase.rpc('get_session_context')
-  if (!error && data?.length > 0) return data[0]
 
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Unauthorized')
-  
-  const { data: userData } = await supabase.from('users').select('clinic_id').eq('id', user.id).single()
-  if (!userData?.clinic_id) throw new Error('Clinic context not found')
-  
+  const { data: { user }, error: authError } = await supabase.auth.getUser()
+  if (authError || !user) throw new Error('Unauthorized')
+
+  const { data: userData, error: userError } = await supabase
+    .from('users')
+    .select('clinic_id')
+    .eq('id', user.id)
+    .single()
+
+  if (userError) throw new Error(`Clinic context error: ${userError.message}`)
+  if (!userData?.clinic_id) throw new Error(`No clinic_id for user ${user.id}`)
+
   return { clinic_id: userData.clinic_id, user_id: user.id }
 }
 

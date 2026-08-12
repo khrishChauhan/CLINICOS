@@ -37,7 +37,7 @@ export class SurgeryService {
     if (surgery.status !== 'Pre-Op') throw new Error(`Cannot transition from ${surgery.status} to Intra-Op`)
     
     // Safety Checklist Validation
-    const cl = surgery.checklists?.[0]
+    const cl = Array.isArray(surgery.checklists) ? surgery.checklists[0] : surgery.checklists
     if (!cl) throw new Error('Pre-Operative checklist must be completed before surgery can begin.')
     
     const missing = []
@@ -103,7 +103,7 @@ export class SurgeryService {
     // 2. Surgeon Fee (Mocked flat fee for now or fetch from doctor config)
     invoiceItems.push({
       item_type: 'Service',
-      description: `Surgeon Fee: Dr. ${surgery.lead_surgeon?.last_name}`,
+      description: `Surgeon Fee: Dr. ${surgery.lead_surgeon?.username}`,
       quantity: 1,
       unit_price: 15000, // Example fee
       total_amount: 15000

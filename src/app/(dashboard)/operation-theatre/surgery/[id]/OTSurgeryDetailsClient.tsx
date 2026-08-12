@@ -86,7 +86,7 @@ export function OTSurgeryDetailsClient({ surgery, initialNotes, initialConsumabl
             <div key={note.id} className="p-3 border border-slate-200 rounded-lg text-sm bg-white shadow-sm">
               <div className="flex justify-between items-center mb-1 pb-1 border-b border-slate-100">
                 <span className="font-semibold text-blue-700">{note.note_type}</span>
-                <span className="text-xs text-slate-400">{dayjs(note.recorded_at).format('DD MMM, HH:mm')} by {note.recorder?.last_name || 'Staff'}</span>
+                <span className="text-xs text-slate-400">{dayjs(note.recorded_at).format('DD MMM, HH:mm')} by {note.recorder?.username || 'Staff'}</span>
               </div>
               <p className="whitespace-pre-wrap text-slate-700">{note.content}</p>
             </div>

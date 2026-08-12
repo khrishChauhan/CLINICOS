@@ -50,7 +50,7 @@ export const invoiceService = {
           lab_test:lab_tests(name, price)
         )
       `)
-      .eq('visit_id', visitId)
+      .eq('consultation_id', visitId)
 
     if (labOrders) {
       for (const order of labOrders) {

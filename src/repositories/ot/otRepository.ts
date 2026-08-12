@@ -7,7 +7,6 @@ export class OTRepository {
   // --- Rooms ---
   async getRooms() {
     return this.supabase
-      .schema('ot')
       .from('rooms')
       .select('*')
       .order('name')
@@ -16,20 +15,18 @@ export class OTRepository {
   // --- Surgeries ---
   async getSurgeries(date?: string) {
     let query = this.supabase
-      .schema('ot')
       .from('surgeries')
       .select(`
         *,
         patient:patients(id, first_name, last_name, gender, date_of_birth),
         room:rooms(*),
-        lead_surgeon:users!lead_surgeon_id(id, first_name, last_name),
-        anesthetist:users!anesthetist_id(id, first_name, last_name),
+        lead_surgeon:users!lead_surgeon_id(id, username, email),
+        anesthetist:users!anesthetist_id(id, username, email),
         checklists:checklists(*)
       `)
       .order('scheduled_start_time', { ascending: true })
 
     if (date) {
-      // Very basic date filtering, assuming date is YYYY-MM-DD
       const start = new Date(date)
       start.setHours(0, 0, 0, 0)
       const end = new Date(date)
@@ -42,14 +39,13 @@ export class OTRepository {
 
   async getSurgeryById(id: string) {
     return this.supabase
-      .schema('ot')
       .from('surgeries')
       .select(`
         *,
         patient:patients(*),
         room:rooms(*),
-        lead_surgeon:users!lead_surgeon_id(id, first_name, last_name),
-        anesthetist:users!anesthetist_id(id, first_name, last_name),
+        lead_surgeon:users!lead_surgeon_id(id, username, email),
+        anesthetist:users!anesthetist_id(id, username, email),
         checklists:checklists(*)
       `)
       .eq('id', id)
@@ -58,7 +54,6 @@ export class OTRepository {
 
   async scheduleSurgery(data: Partial<Surgery>) {
     return this.supabase
-      .schema('ot')
       .from('surgeries')
       .insert(data)
       .select()
@@ -67,7 +62,6 @@ export class OTRepository {
 
   async updateSurgeryStatus(id: string, status: SurgeryStatus, additionalUpdates: any = {}) {
     return this.supabase
-      .schema('ot')
       .from('surgeries')
       .update({ status, ...additionalUpdates })
       .eq('id', id)
@@ -77,9 +71,7 @@ export class OTRepository {
 
   // --- Checklists ---
   async upsertChecklist(data: Partial<OTChecklist>) {
-    // Upsert since it's 1:1 with surgery
     return this.supabase
-      .schema('ot')
       .from('checklists')
       .upsert(data, { onConflict: 'surgery_id' })
       .select()
@@ -89,7 +81,6 @@ export class OTRepository {
   // --- Team ---
   async addTeamMember(data: Partial<OTTeamMember>) {
     return this.supabase
-      .schema('ot')
       .from('team_members')
       .insert(data)
       .select()
@@ -97,16 +88,14 @@ export class OTRepository {
 
   async getTeamMembers(surgeryId: string) {
     return this.supabase
-      .schema('ot')
       .from('team_members')
-      .select('*, user:users(first_name, last_name)')
+      .select('*, user:users(username, email)')
       .eq('surgery_id', surgeryId)
   }
 
   // --- Notes ---
   async addNote(data: Partial<OTNote>) {
     return this.supabase
-      .schema('ot')
       .from('notes')
       .insert(data)
       .select()
@@ -115,9 +104,8 @@ export class OTRepository {
 
   async getNotes(surgeryId: string) {
     return this.supabase
-      .schema('ot')
       .from('notes')
-      .select('*, recorder:users(first_name, last_name)')
+      .select('*, recorder:users!recorded_by(username, email)')
       .eq('surgery_id', surgeryId)
       .order('recorded_at', { ascending: false })
   }
@@ -125,7 +113,6 @@ export class OTRepository {
   // --- Consumables ---
   async addConsumable(data: Partial<OTConsumable>) {
     return this.supabase
-      .schema('ot')
       .from('consumables')
       .insert(data)
       .select()
@@ -134,7 +121,6 @@ export class OTRepository {
 
   async getConsumables(surgeryId: string) {
     return this.supabase
-      .schema('ot')
       .from('consumables')
       .select('*, medicine:medicines(*)')
       .eq('surgery_id', surgeryId)
@@ -143,7 +129,6 @@ export class OTRepository {
 
   async markConsumablesAsBilled(surgeryId: string) {
     return this.supabase
-      .schema('ot')
       .from('consumables')
       .update({ is_billed: true })
       .eq('surgery_id', surgeryId)

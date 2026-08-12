@@ -1,6 +1,7 @@
 import React from 'react';
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
+import { Toaster } from 'sonner';
 import './globals.css';
 
 const inter = Inter({ subsets: ['latin'] });
@@ -19,6 +20,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${inter.className} bg-slate-50 min-h-screen text-slate-800 flex flex-col font-sans overflow-hidden antialiased`}>
         {children}
+        <Toaster position="top-center" richColors />
       </body>
     </html>
   );
