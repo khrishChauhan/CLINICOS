@@ -16,8 +16,8 @@ export function ScheduleSurgeryForm({ rooms, patients, doctors }: any) {
     lead_surgeon_id: '',
     procedure_name: '',
     diagnosis: '',
-    scheduled_start_time: dayjs().add(1, 'day').format('YYYY-MM-DDTHH:00'),
-    scheduled_end_time: dayjs().add(1, 'day').add(2, 'hour').format('YYYY-MM-DDTHH:00'),
+    scheduled_start_time: dayjs().format('YYYY-MM-DDTHH:00'),
+    scheduled_end_time: dayjs().add(2, 'hour').format('YYYY-MM-DDTHH:00'),
   })
 
   const handleSubmit = async (e: React.FormEvent) => {

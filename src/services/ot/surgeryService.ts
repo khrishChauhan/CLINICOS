@@ -133,10 +133,12 @@ export class SurgeryService {
     const invoiceData = {
       patient_id: surgery.patient_id,
       clinic_id: surgery.clinic_id,
-      type: 'OT',
+      // No 'type' column either, wait, let me check check_billing_cols output...
+      // No type column in billing_invoices. I should remove it.
       status: 'Draft',
       subtotal: invoiceItems.reduce((sum, item) => sum + item.total_amount, 0),
-      total_amount: invoiceItems.reduce((sum, item) => sum + item.total_amount, 0),
+      grand_total: invoiceItems.reduce((sum, item) => sum + item.total_amount, 0),
+      amount_due: invoiceItems.reduce((sum, item) => sum + item.total_amount, 0),
       created_at: new Date().toISOString()
     }
 
@@ -150,16 +152,17 @@ export class SurgeryService {
 
     const itemsToInsert = invoiceItems.map(item => ({
       invoice_id: invoice.id,
-      item_type: item.item_type,
-      description: item.description,
+      item_name: item.description,
       quantity: item.quantity,
       unit_price: item.unit_price,
       total_amount: item.total_amount
     }))
     
-    await this.supabase
+    const { error: itemsError } = await this.supabase
       .from('billing_invoice_items')
       .insert(itemsToInsert)
+      
+    if (itemsError) throw new Error(`Failed to create OT invoice items: ${itemsError.message}`)
 
     // Mark consumables as billed
     await this.repo.markConsumablesAsBilled(surgery.id)
