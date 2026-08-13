@@ -8,6 +8,7 @@ export const doctorRepository = {
       .from('doctors')
       .select('*')
       .eq('clinic_id', clinicId)
+      .eq('is_deleted', false)
       .order('first_name', { ascending: true })
 
     if (error) throw new Error(`Failed to fetch doctors: ${error.message}`)
@@ -55,11 +56,16 @@ export const doctorRepository = {
     return data as DoctorRow
   },
 
-  async deleteDoctor(supabase: SupabaseClient, clinicId: string, doctorId: string): Promise<void> {
+  async deleteDoctor(supabase: SupabaseClient, clinicId: string, doctorId: string, updaterUserId: string): Promise<void> {
     const { error } = await supabase
       .schema('doctor')
       .from('doctors')
-      .delete()
+      .update({
+        is_deleted: true,
+        deleted_at: new Date().toISOString(),
+        deleted_by: updaterUserId,
+        status: 'Inactive'
+      })
       .eq('clinic_id', clinicId)
       .eq('id', doctorId)
 

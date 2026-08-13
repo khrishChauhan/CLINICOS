@@ -190,8 +190,8 @@ export async function updateDoctorStatusAction(doctorId: string, status: 'Active
 
 export async function deleteDoctorAction(doctorId: string) {
   try {
-    const { adminClient, clinicId } = await getAuthContext()
-    await doctorProfileService.deleteDoctor(adminClient, clinicId, doctorId)
+    const { adminClient, clinicId, user } = await getAuthContext()
+    await doctorProfileService.deleteDoctor(adminClient, clinicId, doctorId, user.id)
     revalidatePath('/doctors')
     return { success: true }
   } catch (error: any) {

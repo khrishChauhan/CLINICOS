@@ -80,7 +80,7 @@ export const doctorProfileService = {
     })
   },
 
-  async deleteDoctor(supabase: SupabaseClient, clinicId: string, doctorId: string) {
-    return await doctorRepository.deleteDoctor(supabase, clinicId, doctorId)
+  async deleteDoctor(supabase: SupabaseClient, clinicId: string, doctorId: string, updaterUserId: string) {
+    return await doctorRepository.deleteDoctor(supabase, clinicId, doctorId, updaterUserId)
   }
 }
