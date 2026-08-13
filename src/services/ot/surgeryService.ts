@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { OTRepository } from '@/repositories/ot/otRepository'
 import { SurgeryStatus } from '@/types/ot'
+import dayjs from 'dayjs'
 
 export class SurgeryService {
   private repo: OTRepository
@@ -131,10 +132,9 @@ export class SurgeryService {
     if (invoiceItems.length === 0) return // Nothing to bill
 
     const invoiceData = {
+      invoice_number: `INV-OT-${dayjs().format('YYYYMMDD')}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`,
       patient_id: surgery.patient_id,
       clinic_id: surgery.clinic_id,
-      // No 'type' column either, wait, let me check check_billing_cols output...
-      // No type column in billing_invoices. I should remove it.
       status: 'Draft',
       subtotal: invoiceItems.reduce((sum, item) => sum + item.total_amount, 0),
       grand_total: invoiceItems.reduce((sum, item) => sum + item.total_amount, 0),
