@@ -22,7 +22,7 @@ export default function NewLabOrderPage() {
   const [items, setItems] = useState([{ test_id: '', test_name: '', sample_type: '', remarks: '' }])
 
   useEffect(() => {
-    getMasterDataAction('laboratory_tests').then(res => {
+    getMasterDataAction('lab_tests').then(res => {
       if (res.success && res.data) setTestsMaster(res.data)
     })
   }, [])

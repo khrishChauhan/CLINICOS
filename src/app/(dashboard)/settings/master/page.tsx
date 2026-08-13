@@ -27,7 +27,7 @@ const TABS = [
   { id: 'visit_statuses', label: 'Visit Statuses', title: 'Visit_status' },
   { id: 'diagnosis_codes', label: 'Diagnosis Codes', title: 'Diagnosis_name' },
   { id: 'procedure_codes', label: 'Procedure Codes', title: 'Procedure_name' },
-  { id: 'laboratory_tests', label: 'Laboratory Tests', title: 'Test_name' },
+  { id: 'lab_tests', label: 'Laboratory Tests', title: 'Test_name' },
   { id: 'radiology_tests', label: 'Radiology Tests', title: 'Test_name' },
   { id: 'medicine_categories', label: 'Medicine Categories', title: 'Category_name' },
   { id: 'units_of_measure', label: 'Units Of Measure', title: 'Unit_name' },
