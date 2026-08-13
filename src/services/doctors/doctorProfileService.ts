@@ -35,9 +35,35 @@ export const doctorProfileService = {
       doctorCode = `DOC-${candidate.toString().padStart(3, '0')}`
     }
 
-    // 2. Insert into doctor.doctors
+    // 2. Create User record if missing (needed for OT, appointments, etc. which reference public.users)
+    let finalUserId = payload.user_id
+    if (!finalUserId) {
+      const { data: roleData } = await supabase.from('roles').select('id').eq('role_name', 'Doctor').single()
+      if (roleData) {
+        const dummyUsername = `dr.${payload.first_name?.toLowerCase().replace(/\s+/g, '') || 'doc'}.${payload.last_name?.toLowerCase().replace(/\s+/g, '') || Date.now()}`
+        const newUserId = crypto.randomUUID()
+        const { error: userError } = await supabase.from('users').insert({
+          id: newUserId,
+          clinic_id: clinicId,
+          role_id: roleData.id,
+          username: dummyUsername,
+          email: payload.email || `${dummyUsername}@clinic.local`,
+          mobile: payload.mobile_number || null,
+          status: 'Active'
+        })
+        
+        if (!userError) {
+          finalUserId = newUserId
+        } else {
+          console.error("Failed to auto-create user for doctor:", userError)
+        }
+      }
+    }
+
+    // 3. Insert into doctor.doctors
     const newDoc = await doctorRepository.createDoctor(supabase, {
       ...payload,
+      user_id: finalUserId,
       clinic_id: clinicId,
       doctor_code: doctorCode,
       created_by: creatorUserId,
