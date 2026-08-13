@@ -19,7 +19,8 @@ import {
   FileChartColumn, 
   ChartColumnIncreasing, 
   Settings, 
-  LifeBuoy 
+  LifeBuoy,
+  Activity
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 
@@ -35,6 +36,7 @@ const navItems = [
   // { name: 'Consumables', path: '/consumables', icon: Package },
   { name: 'Operation Theatre', path: '/operation-theatre', icon: Heart },
   { name: 'Pathology Lab', path: '/laboratory', icon: FlaskConical },
+  { name: 'Radiology', path: '/radiology', icon: Activity },
   { name: 'Staff Directory', path: '/staff', icon: ClipboardList },
   { name: 'Audits & Reports', path: '/reports', icon: FileChartColumn },
 ];
