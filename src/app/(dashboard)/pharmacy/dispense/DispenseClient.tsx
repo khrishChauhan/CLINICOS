@@ -43,10 +43,23 @@ export default function DispenseClient({ medicines, patients, pendingPrescriptio
   }).slice(0, 10)
 
   const addToCart = (med: any, reqQty: number = 1, origId: string | null = null, subReason: string | null = null) => {
+    if (med.total_stock !== undefined && med.total_stock <= 0) {
+      alert('This medicine is out of stock.')
+      return
+    }
+
     setCart(prev => {
       const exists = prev.find(p => p.id === med.id)
+      const currentCartQty = exists ? exists.quantity : 0
+      const newQty = currentCartQty + reqQty
+
+      if (med.total_stock !== undefined && newQty > med.total_stock) {
+        alert(`Cannot add more. Only ${med.total_stock} units in stock.`)
+        return prev
+      }
+
       if (exists) {
-        return prev.map(p => p.id === med.id ? { ...p, quantity: p.quantity + reqQty } : p)
+        return prev.map(p => p.id === med.id ? { ...p, quantity: newQty } : p)
       }
       return [...prev, { 
         id: med.id, 
@@ -184,23 +197,33 @@ export default function DispenseClient({ medicines, patients, pendingPrescriptio
         <div className="bg-white rounded-xl border border-slate-200 shadow-sm flex-1 overflow-y-auto p-4">
           {searchQuery && filteredMeds.length > 0 && (
             <div className="space-y-2">
-              {filteredMeds.map(m => (
-                <div key={m.id} className="p-4 border border-slate-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 flex justify-between items-center transition-colors">
-                  <div>
-                    <h3 className="font-bold text-slate-800 text-lg">{getMedName(m)}</h3>
-                    <p className="text-sm text-slate-500">{m.generic_name}</p>
+              {filteredMeds.map(m => {
+                const outOfStock = m.total_stock === undefined || m.total_stock <= 0
+                return (
+                  <div key={m.id} className={`p-4 border rounded-lg flex justify-between items-center transition-colors ${outOfStock ? 'border-red-200 bg-red-50 opacity-70' : 'border-slate-200 hover:border-blue-500 hover:bg-blue-50'}`}>
+                    <div>
+                      <h3 className="font-bold text-slate-800 text-lg flex items-center gap-2">
+                        {getMedName(m)}
+                        {outOfStock ? (
+                          <span className="text-xs font-semibold text-red-600 bg-red-100 px-2 py-1 rounded">Out of Stock</span>
+                        ) : (
+                          <span className="text-xs font-semibold text-emerald-600 bg-emerald-100 px-2 py-1 rounded">Stock: {m.total_stock}</span>
+                        )}
+                      </h3>
+                      <p className="text-sm text-slate-500">{m.generic_name}</p>
+                    </div>
+                    <div className="text-right flex items-center gap-3">
+                      <p className="font-bold text-lg text-blue-600">${m.unit_price}</p>
+                      
+                      {subModalOpen ? (
+                        <Button size="sm" variant="outline" onClick={() => confirmSubstitution(m)} disabled={outOfStock}>Substitute</Button>
+                      ) : (
+                        <Button size="sm" onClick={() => addToCart(m)} disabled={outOfStock}>Add</Button>
+                      )}
+                    </div>
                   </div>
-                  <div className="text-right flex items-center gap-3">
-                    <p className="font-bold text-lg text-blue-600">${m.unit_price}</p>
-                    
-                    {subModalOpen ? (
-                      <Button size="sm" variant="outline" onClick={() => confirmSubstitution(m)}>Substitute</Button>
-                    ) : (
-                      <Button size="sm" onClick={() => addToCart(m)}>Add</Button>
-                    )}
-                  </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           )}
           {searchQuery && filteredMeds.length === 0 && (
