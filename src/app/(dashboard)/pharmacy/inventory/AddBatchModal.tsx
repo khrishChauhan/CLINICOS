@@ -56,7 +56,11 @@ export function AddBatchModal({ medicines, onClose }: { medicines: any[], onClos
                   onChange={e => setMedicineId(e.target.value)}
                   required
                 >
-                  {medicines.map(m => <option key={m.id} value={m.id}>{m.name} ({m.unit})</option>)}
+                  {medicines.map(m => {
+                    const name = m.brand_name || m.generic_name || 'Unknown Medicine'
+                    const detail = m.brand_name && m.generic_name ? `(${m.generic_name})` : ''
+                    return <option key={m.id} value={m.id}>{name} {detail}</option>
+                  })}
                 </select>
               </div>
               <div>
