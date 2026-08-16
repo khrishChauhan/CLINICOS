@@ -166,7 +166,6 @@ export default function PatientProfileClient({ patient: initialPatient }: Props)
     { id: 'overview', label: 'Overview', icon: Activity },
     { id: 'encounters', label: 'Encounters', icon: Stethoscope },
     { id: 'documents', label: 'Documents', icon: FileText },
-    { id: 'billing', label: 'Billing', icon: CreditCard },
   ] as const
 
   return (
@@ -387,7 +386,7 @@ export default function PatientProfileClient({ patient: initialPatient }: Props)
               </div>
             )}
 
-            {(activeTab === 'encounters' || activeTab === 'billing') && (
+            {activeTab === 'encounters' && (
               <div className="flex flex-col items-center justify-center h-64 text-slate-500">
                 <Stethoscope className="w-12 h-12 text-slate-200 mb-4" />
                 <p className="font-medium text-slate-600">Module under construction</p>

@@ -6,6 +6,7 @@ import { useForm, FormProvider } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Check, ChevronRight, ChevronLeft, Loader2, AlertCircle } from 'lucide-react'
 import { useRouter as useNextRouter } from 'next/navigation'
+import Link from 'next/link'
 
 import { patientRegistrationSchema, stepSchemas, type StepNumber, type PatientRegistrationInput } from '@/services/patients/validation'
 import { registerPatient } from '@/actions/patients/registerPatient'
@@ -106,12 +107,12 @@ export default function PatientRegistrationWizard() {
           Patient has been successfully registered. UHID: <span className="font-bold text-slate-800">{successData.uhid}</span>
         </p>
         <div className="flex gap-4">
-          <button onClick={() => router.push('/patients')} className="px-6 py-2.5 rounded-lg border border-slate-300 font-bold text-slate-700 hover:bg-slate-50 transition">
+          <Link href="/patients" className="px-6 py-2.5 rounded-lg border border-slate-300 font-bold text-slate-700 hover:bg-slate-50 transition">
             Back to Registry
-          </button>
-          <button onClick={() => router.push(`/patients/${successData.patientId}`)} className="px-6 py-2.5 rounded-lg bg-blue-600 font-bold text-white hover:bg-blue-700 transition">
+          </Link>
+          <Link href={`/patients/${successData.patientId}`} className="px-6 py-2.5 rounded-lg bg-blue-600 font-bold text-white hover:bg-blue-700 transition">
             View Patient Profile
-          </button>
+          </Link>
         </div>
       </div>
     )
