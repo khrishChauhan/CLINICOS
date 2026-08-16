@@ -93,6 +93,19 @@ export default function Step02_BasicInfo() {
             <option key={s.id} value={s.label}>{s.label}</option>
           ))}
         </FormSelect>
+
+        <div>
+          <FormSelect label="Religion" name="religion" placeholder="Select religion...">
+            {['Hindu', 'Muslim', 'Christian', 'Sikh', 'Buddhist', 'Jain', 'Other'].map(r => (
+              <option key={r} value={r}>{r}</option>
+            ))}
+          </FormSelect>
+          {watch('religion') === 'Other' && (
+            <div className="mt-2">
+              <FormField label="Specify Religion" name="religion_other" placeholder="Specify your religion" />
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )

@@ -35,8 +35,11 @@ function ContactCard({ index, onRemove, relationships }: { index: number; onRemo
           <select {...register(`emergency_contacts.${index}.relationship`)}
             className="mt-1 w-full px-3 py-2 text-sm border border-slate-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/30">
             <option value="">Select relationship...</option>
-            {relationships.map(r => (
-              <option key={r.id} value={r.relationship_name}>{r.relationship_name}</option>
+            {(relationships.length > 0
+              ? relationships.map(r => ({ id: r.id, label: r.relationship_name || (r as any).name || (r as any).label }))
+              : ['Father', 'Mother', 'Spouse', 'Son', 'Daughter', 'Brother', 'Sister', 'Friend', 'Other'].map(r => ({ id: r, label: r }))
+            ).map(r => (
+              <option key={r.id} value={r.label}>{r.label}</option>
             ))}
           </select>
         </div>

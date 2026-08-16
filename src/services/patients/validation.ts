@@ -30,6 +30,8 @@ export const step2Schema = z.object({
   gender: z.enum(['Male', 'Female', 'Other', 'Prefer not to say']).optional(),
   blood_group: z.enum(['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-', 'Unknown']).optional().nullable(),
   marital_status: z.enum(['Single', 'Married', 'Divorced', 'Widowed', 'Separated']).optional(),
+  religion: z.string().max(100).optional(),
+  religion_other: z.string().max(100).optional(),
 })
 
 export const step3Schema = z.object({
@@ -40,18 +42,6 @@ export const step3Schema = z.object({
   alternate_mobile: z.string().max(20).optional(),
   email: z.string().email('Enter a valid email address').max(255).optional().or(z.literal('')),
   preferred_language: z.string().max(50).default('Hindi'),
-})
-
-export const step4Schema = z.object({
-  aadhaar_number: z
-    .string()
-    .refine(v => !v || /^\d{12}$/.test(v), 'Aadhaar must be exactly 12 digits')
-    .optional()
-    .or(z.literal('')),
-  passport_number: z.string().max(50).optional(),
-  occupation: z.string().max(100).optional(),
-  nationality: z.string().max(100).default('Indian'),
-  religion: z.string().max(100).optional(),
 })
 
 export const addressSchema = z.object({
@@ -122,6 +112,17 @@ export const step8Schema = z.object({
 
 export const step9Schema = z.object({
   remarks: z.string().max(1000).optional(),
+})
+
+export const step4Schema = z.object({
+  aadhaar_number: z
+    .string()
+    .refine(v => !v || /^\d{12}$/.test(v), 'Aadhaar must be exactly 12 digits')
+    .optional()
+    .or(z.literal('')),
+  passport_number: z.string().max(50).optional(),
+  occupation: z.string().max(100).optional(),
+  nationality: z.string().max(100).default('Indian'),
 })
 
 // ─────────────────────────────────────────────────────────────────────────────

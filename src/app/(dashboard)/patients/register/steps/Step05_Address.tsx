@@ -42,7 +42,12 @@ function AddressCard({ index, onRemove, countries }: { index: number; onRemove: 
           <select {...register(`${base}.country`)}
             className="mt-1 w-full px-3 py-2 text-sm border border-slate-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/30">
             <option value="">Select Country</option>
-            {countries.map(c => <option key={c.id} value={c.country_name}>{c.country_name}</option>)}
+            {(countries.length > 0
+              ? countries.map(c => ({ id: c.id, label: c.country_name || (c as any).name || (c as any).label }))
+              : ['India', 'United States', 'United Kingdom', 'Australia', 'Canada', 'Other'].map(c => ({ id: c, label: c }))
+            ).map(c => (
+              <option key={c.id} value={c.label}>{c.label}</option>
+            ))}
           </select>
         </div>
         <div>
