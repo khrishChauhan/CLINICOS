@@ -4,11 +4,32 @@ import React, { useState, useEffect } from 'react'
 import { StepHeader, FormField, FormSelect } from '../FormComponents'
 import { getMasterDataAction } from '@/actions/master/masterActions'
 import type { MasterGender, MasterBloodGroup, MasterMaritalStatus } from '@/types/master'
+import { useFormContext } from 'react-hook-form'
 
 export default function Step02_BasicInfo() {
+  const { watch, setValue } = useFormContext()
   const [genders, setGenders] = useState<MasterGender[]>([])
   const [bloodGroups, setBloodGroups] = useState<MasterBloodGroup[]>([])
   const [maritalStatuses, setMaritalStatuses] = useState<MasterMaritalStatus[]>([])
+  
+  const dob = watch('date_of_birth')
+
+  useEffect(() => {
+    if (dob) {
+      const birthDate = new Date(dob)
+      const today = new Date()
+      let age = today.getFullYear() - birthDate.getFullYear()
+      const m = today.getMonth() - birthDate.getMonth()
+      if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+        age--
+      }
+      // Only auto-populate if we have a valid age calculation
+      if (age >= 0 && !isNaN(age)) {
+        setValue('age', age)
+        setValue('age_unit', 'Years')
+      }
+    }
+  }, [dob, setValue])
 
   useEffect(() => {
     async function loadMasterData() {

@@ -25,13 +25,12 @@ const STEPS = [
   { id: 1, name: 'Type' },
   { id: 2, name: 'Basic Info' },
   { id: 3, name: 'Contact' },
-  { id: 4, name: 'Demographics' },
-  { id: 5, name: 'Address' },
-  { id: 6, name: 'Emergency' },
-  { id: 7, name: 'Insurance' },
-  { id: 8, name: 'History' },
-  { id: 9, name: 'Remarks' },
-  { id: 10, name: 'Review' },
+  { id: 4, name: 'Address' },
+  { id: 5, name: 'Emergency' },
+  { id: 6, name: 'Insurance' },
+  { id: 7, name: 'History' },
+  { id: 8, name: 'Remarks' },
+  { id: 9, name: 'Review' },
 ]
 
 export default function PatientRegistrationWizard() {
@@ -151,13 +150,12 @@ export default function PatientRegistrationWizard() {
             {currentStep === 1 && <Step01_RegistrationType />}
             {currentStep === 2 && <Step02_BasicInfo />}
             {currentStep === 3 && <Step03_ContactDetails />}
-            {currentStep === 4 && <Step04_Demographics />}
-            {currentStep === 5 && <Step05_Address />}
-            {currentStep === 6 && <Step06_EmergencyContact />}
-            {currentStep === 7 && <Step07_Insurance />}
-            {currentStep === 8 && <Step08_MedicalHistory />}
-            {currentStep === 9 && <Step09_AdditionalInfo />}
-            {currentStep === 10 && <Step10_Review />}
+            {currentStep === 4 && <Step05_Address />}
+            {currentStep === 5 && <Step06_EmergencyContact />}
+            {currentStep === 6 && <Step07_Insurance />}
+            {currentStep === 7 && <Step08_MedicalHistory />}
+            {currentStep === 8 && <Step09_AdditionalInfo />}
+            {currentStep === 9 && <Step10_Review />}
             
             {submitError && (
               <div className="mt-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3">

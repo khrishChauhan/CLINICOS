@@ -78,7 +78,7 @@ export default function Step06_EmergencyContact() {
 
   return (
     <div>
-      <StepHeader step={6} title="Emergency Contacts" description="Add at least one emergency contact for the patient." />
+      <StepHeader step={5} title="Emergency Contacts" description="Add at least one emergency contact for the patient." />
       <div className="space-y-4">
         {fields.map((field, index) => (
           <ContactCard key={field.id} index={index} onRemove={() => remove(index)} relationships={relationships} />

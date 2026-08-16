@@ -29,7 +29,7 @@ export default function Step10_Review() {
   return (
     <div className="space-y-6">
       <StepHeader
-        step={10}
+        step={9}
         title="Review & Confirm"
         description="Please review the patient details and duplicate checks before final submission."
       />

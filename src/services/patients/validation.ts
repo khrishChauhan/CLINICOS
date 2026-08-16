@@ -145,12 +145,11 @@ export const stepSchemas = {
   1: step1Schema,
   2: step2Schema,
   3: step3Schema,
-  4: step4Schema,
-  5: step5Schema,
-  6: step6Schema,
-  7: step7Schema,
-  8: step8Schema,
-  9: step9Schema,
+  4: step5Schema,
+  5: step6Schema,
+  6: step7Schema,
+  7: step8Schema,
+  8: step9Schema,
 } as const
 
 export type StepNumber = keyof typeof stepSchemas

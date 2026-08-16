@@ -7,7 +7,7 @@ export default function Step09_AdditionalInfo() {
   return (
     <div>
       <StepHeader
-        step={9}
+        step={8}
         title="Additional Information"
         description="Any other remarks or notes about the patient."
       />

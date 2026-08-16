@@ -83,7 +83,7 @@ export default function Step07_Insurance() {
 
   return (
     <div>
-      <StepHeader step={7} title="Insurance Details" description="Add patient insurance policies (optional)." />
+      <StepHeader step={6} title="Insurance Details" description="Add patient insurance policies (optional)." />
       <div className="space-y-4">
         {fields.map((field, index) => (
           <InsuranceCard key={field.id} index={index} onRemove={() => remove(index)} />

@@ -162,7 +162,7 @@ export default function Step05_Address() {
 
   return (
     <div>
-      <StepHeader step={5} title="Address Details" description="Enter the patient's residential or contact address." />
+      <StepHeader step={4} title="Address Details" description="Enter the patient's residential or contact address." />
       <div className="space-y-4">
         {fields.map((field, index) => (
           <AddressCard key={field.id} index={index} onRemove={() => remove(index)} countries={countries} />

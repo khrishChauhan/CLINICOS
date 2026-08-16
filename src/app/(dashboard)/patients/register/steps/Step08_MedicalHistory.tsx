@@ -67,7 +67,7 @@ export default function Step08_MedicalHistory() {
 
   return (
     <div>
-      <StepHeader step={8} title="Medical History" description="Record past medical conditions and treatments (optional)." />
+      <StepHeader step={7} title="Medical History" description="Record past medical conditions and treatments (optional)." />
       <div className="space-y-4">
         {fields.map((field, index) => (
           <MedicalHistoryCard key={field.id} index={index} onRemove={() => remove(index)} />
