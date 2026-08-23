@@ -37,15 +37,6 @@ export default async function Dashboard() {
             <p className="text-slate-500 text-sm mt-1">Welcome back to Click Aarambh ClinicOS. Here's a brief snapshot of Durga Clinic for today, <span className="font-semibold text-blue-600">{currentDate}</span>.</p>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
-            <Button variant="primary" className="bg-blue-600/90 hover:bg-blue-600">
-              <Plus className="w-4 h-4" /> Add Patient
-            </Button>
-            <Button variant="outline">
-              <Calendar className="w-4 h-4" /> Book Appointment
-            </Button>
-            <Button className="bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-700 border border-emerald-500/20 shadow-none">
-              <IndianRupee className="w-4 h-4" /> New Bill
-            </Button>
           </div>
         </div>
 
