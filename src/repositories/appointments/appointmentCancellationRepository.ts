@@ -4,6 +4,7 @@ import type { AppointmentCancellationRow } from '@/types/appointments'
 export const appointmentCancellationRepository = {
   async createCancellationRecord(supabase: SupabaseClient, payload: Omit<AppointmentCancellationRow, 'id' | 'cancelled_at'>) {
     const { data, error } = await supabase
+      .schema('appointment')
       .from('appointment_cancellation')
       .insert([payload])
       .select()
@@ -14,6 +15,7 @@ export const appointmentCancellationRepository = {
 
   async getCancellationByAppointmentId(supabase: SupabaseClient, appointmentId: string) {
     const { data, error } = await supabase
+      .schema('appointment')
       .from('appointment_cancellation')
       .select('*')
       .eq('appointment_id', appointmentId)

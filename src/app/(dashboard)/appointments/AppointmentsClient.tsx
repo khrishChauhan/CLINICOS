@@ -109,7 +109,15 @@ export default function AppointmentsClient({ initialAppointments, stats, doctors
   }
 
   const getDoctorName = (apt: ExtendedApt) => {
+    // 1. Try to find the doctor from the dropdown list using user_id
+    if (apt.doctor_id) {
+      const doc = doctors.find(d => d.user_id === apt.doctor_id)
+      if (doc) return `Dr. ${doc.first_name} ${doc.last_name}`
+    }
+    
+    // 2. Fallback to joined data (if backend eventually populates it)
     if (apt.doctor?.first_name) return `Dr. ${apt.doctor.first_name} ${apt.doctor.last_name}`
+    
     return 'Unknown Doctor'
   }
 
@@ -261,9 +269,7 @@ export default function AppointmentsClient({ initialAppointments, stats, doctors
                             <Star className="w-3.5 h-3.5" />
                           </button>
                         )}
-                        <button onClick={() => setAuditAptId(apt.id)} className="px-2 py-1 bg-slate-100 text-slate-600 hover:bg-slate-200 rounded text-xs font-semibold transition" title="Audit Trail">
-                          <Activity className="w-3.5 h-3.5" />
-                        </button>
+
                         {apt.status !== 'Completed' && apt.status !== 'Cancelled' && (
                           <button onClick={() => setCancelAptId(apt.id)} className="px-2 py-1 bg-red-50 text-red-600 hover:bg-red-100 rounded text-xs font-semibold transition" title="Cancel">
                             Cancel
