@@ -7,14 +7,15 @@ import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/Table';
 
-export default async function InvoicePage({ params }: { params: { id: string } }) {
+export default async function InvoicePage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const supabase = await createClient();
   const adminClient = createAdminClient();
 
   const { data: invoice, error } = await supabase
     .from('billing_invoices')
     .select('*, patients ( first_name, last_name, uhid, mobile_number ), users ( username )')
-    .eq('id', params.id)
+    .eq('id', id)
     .single();
 
   if (error || !invoice) return notFound();
@@ -22,13 +23,13 @@ export default async function InvoicePage({ params }: { params: { id: string } }
   const { data: items } = await supabase
     .from('billing_invoice_items')
     .select('*')
-    .eq('invoice_id', params.id)
+    .eq('invoice_id', id)
     .order('created_at', { ascending: true });
 
   const { data: payments } = await supabase
     .from('billing_payments')
     .select('amount, payment_method, payment_date, status')
-    .eq('invoice_id', params.id)
+    .eq('invoice_id', id)
     .order('payment_date', { ascending: false });
 
   const getStatusVariant = (status: string) => {
@@ -51,7 +52,7 @@ export default async function InvoicePage({ params }: { params: { id: string } }
           </Link>
           <div>
             <h1 className="text-xl font-bold text-slate-800">
-              Invoice {invoice.invoice_number || `#${params.id.slice(0, 8).toUpperCase()}`}
+              Invoice {invoice.invoice_number || `#${id.slice(0, 8).toUpperCase()}`}
             </h1>
             <p className="text-xs text-slate-400 mt-0.5">
               Created {new Date(invoice.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}
