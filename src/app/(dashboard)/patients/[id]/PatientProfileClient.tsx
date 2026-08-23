@@ -430,8 +430,7 @@ export default function PatientProfileClient({ patient: initialPatient }: Props)
                         consultationStatus={enc.consultation_status}
                         provisionalDiagnosis={enc.provisional_diagnosis}
                         notes={enc.notes}
-                        soapAssessment={enc.soap_assessment}
-                        soapPlan={enc.soap_plan}
+                        chiefComplaints={enc.chief_complaints}
                         followupDate={enc.followup_date}
                       />
                     ))}

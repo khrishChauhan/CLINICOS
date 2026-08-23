@@ -129,17 +129,41 @@ export async function getPatientEncountersAction(patientId: string) {
     const visits = await visitRepository.getVisitsByPatient(supabase, clinicId, patientId)
     if (!visits || visits.length === 0) return { success: true, data: [] }
 
-    // 2. Batch-fetch SOAP notes for all visit IDs
     const visitIds = visits.map(v => v.id)
-    const { data: soapNotes } = await supabase
-      .from('soap_notes')
-      .select('visit_id, assessment, plan')
+    
+    // 2. Batch-fetch Diagnoses
+    const { data: diagnoses } = await supabase
+      .from('diagnoses')
+      .select('visit_id, diagnosis_name')
+      .in('visit_id', visitIds)
+      
+    // 3. Batch-fetch Chief Complaints
+    const { data: complaints } = await supabase
+      .from('chief_complaints')
+      .select('visit_id, complaint')
       .in('visit_id', visitIds)
 
-    const soapMap: Record<string, { assessment: string | null; plan: string | null }> = {}
-    soapNotes?.forEach(s => { soapMap[s.visit_id] = { assessment: s.assessment, plan: s.plan } })
+    // 4. Batch-fetch Clinical Notes
+    const { data: notesList } = await supabase
+      .from('clinical_notes')
+      .select('visit_id, note')
+      .in('visit_id', visitIds)
 
-    // 3. Collect unique user_ids (stored as created_by) to resolve doctor names
+    // Helper to group by visit_id
+    const groupStrings = (data: any[] | null, field: string) => {
+      const map: Record<string, string[]> = {}
+      data?.forEach(item => {
+        if (!map[item.visit_id]) map[item.visit_id] = []
+        if (item[field]) map[item.visit_id].push(item[field])
+      })
+      return map
+    }
+
+    const diagMap = groupStrings(diagnoses, 'diagnosis_name')
+    const compMap = groupStrings(complaints, 'complaint')
+    const noteMap = groupStrings(notesList, 'note')
+
+    // 5. Collect unique user_ids (stored as created_by) to resolve doctor names
     const userIds = [...new Set(visits.map(v => v.created_by).filter(Boolean))] as string[]
     const { data: userProfiles } = userIds.length > 0
       ? await adminClient.from('users').select('id, username, first_name, last_name').in('id', userIds)
@@ -150,19 +174,25 @@ export async function getPatientEncountersAction(patientId: string) {
       userMap[u.id] = u.first_name && u.last_name ? `Dr. ${u.first_name} ${u.last_name}` : u.username || 'Unknown Doctor'
     })
 
-    // 4. Combine into enriched encounters
-    const encounters = visits.map(v => ({
-      id: v.id,
-      visit_number: v.visit_number || v.id.slice(0, 6).toUpperCase(),
-      visit_date: v.visit_date,
-      consultation_status: v.consultation_status,
-      provisional_diagnosis: v.provisional_diagnosis || null,
-      notes: v.notes || null,
-      followup_date: v.followup_date || null,
-      doctor_name: v.created_by ? (userMap[v.created_by] || null) : null,
-      soap_assessment: soapMap[v.id]?.assessment || null,
-      soap_plan: soapMap[v.id]?.plan || null,
-    }))
+    // 6. Combine into enriched encounters
+    const encounters = visits.map(v => {
+      // If no new structured data, fallback to old visits table data if it exists
+      const dList = diagMap[v.id]?.length ? diagMap[v.id].join(', ') : v.provisional_diagnosis || null
+      const cList = compMap[v.id]?.length ? compMap[v.id].join(', ') : null
+      const nList = noteMap[v.id]?.length ? noteMap[v.id].join('\n\n') : v.notes || null
+
+      return {
+        id: v.id,
+        visit_number: v.visit_number || v.id.slice(0, 6).toUpperCase(),
+        visit_date: v.visit_date,
+        consultation_status: v.consultation_status,
+        provisional_diagnosis: dList,
+        chief_complaints: cList,
+        notes: nList,
+        followup_date: v.followup_date || null,
+        doctor_name: v.created_by ? (userMap[v.created_by] || null) : null,
+      }
+    })
 
     return { success: true, data: encounters }
   } catch (error: any) {

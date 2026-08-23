@@ -10,8 +10,7 @@ interface EncounterCardProps {
   consultationStatus: string
   provisionalDiagnosis: string | null
   notes: string | null
-  soapAssessment: string | null
-  soapPlan: string | null
+  chiefComplaints: string | null
   followupDate: string | null
 }
 
@@ -22,8 +21,7 @@ export default function EncounterCard({
   consultationStatus,
   provisionalDiagnosis,
   notes,
-  soapAssessment,
-  soapPlan,
+  chiefComplaints,
   followupDate,
 }: EncounterCardProps) {
   const [expanded, setExpanded] = useState(false)
@@ -35,7 +33,7 @@ export default function EncounterCard({
       ? 'bg-amber-50 text-amber-700 border-amber-200'
       : 'bg-slate-100 text-slate-500 border-slate-200'
 
-  const summary = provisionalDiagnosis || soapAssessment || notes || soapPlan
+  const summary = provisionalDiagnosis || chiefComplaints || notes
 
   return (
     <div className="border border-slate-200 rounded-xl overflow-hidden bg-white hover:border-slate-300 transition">
@@ -90,23 +88,13 @@ export default function EncounterCard({
               <p className="text-sm text-slate-700 font-medium">{provisionalDiagnosis}</p>
             </div>
           )}
-          {(soapAssessment || soapPlan) && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {soapAssessment && (
-                <div>
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Assessment (SOAP)</p>
-                  <p className="text-sm text-slate-600">{soapAssessment}</p>
-                </div>
-              )}
-              {soapPlan && (
-                <div>
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Plan (SOAP)</p>
-                  <p className="text-sm text-slate-600">{soapPlan}</p>
-                </div>
-              )}
+          {chiefComplaints && (
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Chief Complaints</p>
+              <p className="text-sm text-slate-600">{chiefComplaints}</p>
             </div>
           )}
-          {notes && !soapAssessment && !soapPlan && (
+          {notes && (
             <div>
               <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Clinical Notes</p>
               <p className="text-sm text-slate-600">{notes}</p>

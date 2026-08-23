@@ -23,7 +23,7 @@ import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import type { VisitRow } from '@/types/emr'
 
-type Tab = 'timeline' | 'complaints' | 'vitals' | 'diagnoses' | 'procedures' | 'prescription' | 'clinical_notes' | 'orders' | 'followup' | 'referrals' | 'alerts' | 'treatment_plans' | 'attachments' | 'audit' | 'summary'
+type Tab = 'timeline' | 'complaints' | 'vitals' | 'diagnoses' | 'procedures' | 'prescription' | 'clinical_notes' | 'orders' | 'followup' | 'referrals' | 'alerts' | 'treatment_plans' | 'attachments' | 'audit'
 
 interface VisitWorkspaceProps {
   visitId: string
@@ -34,19 +34,11 @@ export default function VisitWorkspace({ visitId, onComplete }: VisitWorkspacePr
   const [visit, setVisit] = useState<VisitRow | null>(null)
   const [activeTab, setActiveTab] = useState<Tab>('timeline')
   const [completing, setCompleting] = useState(false)
-  const [notes, setNotes] = useState('')
-  const [provDiag, setProvDiag] = useState('')
-  const [followupRequired, setFollowupRequired] = useState(false)
-  const [followupDate, setFollowupDate] = useState('')
 
   const loadVisit = useCallback(async () => {
     const res = await getVisitAction(visitId)
     if (res.success && res.data) {
       setVisit(res.data)
-      setNotes(res.data.notes || '')
-      setProvDiag(res.data.provisional_diagnosis || '')
-      setFollowupRequired(res.data.followup_required)
-      setFollowupDate(res.data.followup_date || '')
     }
   }, [visitId])
 
@@ -55,26 +47,12 @@ export default function VisitWorkspace({ visitId, onComplete }: VisitWorkspacePr
   const handleComplete = async () => {
     if (!confirm('Mark this consultation as Complete? The linked appointment will also be updated.')) return
     setCompleting(true)
-    const res = await completeVisitAction(visitId, {
-      provisional_diagnosis: provDiag || undefined,
-      notes: notes || undefined,
-      followup_required: followupRequired,
-      followup_date: followupDate || undefined
-    })
+    const res = await completeVisitAction(visitId)
     if (res.success && res.data) {
       setVisit(res.data)
       onComplete?.(res.data)
     }
     setCompleting(false)
-  }
-
-  const handleSaveSummary = async () => {
-    await updateVisitAction(visitId, {
-      provisional_diagnosis: provDiag || undefined,
-      notes: notes || undefined,
-      followup_required: followupRequired,
-      followup_date: followupDate || undefined
-    })
   }
 
   if (!visit) return <div className="p-6 text-center text-slate-400 animate-pulse">Loading consultation...</div>
@@ -96,7 +74,6 @@ export default function VisitWorkspace({ visitId, onComplete }: VisitWorkspacePr
     { id: 'followup', label: 'Follow-up' },
     { id: 'attachments', label: 'Attachments' },
     { id: 'audit', label: 'Audit Logs' },
-    { id: 'summary', label: 'Summary' },
   ]
 
   return (
@@ -156,56 +133,6 @@ export default function VisitWorkspace({ visitId, onComplete }: VisitWorkspacePr
         {activeTab === 'followup' && <FollowUpPlanPanel visitId={visitId} />}
         {activeTab === 'attachments' && <ClinicalAttachmentsPanel visitId={visitId} />}
         {activeTab === 'audit' && <EMRAuditPanel patientId={visit.patient_id} />}
-        {activeTab === 'summary' && (
-          <div className="space-y-5">
-            <div>
-              <label className="block text-sm font-semibold text-slate-700 mb-1">Provisional Diagnosis</label>
-              <textarea
-                rows={3}
-                value={provDiag}
-                onChange={e => setProvDiag(e.target.value)}
-                disabled={isCompleted}
-                className="w-full border border-slate-300 rounded-xl p-3 text-sm outline-none focus:border-blue-500 resize-y bg-white disabled:bg-slate-50 disabled:text-slate-500"
-                placeholder="Enter provisional diagnosis..."
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-slate-700 mb-1">Consultation Notes</label>
-              <textarea
-                rows={4}
-                value={notes}
-                onChange={e => setNotes(e.target.value)}
-                disabled={isCompleted}
-                className="w-full border border-slate-300 rounded-xl p-3 text-sm outline-none focus:border-blue-500 resize-y bg-white disabled:bg-slate-50 disabled:text-slate-500"
-                placeholder="General notes..."
-              />
-            </div>
-            <div className="flex items-center gap-4 flex-wrap">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={followupRequired}
-                  onChange={e => setFollowupRequired(e.target.checked)}
-                  disabled={isCompleted}
-                  className="w-4 h-4 accent-blue-600"
-                />
-                <span className="text-sm font-semibold text-slate-700">Follow-up Required</span>
-              </label>
-              {followupRequired && (
-                <input
-                  type="date"
-                  value={followupDate}
-                  onChange={e => setFollowupDate(e.target.value)}
-                  disabled={isCompleted}
-                  className="border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-500"
-                />
-              )}
-            </div>
-            {!isCompleted && (
-              <Button variant="outline" onClick={handleSaveSummary}>Save Summary</Button>
-            )}
-          </div>
-        )}
       </div>
     </div>
   )
