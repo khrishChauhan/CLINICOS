@@ -6,6 +6,8 @@ import { useAuth } from './AuthContext'
 // ---------------------------------------------------------------------------
 // Context definition
 // ---------------------------------------------------------------------------
+export type SimulatedRole = 'Admin' | 'Doctor' | 'Receptionist'
+
 interface PermissionContextValue {
   /** Check if the user has a specific permission e.g. "patients.create" */
   hasPermission: (permission: string) => boolean
@@ -17,6 +19,9 @@ interface PermissionContextValue {
   hasRole: (roleName: string) => boolean
   /** Check if a feature flag is enabled e.g. "sms_notifications" */
   isFeatureEnabled: (flagKey: string) => boolean
+  /** Mock UI Role Simulation */
+  simulatedRole: SimulatedRole
+  setSimulatedRole: (role: SimulatedRole) => void
 }
 
 const PermissionContext = createContext<PermissionContextValue | null>(null)
@@ -26,6 +31,7 @@ const PermissionContext = createContext<PermissionContextValue | null>(null)
 // ---------------------------------------------------------------------------
 export function PermissionProvider({ children }: { children: React.ReactNode }) {
   const { session } = useAuth()
+  const [simulatedRole, setSimulatedRole] = React.useState<SimulatedRole>('Admin')
 
   const hasPermission = useCallback((permission: string): boolean => {
     if (!session) return false
@@ -59,6 +65,8 @@ export function PermissionProvider({ children }: { children: React.ReactNode }) 
       hasAllPermissions,
       hasRole,
       isFeatureEnabled,
+      simulatedRole,
+      setSimulatedRole,
     }}>
       {children}
     </PermissionContext.Provider>

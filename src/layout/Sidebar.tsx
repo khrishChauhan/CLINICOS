@@ -23,6 +23,7 @@ import {
   Activity
 } from 'lucide-react';
 import { cn } from '../lib/utils';
+import { usePermission } from '../context/PermissionContext';
 
 const navItems = [
   { name: 'Dashboard', path: '/', icon: LayoutDashboard },
@@ -36,12 +37,24 @@ const navItems = [
   { name: 'Operation Theatre', path: '/operation-theatre', icon: Heart },
   { name: 'Pathology Lab', path: '/laboratory', icon: FlaskConical },
   { name: 'Radiology', path: '/radiology', icon: Activity },
-  // { name: 'Staff Directory', path: '/staff', icon: ClipboardList },
-  // { name: 'Audits & Reports', path: '/reports', icon: FileChartColumn },
 ];
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const { simulatedRole } = usePermission();
+
+  const filteredNavItems = React.useMemo(() => {
+    return navItems.filter((item) => {
+      if (simulatedRole === 'Doctor') {
+        return ['Dashboard', 'Patients', 'Appointments', 'Live Queue', 'EMR Consult', 'Pathology Lab', 'Radiology'].includes(item.name);
+      }
+      if (simulatedRole === 'Receptionist') {
+        return ['Dashboard', 'Patients', 'Appointments', 'Live Queue', 'Doctors', 'Cashier Ledger'].includes(item.name);
+      }
+      return true; // Admin sees all
+    });
+  }, [simulatedRole]);
+
   return (
     <aside className="bg-white/40 backdrop-blur-xl border-r border-slate-200/50 text-slate-700 w-64 fixed inset-y-0 left-0 z-40 transition-transform lg:translate-x-0 flex flex-col justify-between translate-x-0">
       <div className="space-y-6 py-4 flex-1 overflow-y-auto">
@@ -58,7 +71,7 @@ export default function Sidebar() {
           </button>
         </div>
         <nav className="space-y-1.5 px-3 text-xs">
-          {navItems.map((item) => {
+          {filteredNavItems.map((item) => {
             const isActive = pathname === item.path;
             return (
               <Link

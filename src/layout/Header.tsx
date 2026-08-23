@@ -3,11 +3,13 @@
 import React from 'react';
 import { Menu, CloudLightning, Bell, LogOut, Loader2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { usePermission } from '../context/PermissionContext';
 import { useRouter } from 'next/navigation';
 import NotificationBellClient from './NotificationBellClient';
 
 export default function Header() {
   const { session, loading, signOut } = useAuth();
+  const { simulatedRole, setSimulatedRole } = usePermission();
   const router = useRouter();
 
   const currentDate = new Date().toLocaleDateString('en-US', {
@@ -49,12 +51,27 @@ export default function Header() {
           ) : (
             <>
               <span className="font-bold text-slate-700">{displayName}</span>
-              <span className="text-[10px] bg-slate-100/80 text-slate-600 px-1.5 py-0.5 rounded font-bold uppercase border border-slate-200/30">
+              <span className="text-[10px] bg-slate-100/80 text-slate-600 px-1.5 py-0.5 rounded font-bold uppercase border border-slate-200/30 hidden sm:inline-block">
                 {roleName}
               </span>
             </>
           )}
         </div>
+
+        {/* View Switcher */}
+        <div className="flex items-center border-l border-slate-200/50 pl-4">
+          <select 
+            value={simulatedRole} 
+            onChange={(e) => setSimulatedRole(e.target.value as any)}
+            className="text-xs bg-slate-50 border border-slate-200 text-slate-700 rounded-md px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-500 font-medium"
+            title="Simulate Role View"
+          >
+            <option value="Admin">Admin View</option>
+            <option value="Doctor">Doctor View</option>
+            <option value="Receptionist">Receptionist View</option>
+          </select>
+        </div>
+
         <button
           onClick={handleSignOut}
           title="Sign out"
