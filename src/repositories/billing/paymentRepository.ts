@@ -6,7 +6,7 @@ export async function recordPayment(
   payload: Omit<PaymentRow, 'id' | 'payment_date' | 'status'>
 ): Promise<PaymentRow> {
   const { data, error } = await supabase
-    .from('payments')
+    .from('billing_payments')
     .insert([{ ...payload, status: 'Success' }])
     .select()
     .single()

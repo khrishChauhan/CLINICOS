@@ -118,3 +118,54 @@ export async function getTodaysVisitsAction(filters?: { status?: string }) {
     return { success: false, error: error.message }
   }
 }
+
+/** Get enriched patient encounters with doctor name and SOAP notes for display in patient profile. */
+export async function getPatientEncountersAction(patientId: string) {
+  try {
+    const { supabase, clinicId } = await getAuthContext()
+    const adminClient = createAdminClient()
+
+    // 1. Fetch all visits for this patient
+    const visits = await visitRepository.getVisitsByPatient(supabase, clinicId, patientId)
+    if (!visits || visits.length === 0) return { success: true, data: [] }
+
+    // 2. Batch-fetch SOAP notes for all visit IDs
+    const visitIds = visits.map(v => v.id)
+    const { data: soapNotes } = await supabase
+      .from('soap_notes')
+      .select('visit_id, assessment, plan')
+      .in('visit_id', visitIds)
+
+    const soapMap: Record<string, { assessment: string | null; plan: string | null }> = {}
+    soapNotes?.forEach(s => { soapMap[s.visit_id] = { assessment: s.assessment, plan: s.plan } })
+
+    // 3. Collect unique user_ids (stored as created_by) to resolve doctor names
+    const userIds = [...new Set(visits.map(v => v.created_by).filter(Boolean))] as string[]
+    const { data: userProfiles } = userIds.length > 0
+      ? await adminClient.from('users').select('id, username, first_name, last_name').in('id', userIds)
+      : { data: [] }
+
+    const userMap: Record<string, string> = {}
+    userProfiles?.forEach((u: any) => {
+      userMap[u.id] = u.first_name && u.last_name ? `Dr. ${u.first_name} ${u.last_name}` : u.username || 'Unknown Doctor'
+    })
+
+    // 4. Combine into enriched encounters
+    const encounters = visits.map(v => ({
+      id: v.id,
+      visit_number: v.visit_number || v.id.slice(0, 6).toUpperCase(),
+      visit_date: v.visit_date,
+      consultation_status: v.consultation_status,
+      provisional_diagnosis: v.provisional_diagnosis || null,
+      notes: v.notes || null,
+      followup_date: v.followup_date || null,
+      doctor_name: v.created_by ? (userMap[v.created_by] || null) : null,
+      soap_assessment: soapMap[v.id]?.assessment || null,
+      soap_plan: soapMap[v.id]?.plan || null,
+    }))
+
+    return { success: true, data: encounters }
+  } catch (error: any) {
+    return { success: false, error: error.message }
+  }
+}

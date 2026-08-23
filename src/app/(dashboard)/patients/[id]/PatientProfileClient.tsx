@@ -1,15 +1,17 @@
 'use client'
 
-import React, { useState, useTransition } from 'react'
+import React, { useState, useTransition, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { ChevronLeft, Edit, FileText, Activity, CreditCard, Stethoscope, Mail, Phone, Calendar, Clock, Droplets, MapPin, Upload, CheckCircle, XCircle } from 'lucide-react'
+import { ChevronLeft, Edit, FileText, Activity, Stethoscope, Mail, Phone, Calendar, Clock, Droplets, MapPin, Upload, CheckCircle, XCircle, Loader2 } from 'lucide-react'
 import type { PatientListItem } from '@/types/patients'
 import { createClient } from '@/lib/supabase/client'
 import { linkPatientDocument } from '@/actions/patients/linkDocument'
 import { updatePatientStatusAction } from '@/actions/patients/patientActions'
+import { getPatientEncountersAction } from '@/actions/emr/visitActions'
 import { usePermission } from '@/context/PermissionContext'
 import { useAuth } from '@/context/AuthContext'
 import EditPatientDrawer from './EditPatientDrawer'
+import EncounterCard from '@/components/emr/EncounterCard'
 
 interface Props {
   patient: PatientListItem
@@ -93,8 +95,20 @@ export default function PatientProfileClient({ patient: initialPatient }: Props)
   const [uploadError, setUploadError] = useState<string | null>(null)
   const [statusError, setStatusError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
+  const [encounters, setEncounters] = useState<any[]>([])
+  const [encountersLoading, setEncountersLoading] = useState(false)
 
   const targetStatus: 'Active' | 'Inactive' = patient.status === 'Active' ? 'Inactive' : 'Active'
+
+  // Load encounters when tab is selected
+  useEffect(() => {
+    if (activeTab === 'encounters' && encounters.length === 0 && !encountersLoading) {
+      setEncountersLoading(true)
+      getPatientEncountersAction(patient.id).then(res => {
+        if (res.success && res.data) setEncounters(res.data)
+      }).finally(() => setEncountersLoading(false))
+    }
+  }, [activeTab, patient.id])
 
   // ── Edit success → refresh patient data from server
   const handleEditSuccess = () => {
@@ -387,10 +401,42 @@ export default function PatientProfileClient({ patient: initialPatient }: Props)
             )}
 
             {activeTab === 'encounters' && (
-              <div className="flex flex-col items-center justify-center h-64 text-slate-500">
-                <Stethoscope className="w-12 h-12 text-slate-200 mb-4" />
-                <p className="font-medium text-slate-600">Module under construction</p>
-                <p className="text-sm">This feature will be available in the upcoming Integration Phase.</p>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-bold text-slate-800 text-lg flex items-center gap-2">
+                    <Stethoscope className="w-5 h-5 text-slate-400" /> Visit History
+                  </h3>
+                  <span className="text-xs text-slate-400">{encounters.length} visit{encounters.length !== 1 ? 's' : ''} recorded</span>
+                </div>
+
+                {encountersLoading ? (
+                  <div className="flex items-center justify-center py-16">
+                    <Loader2 className="w-6 h-6 animate-spin text-slate-400" />
+                  </div>
+                ) : encounters.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-16 text-slate-400">
+                    <Stethoscope className="w-12 h-12 text-slate-200 mb-4" />
+                    <p className="font-medium text-slate-600">No visits recorded yet</p>
+                    <p className="text-sm mt-1">Once this patient has a consultation, their visit history will appear here.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {encounters.map(enc => (
+                      <EncounterCard
+                        key={enc.id}
+                        visitNumber={enc.visit_number}
+                        visitDate={enc.visit_date}
+                        doctorName={enc.doctor_name}
+                        consultationStatus={enc.consultation_status}
+                        provisionalDiagnosis={enc.provisional_diagnosis}
+                        notes={enc.notes}
+                        soapAssessment={enc.soap_assessment}
+                        soapPlan={enc.soap_plan}
+                        followupDate={enc.followup_date}
+                      />
+                    ))}
+                  </div>
+                )}
               </div>
             )}
           </div>
