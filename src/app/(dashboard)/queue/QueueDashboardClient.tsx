@@ -3,6 +3,7 @@
 import React, { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { updateAppointmentStatusAction } from '@/actions/appointments/updateAppointmentStatus'
+import { usePermission } from '@/context/PermissionContext'
 import type { AppointmentRow } from '@/types/appointments'
 import type { DoctorForDropdown } from '@/actions/appointments/getDoctorsForClinicAction'
 import { Clock, Play, CheckCircle, XCircle, Stethoscope, UserPlus, AlertTriangle } from 'lucide-react'
@@ -30,6 +31,7 @@ const STATUS_COLORS: Record<string, string> = {
 
 export default function QueueDashboardClient({ initialQueue, doctors }: Props) {
   const router = useRouter()
+  const { simulatedRole } = usePermission()
   const [queue, setQueue] = useState<ExtendedApt[]>(initialQueue as ExtendedApt[])
   const [loadingId, setLoadingId] = useState<string | null>(null)
   const [isWalkInOpen, setIsWalkInOpen] = useState(false)
@@ -153,20 +155,22 @@ export default function QueueDashboardClient({ initialQueue, doctors }: Props) {
             {inConsult.length > 0 && ` · ${inConsult.length} in consult`}
           </p>
         </div>
-        <div className="flex gap-2">
-          <button
-            onClick={() => setIsBookingOpen(true)}
-            className="flex items-center gap-1.5 px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold text-sm hover:bg-blue-700 transition shadow-sm"
-          >
-            <Stethoscope className="w-4 h-4" /> Book Appt
-          </button>
-          <button
-            onClick={() => setIsWalkInOpen(true)}
-            className="flex items-center gap-1.5 px-4 py-2 bg-emerald-600 text-white rounded-lg font-semibold text-sm hover:bg-emerald-700 transition shadow-sm"
-          >
-            <UserPlus className="w-4 h-4" /> Walk-In
-          </button>
-        </div>
+        {simulatedRole !== 'Doctor' && (
+          <div className="flex gap-2">
+            <button
+              onClick={() => setIsBookingOpen(true)}
+              className="flex items-center gap-1.5 px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold text-sm hover:bg-blue-700 transition shadow-sm"
+            >
+              <Stethoscope className="w-4 h-4" /> Book Appt
+            </button>
+            <button
+              onClick={() => setIsWalkInOpen(true)}
+              className="flex items-center gap-1.5 px-4 py-2 bg-emerald-600 text-white rounded-lg font-semibold text-sm hover:bg-emerald-700 transition shadow-sm"
+            >
+              <UserPlus className="w-4 h-4" /> Walk-In
+            </button>
+          </div>
+        )}
       </div>
 
       {errorMsg && (

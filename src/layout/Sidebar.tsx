@@ -46,7 +46,7 @@ export default function Sidebar() {
   const filteredNavItems = React.useMemo(() => {
     return navItems.filter((item) => {
       if (simulatedRole === 'Doctor') {
-        return ['Dashboard', 'Patients', 'Appointments', 'Live Queue', 'EMR Consult', 'Pathology Lab', 'Radiology'].includes(item.name);
+        return ['Patients', 'Live Queue', 'EMR Consult', 'Pathology Lab', 'Radiology'].includes(item.name);
       }
       if (simulatedRole === 'Receptionist') {
         return ['Dashboard', 'Patients', 'Appointments', 'Live Queue', 'Doctors', 'Cashier Ledger'].includes(item.name);

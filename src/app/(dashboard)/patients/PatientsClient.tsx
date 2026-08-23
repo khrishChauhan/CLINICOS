@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/Input'
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/Table'
 import PatientTableSkeleton from './PatientTableSkeleton'
 import { listPatients } from '@/actions/patients/listPatients'
+import { usePermission } from '@/context/PermissionContext'
 import type { PatientListItem, PatientFilters, PaginatedResult, PatientListResult } from '@/types/patients'
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -85,6 +86,7 @@ export default function PatientsClient({ initialData, initialFilters }: Patients
   const router = useRouter()
   const pathname = usePathname()
   const searchParamsHook = useSearchParams()
+  const { simulatedRole } = usePermission()
   const [isPending, startTransition] = useTransition()
 
   const [search, setSearch]         = useState(initialFilters.search ?? '')
@@ -173,12 +175,13 @@ export default function PatientsClient({ initialData, initialFilters }: Patients
                   : `Manage details, vitals, timelines and EHR records — ${totalCount} patient${totalCount !== 1 ? 's' : ''} total`}
               </p>
             </div>
-            {/* ✅ Fixed: "Add Patient" button now links to register page */}
-            <Link href="/patients/register">
-              <Button className="bg-blue-600/90 hover:bg-blue-600 text-white flex items-center gap-2">
-                <Plus className="w-4 h-4" /> Add Patient Record
-              </Button>
-            </Link>
+            {simulatedRole !== 'Doctor' && (
+              <Link href="/patients/register">
+                <Button className="bg-blue-600/90 hover:bg-blue-600 text-white flex items-center gap-2">
+                  <Plus className="w-4 h-4" /> Add Patient Record
+                </Button>
+              </Link>
+            )}
           </div>
 
           {/* Filters Bar */}
