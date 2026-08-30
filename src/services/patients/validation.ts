@@ -151,6 +151,7 @@ export const stepSchemas = {
   6: step7Schema,
   7: step8Schema,
   8: step9Schema,
+  9: z.object({}), // Review step — no fields to validate
 } as const
 
 export type StepNumber = keyof typeof stepSchemas
