@@ -181,7 +181,7 @@ async function upsertPublicUser(
     email: user.email,
     username: user.username,
     employee_id: user.employeeId,
-    status: 'Active',
+    status: 'active',
     is_email_verified: true,
   }, { onConflict: 'id' })
 
@@ -206,7 +206,7 @@ async function upsertDoctorRecord(
     doctor_code: 'DOC-' + Math.floor(Math.random() * 10000).toString().padStart(4, '0'),
     first_name: user.doctorFirstName ?? 'Doctor',
     last_name: user.doctorLastName ?? '',
-    status: 'Active',
+    status: 'active',
   }
 
   let error;
