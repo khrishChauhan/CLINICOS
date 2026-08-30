@@ -15,7 +15,7 @@ import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
 import { Badge } from '@/components/ui/Badge'
-import { usePermission } from '@/context/PermissionContext'
+import { useAuth } from '@/context/AuthContext'
 import type { AppointmentRow } from '@/types/appointments'
 import type { DoctorForDropdown } from '@/actions/appointments/getDoctorsForClinicAction'
 
@@ -35,7 +35,7 @@ interface Props {
 export default function AppointmentsClient({ initialAppointments, stats, doctors, currentDate, currentDoctorId }: Props) {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const { simulatedRole } = usePermission()
+  const { session } = useAuth()
   const [isPending, startTransition] = useTransition()
   
   const [isBookingOpen, setIsBookingOpen] = useState(false)
@@ -189,7 +189,7 @@ export default function AppointmentsClient({ initialAppointments, stats, doctors
                   </select>
                 </div>
               </div>
-              {simulatedRole !== 'Doctor' && (
+              {session?.role_name !== 'Doctor' && (
                 <div className="flex gap-2">
                   <Button size="sm" onClick={() => setIsWalkInOpen(true)} className="bg-emerald-600 hover:bg-emerald-700 whitespace-nowrap">
                     <Plus className="w-3.5 h-3.5" /> Book Walk-In

@@ -3,7 +3,7 @@
 import React, { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { updateAppointmentStatusAction } from '@/actions/appointments/updateAppointmentStatus'
-import { usePermission } from '@/context/PermissionContext'
+import { useAuth } from '@/context/AuthContext'
 import type { AppointmentRow } from '@/types/appointments'
 import type { DoctorForDropdown } from '@/actions/appointments/getDoctorsForClinicAction'
 import { Clock, Play, CheckCircle, XCircle, Stethoscope, UserPlus, AlertTriangle } from 'lucide-react'
@@ -31,7 +31,7 @@ const STATUS_COLORS: Record<string, string> = {
 
 export default function QueueDashboardClient({ initialQueue, doctors }: Props) {
   const router = useRouter()
-  const { simulatedRole } = usePermission()
+  const { session } = useAuth()
   const [queue, setQueue] = useState<ExtendedApt[]>(initialQueue as ExtendedApt[])
   const [loadingId, setLoadingId] = useState<string | null>(null)
   const [isWalkInOpen, setIsWalkInOpen] = useState(false)
@@ -155,7 +155,7 @@ export default function QueueDashboardClient({ initialQueue, doctors }: Props) {
             {inConsult.length > 0 && ` · ${inConsult.length} in consult`}
           </p>
         </div>
-        {simulatedRole !== 'Doctor' && (
+        {session?.role_name !== 'Doctor' && (
           <div className="flex gap-2">
             <button
               onClick={() => setIsBookingOpen(true)}

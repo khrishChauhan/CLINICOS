@@ -23,7 +23,7 @@ import {
   Activity
 } from 'lucide-react';
 import { cn } from '../lib/utils';
-import { usePermission } from '../context/PermissionContext';
+import { useAuth } from '../context/AuthContext';
 
 const navItems = [
   { name: 'Dashboard', path: '/', icon: LayoutDashboard },
@@ -39,21 +39,24 @@ const navItems = [
   { name: 'Radiology', path: '/radiology', icon: Activity },
 ];
 
+const ROLE_NAV: Record<string, string[]> = {
+  'doctor': ['Patients', 'Live Queue', 'EMR Consult', 'Pathology Lab', 'Radiology', 'Operation Theatre'],
+  'receptionist': ['Dashboard', 'Patients', 'Appointments', 'Live Queue', 'Doctors', 'Cashier Ledger'],
+  'pharmacist': ['Pharmacy Store', 'Cashier Ledger', 'Patients'],
+};
+
 export default function Sidebar() {
   const pathname = usePathname();
-  const { simulatedRole } = usePermission();
+  const { session } = useAuth();
 
   const filteredNavItems = React.useMemo(() => {
-    return navItems.filter((item) => {
-      if (simulatedRole === 'Doctor') {
-        return ['Patients', 'Live Queue', 'EMR Consult', 'Pathology Lab', 'Radiology'].includes(item.name);
-      }
-      if (simulatedRole === 'Receptionist') {
-        return ['Dashboard', 'Patients', 'Appointments', 'Live Queue', 'Doctors', 'Cashier Ledger'].includes(item.name);
-      }
-      return true; // Admin sees all
-    });
-  }, [simulatedRole]);
+    const role = session?.role_name?.toLowerCase() ?? '';
+    const allowed = ROLE_NAV[role];
+    if (allowed) {
+      return navItems.filter(item => allowed.includes(item.name));
+    }
+    return navItems; // Super Admin / Admin sees all
+  }, [session]);
 
   return (
     <aside className="bg-white/40 backdrop-blur-xl border-r border-slate-200/50 text-slate-700 w-64 fixed inset-y-0 left-0 z-40 transition-transform lg:translate-x-0 flex flex-col justify-between translate-x-0">

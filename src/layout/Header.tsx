@@ -1,15 +1,13 @@
 'use client'
 
 import React from 'react';
-import { Menu, CloudLightning, Bell, LogOut, Loader2 } from 'lucide-react';
+import { Menu, CloudLightning, LogOut, Loader2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { usePermission } from '../context/PermissionContext';
 import { useRouter } from 'next/navigation';
 import NotificationBellClient from './NotificationBellClient';
 
 export default function Header() {
   const { session, loading, signOut } = useAuth();
-  const { simulatedRole, setSimulatedRole } = usePermission();
   const router = useRouter();
 
   const currentDate = new Date().toLocaleDateString('en-US', {
@@ -42,7 +40,7 @@ export default function Header() {
       </div>
       <div className="flex items-center gap-4">
         <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded-full text-[10px] font-bold text-emerald-700 backdrop-blur-xs">
-          <CloudLightning className="w-3 h-3 text-emerald-500 animate-pulse" /> LOCAL SERVER LIVE
+          <CloudLightning className="w-3 h-3 text-emerald-500 animate-pulse" /> LIVE
         </div>
         <NotificationBellClient />
         <div className="flex items-center gap-2 border-l border-slate-200/50 pl-4 text-xs">
@@ -56,20 +54,6 @@ export default function Header() {
               </span>
             </>
           )}
-        </div>
-
-        {/* View Switcher */}
-        <div className="flex items-center border-l border-slate-200/50 pl-4">
-          <select 
-            value={simulatedRole} 
-            onChange={(e) => setSimulatedRole(e.target.value as any)}
-            className="text-xs bg-slate-50 border border-slate-200 text-slate-700 rounded-md px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-500 font-medium"
-            title="Simulate Role View"
-          >
-            <option value="Admin">Admin View</option>
-            <option value="Doctor">Doctor View</option>
-            <option value="Receptionist">Receptionist View</option>
-          </select>
         </div>
 
         <button
