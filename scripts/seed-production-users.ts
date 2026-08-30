@@ -197,14 +197,26 @@ async function upsertDoctorRecord(
   user: UserSeed,
   clinicId: string
 ) {
-  const { error } = await supabase.schema('doctor').from('doctors').upsert({
+  // Check if exists first
+  const { data: existing } = await supabase.schema('doctor').from('doctors').select('id').eq('user_id', authUserId).single()
+
+  const payload = {
     user_id: authUserId,
     clinic_id: clinicId,
+    doctor_code: 'DOC-' + Math.floor(Math.random() * 10000).toString().padStart(4, '0'),
     first_name: user.doctorFirstName ?? 'Doctor',
     last_name: user.doctorLastName ?? '',
-    specialization: user.specialization ?? 'General Physician',
     status: 'Active',
-  }, { onConflict: 'user_id' })
+  }
+
+  let error;
+  if (existing) {
+    const { error: updErr } = await supabase.schema('doctor').from('doctors').update(payload).eq('user_id', authUserId)
+    error = updErr
+  } else {
+    const { error: insErr } = await supabase.schema('doctor').from('doctors').insert([payload])
+    error = insErr
+  }
 
   if (error) {
     console.error(`   ❌ doctor.doctors upsert failed: ${error.message}`)
