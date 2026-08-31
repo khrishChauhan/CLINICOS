@@ -25,7 +25,7 @@ export async function rescheduleAppointmentAction(
     if (!profile?.clinic_id) throw new Error('Clinic ID not found')
 
     const result = await rescheduleService.rescheduleAppointment(
-      supabase,
+      adminClient,
       appointmentId,
       profile.clinic_id,
       newDate,

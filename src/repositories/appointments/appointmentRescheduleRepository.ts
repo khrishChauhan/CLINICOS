@@ -3,7 +3,7 @@ import type { AppointmentRescheduleRow } from '@/types/appointments'
 
 export const appointmentRescheduleRepository = {
   async createRescheduleRecord(supabase: SupabaseClient, payload: Omit<AppointmentRescheduleRow, 'id' | 'rescheduled_at'>) {
-    const { data, error } = await supabase
+    const { data, error } = await supabase.schema('appointment')
       .from('appointment_reschedule')
       .insert([payload])
       .select()
@@ -13,7 +13,7 @@ export const appointmentRescheduleRepository = {
   },
 
   async getReschedulesByAppointmentId(supabase: SupabaseClient, appointmentId: string) {
-    const { data, error } = await supabase
+    const { data, error } = await supabase.schema('appointment')
       .from('appointment_reschedule')
       .select('*')
       .eq('appointment_id', appointmentId)
