@@ -1,0 +1,3 @@
+import { Client } from 'pg';
+const client = new Client({ connectionString: 'postgresql://postgres.ihnjzlilbwhosfpawdvx:Click%20Aarambh%20ClinicOS@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres' });
+async function check() { await client.connect(); const res = await client.query('SELECT u.email, r.role_name FROM public.users u JOIN public.roles r ON u.role_id = r.id;'); console.table(res.rows); await client.end(); } check();
